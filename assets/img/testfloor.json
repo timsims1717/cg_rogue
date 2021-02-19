@@ -1,0 +1,11 @@
+{
+  "img": "testfloor.png",
+  "height": 96.0,
+  "width": 40.0,
+  "singleRow": true,
+  "sprites": [
+    {},
+    {},
+    {}
+  ]
+}

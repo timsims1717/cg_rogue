@@ -1,0 +1,22 @@
+{
+  "img": "testmananim.png",
+  "height": 64.0,
+  "singleRow": true,
+  "sprites": [
+    {
+      "w": 15.0
+    },
+    {
+      "w": 15.0
+    },
+    {
+      "w": 16.0
+    },
+    {
+      "w": 30.0
+    },
+    {
+      "w": 30.0
+    }
+  ]
+}

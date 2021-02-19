@@ -1,0 +1,12 @@
+{
+  "spriteSheet": "testmananim.json",
+  "fps": 4,
+  "frameData": {
+    "idle": {
+        "mid": 0
+      },
+    "run": [
+
+    ]
+  }
+}

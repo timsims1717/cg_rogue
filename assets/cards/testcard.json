@@ -1,0 +1,9 @@
+{
+  "img": "testcard.png",
+  "height": 350.0,
+  "width": 250.0,
+  "singleRow": true,
+  "sprites": [
+    {}
+  ]
+}
