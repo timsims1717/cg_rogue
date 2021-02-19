@@ -22,14 +22,13 @@ func CreateStrike() *player.Card {
 		}
 	}
 	act := player.NewPlayerAction(selectors.NewTargetSelect(), values, []func([]world.Coords, actions.ActionValues) {fn})
-	return player.NewCard("Strike", "Deal 5 damage.", act)
+	sec := player.NewCardSection("Deal 4 damage.", act)
+	return player.NewCard("Strike", []*player.CardSection{sec})
 }
 
 func StrikeLevel(level int) actions.ActionValues {
 	values := actions.ActionValues{
-		Source:  nil,
 		Damage:  4,
-		Move:    0,
 		Range:   1,
 		Targets: 1,
 	}
@@ -60,20 +59,67 @@ func CreateManeuver() *player.Card {
 	sel.Unoccupied = true
 	sel.Nonempty = true
 	act := player.NewPlayerAction(sel, values, []func([]world.Coords, actions.ActionValues) {fn})
-	return player.NewCard("Maneuver", "Move 3.", act)
+	sec := player.NewCardSection("Move 3.", act)
+	return player.NewCard("Maneuver", []*player.CardSection{sec})
 }
 
 func ManeuverLevel(level int) actions.ActionValues {
 	values := actions.ActionValues{
-		Source:  nil,
-		Damage:  0,
 		Move:    3 + level,
-		Range:   0,
-		Targets: 0,
 	}
 	return values
 }
 
-func Charge(path []world.Coords, values actions.ActionValues) {
+func CreateCharge() *player.Card {
+	valMov, valAtk := ChargeLevel(0)
+	fnMov := func (path []world.Coords, values actions.ActionValues) {
+		actions.AddToBot(actions.NewMoveSeriesAction(values.Source, path))
+	}
+	fnAtk := func (targets []world.Coords, values actions.ActionValues) {
+		if len(targets) > 0 {
+			occ := floor.CurrentFloor.GetOccupant(targets[0])
+			if occ != nil {
+				if target, ok := occ.(objects.Targetable); ok {
+					actions.AddToBot(actions.NewDamageAction(values.Source, target, values.Damage))
+				}
+			}
+		}
+	}
+	selMov := selectors.NewPathSelect()
+	selMov.Unoccupied = true
+	selMov.Nonempty = true
+	actMov := player.NewPlayerAction(selMov, valMov, []func([]world.Coords, actions.ActionValues) {fnMov})
+	actAtk := player.NewPlayerAction(selectors.NewTargetSelect(), valAtk, []func([]world.Coords, actions.ActionValues) {fnAtk})
+	secMov := player.NewCardSection("Move 1.", actMov)
+	secAtk := player.NewCardSection("Deal 2 damage.", actAtk)
+	return player.NewCard("Charge", []*player.CardSection{secMov, secAtk})
+}
 
+func ChargeLevel(level int) (actions.ActionValues, actions.ActionValues) {
+	valMov := actions.ActionValues{
+		Move:    1,
+	}
+	valAtk := actions.ActionValues{
+		Damage:  2,
+		Range:   1,
+		Targets: 1,
+	}
+	if level >= 1 {
+		valAtk.Damage += 2
+	}
+	if level >= 2 {
+		valMov.Move += 1
+	}
+	if level >= 3 {
+		valAtk.Damage += 2
+	}
+	if level >= 4 {
+		valAtk.Damage += 1
+		valMov.Move += 1
+	}
+	if level >= 5 {
+		valAtk.Damage += 1
+		valMov.Move += 1
+	}
+	return valMov, valAtk
 }

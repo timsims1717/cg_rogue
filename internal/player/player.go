@@ -63,7 +63,8 @@ func (p *Player) Update(win *pixelgl.Window) {
 
 func (p *Player) SetPlayerAction(act *PlayerAction) {
 	act.Complete = false
-	act.Selector.Init(p.Character.Coords, p.Input, act.Values)
+	act.Selector.Init(p.Input)
+	act.Selector.SetValues(act.Values)
 	p.CurrAction = act
 }
 

@@ -30,7 +30,7 @@ func (h *Hand) Update() {
 	if !h.isHovered() {
 		for i := len(h.Group) - 1; i >= 0; i-- {
 			card := h.Group[i]
-			if card.PointInside(h.player.Input.World) {
+			if card.PointInside(h.player.Input.World) && !card.trans {
 				h.Hovered = i
 				h.update = true
 				break
@@ -72,6 +72,7 @@ func (h *Hand) Draw(win *pixelgl.Window) {
 func (h *Hand) AddCard(card *Card) {
 	h.update = true
 	if card != nil {
+		card.trans = true
 		h.Group = append(h.Group, card)
 	}
 }

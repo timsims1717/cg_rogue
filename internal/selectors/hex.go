@@ -23,14 +23,17 @@ func NewEmptyHexSelect() *EmptyHexSelect {
 	return &EmptyHexSelect{}
 }
 
-func (h *EmptyHexSelect) Init(origin world.Coords, input *input.Input, values actions.ActionValues) {
+func (h *EmptyHexSelect) Init(input *input.Input) {
 	h.isDone = false
 	h.cancel = false
-	h.origin = origin
 	h.input = input
+	h.clicked = []world.Coords{}
+}
+
+func (h *EmptyHexSelect) SetValues(values actions.ActionValues) {
+	h.origin = values.Source.Coords
 	h.maxRange = util.Max(values.Range, values.Move)
 	h.count = values.Targets
-	h.clicked = []world.Coords{}
 }
 
 func (h *EmptyHexSelect) Update() {
@@ -40,7 +43,7 @@ func (h *EmptyHexSelect) Update() {
 		hex := floor.CurrentFloor.Get(h.input.Coords)
 		legal := hex != nil && hex.Occupant == nil && !hex.Empty && world.DistanceHex(h.origin.X, h.origin.Y, x, y) <= h.maxRange
 		if legal {
-			if h.input.Select.JustReleased() {
+			if h.input.Select.JustPressed() {
 				h.input.Select.Consume()
 				// add to or remove from the clicked array
 				found := -1
@@ -105,13 +108,16 @@ func NewPathSelect() *PathSelect {
 	return &PathSelect{}
 }
 
-func (p *PathSelect) Init(origin world.Coords, input *input.Input, values actions.ActionValues) {
+func (p *PathSelect) Init(input *input.Input) {
 	p.isDone = false
 	p.cancel = false
-	p.origin = origin
 	p.input = input
-	p.maxRange = util.Max(values.Range, values.Move)
 	p.picked = []world.Coords{}
+}
+
+func (p *PathSelect) SetValues(values actions.ActionValues) {
+	p.origin = values.Source.Coords
+	p.maxRange = util.Max(values.Range, values.Move)
 }
 
 func (p *PathSelect) Update() {
@@ -122,7 +128,7 @@ func (p *PathSelect) Update() {
 		if legal {
 			path, dist, found := floor.CurrentFloor.FindPath(p.origin, p.input.Coords, p.Unoccupied, p.Nonempty)
 			if found && dist <= p.maxRange {
-				if p.input.Select.JustReleased() {
+				if p.input.Select.JustPressed() {
 					p.input.Select.Consume()
 					for _, h := range path {
 						if h.X != p.origin.X || h.Y != p.origin.Y {

@@ -30,7 +30,7 @@ func (p *PlayCard) Update() {
 			p.player.Input.Cancel.Consume()
 			p.Card.stop()
 		}
-		if p.Card.action.Complete {
+		if !p.Card.isPlay {
 			CardManager.Move(p, p.player.Hand, 0)
 		}
 	}
@@ -45,6 +45,7 @@ func (p *PlayCard) Draw(win *pixelgl.Window) {
 func (p *PlayCard) AddCard(card *Card) {
 	p.update = true
 	if card != nil {
+		card.trans = true
 		p.Card = card
 		p.Card.play(p.player)
 	}

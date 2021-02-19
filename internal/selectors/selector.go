@@ -8,7 +8,8 @@ import (
 
 // A Selector can be updated, checked for completion, cancelled, and finished.
 type Selector interface {
-	Init(world.Coords, *input.Input, actions.ActionValues)
+	Init(*input.Input)
+	SetValues(actions.ActionValues)
 	Update()
 	IsCancelled() bool
 	IsDone() bool

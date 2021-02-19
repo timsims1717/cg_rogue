@@ -69,7 +69,7 @@ func run() {
 	player.Player1.Hand = player.NewHand(player.Player1)
 	player.Player1.Hand.AddCard(cards.CreateStrike())
 	player.Player1.Hand.AddCard(cards.CreateManeuver())
-	//player.Player1.Hand.AddCard(player.NewCard("Strike", "Deal 5 damage."))
+	player.Player1.Hand.AddCard(cards.CreateCharge())
 	player.Player1.PlayCard = player.NewPlayCard(player.Player1)
 
 	timing.Reset()

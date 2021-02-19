@@ -26,12 +26,9 @@ func Initialize() {
 }
 
 type Card struct {
-	rawText  string
 	RawTitle string
-	desc     *text.Text
 	title    *text.Text
 	canvas   *pixelgl.Canvas
-	updated  bool
 
 	draw   bool
 	Pos    pixel.Vec
@@ -42,22 +39,20 @@ type Card struct {
 	interY *gween.Tween
 	interR *gween.Tween
 	interS *gween.Tween
+	trans  bool
 
 	isPlay    bool
 	canCancel bool
-	isDone    bool
-	action    *PlayerAction
+	sections  []*CardSection
 	actPtr    int
+	player    *Player
 }
 
-func NewCard(title string, rawText string, action *PlayerAction) *Card {
+func NewCard(title string, sections []*CardSection) *Card {
 	return &Card{
-		rawText:  rawText,
 		RawTitle: title,
 		canvas:   pixelgl.NewCanvas(pixel.R(0, 0, BaseCardWidth, BaseCardHeight)),
-		desc:     text.New(pixel.ZV, text2.BasicAtlas),
 		title:    text.New(pixel.ZV, text2.BasicAtlas),
-		updated:  true,
 
 		draw:   true,
 		Pos:    pixel.ZV,
@@ -65,8 +60,8 @@ func NewCard(title string, rawText string, action *PlayerAction) *Card {
 		Rot:    0.0,
 		Mat:    pixel.IM,
 
-		action: action,
-		actPtr: -1,
+		sections:  sections,
+		actPtr:    -1,
 		canCancel: true,
 	}
 }
@@ -79,23 +74,25 @@ func (c *Card) PointInside(point pixel.Vec) bool {
 }
 
 func (c *Card) Update() {
-	// card text
-	c.desc.Clear()
-	c.desc.Color = colornames.Black
-	c.desc.Dot.X -= c.desc.BoundsOf(c.rawText).W() / 2.
-	fmt.Fprintln(c.desc, c.rawText)
-
+	// card title
 	c.title.Clear()
 	c.title.Color = colornames.Black
 	c.title.Dot.X -= c.title.BoundsOf(c.RawTitle).W() / 2.
 	fmt.Fprintln(c.title, c.RawTitle)
 
+	for _, cs := range c.sections {
+		cs.Update()
+	}
+
+	moved := false
 	// card position, scaling, and rotation
 	if c.interX != nil {
 		x, finX := c.interX.Update(timing.DT)
 		c.Pos.X = x
 		if finX {
 			c.interX = nil
+		} else {
+			moved = true
 		}
 	}
 	if c.interY != nil {
@@ -103,6 +100,8 @@ func (c *Card) Update() {
 		c.Pos.Y = y
 		if finY {
 			c.interY = nil
+		} else {
+			moved = true
 		}
 	}
 	if c.interS != nil {
@@ -110,6 +109,27 @@ func (c *Card) Update() {
 		c.Scalar = s
 		if finS {
 			c.interS = nil
+		} else {
+			moved = true
+		}
+	}
+	c.trans = c.trans && moved
+
+	if c.isPlay {
+		if c.actPtr >= len(c.sections) {
+			c.stop()
+		} else {
+			section := c.sections[c.actPtr]
+			if !section.start {
+				section.action.Values.Source = c.player.Character
+				c.player.SetPlayerAction(section.action)
+				section.start = true
+			} else if section.action.Complete {
+				section.isDone = true
+				c.actPtr++
+			} else {
+				section.action.Selector.SetValues(section.action.Values)
+			}
 		}
 	}
 }
@@ -117,7 +137,9 @@ func (c *Card) Update() {
 func (c *Card) Draw(win *pixelgl.Window) {
 	c.canvas.Clear(pixel.RGBA{R: 0, G: 0, B: 0, A: 0})
 	CardBG.Draw(c.canvas, pixel.IM.Moved(pixel.V(BaseCardWidth* 0.5, BaseCardHeight* 0.5)))
-	c.desc.Draw(c.canvas, pixel.IM.Scaled(c.desc.Orig, 1.2).Moved(pixel.V(BaseCardWidth* 0.5, BaseCardHeight* 0.5)))
+	for i, cs := range c.sections {
+		cs.Draw(c.canvas, i)
+	}
 	c.title.Draw(c.canvas, pixel.IM.Scaled(c.title.Orig, 2.0).Moved(pixel.V(BaseCardWidth* 0.5, BaseCardHeight- 32.0)))
 	zoom := 1/camera.Cam.Zoom
 	c.Mat = pixel.IM.Scaled(pixel.ZV, zoom * c.Scalar)
@@ -130,14 +152,22 @@ func (c *Card) Draw(win *pixelgl.Window) {
 func (c *Card) play(player *Player) {
 	c.actPtr = 0
 	c.isPlay = true
-	c.action.Values.Source = player.Character
-	player.SetPlayerAction(c.action)
+	c.player = player
+	for _, section := range c.sections {
+		section.start = false
+		section.isDone = false
+		section.action.Complete = false
+	}
 }
 
 func (c *Card) stop() {
 	c.actPtr = -1
 	c.isPlay = false
-	c.action.Complete = true
+	for _, section := range c.sections {
+		section.start = true
+		section.isDone = true
+		section.action.Complete = true
+	}
 }
 
 func (c *Card) setXY(v pixel.Vec) {
@@ -154,6 +184,7 @@ type CardSection struct {
 	action  *PlayerAction
 	text    *text.Text
 	isDone  bool
+	start   bool
 }
 
 func NewCardSection(rawText string, action *PlayerAction) *CardSection {
@@ -162,4 +193,15 @@ func NewCardSection(rawText string, action *PlayerAction) *CardSection {
 		action:  action,
 		text:    text.New(pixel.ZV, text2.BasicAtlas),
 	}
+}
+
+func (cs *CardSection) Update() {
+	cs.text.Clear()
+	cs.text.Color = colornames.Black
+	cs.text.Dot.X -= cs.text.BoundsOf(cs.rawText).W() / 2.
+	fmt.Fprintln(cs.text, cs.rawText)
+}
+
+func (cs *CardSection) Draw(canvas *pixelgl.Canvas, offset int) {
+	cs.text.Draw(canvas, pixel.IM.Scaled(cs.text.Orig, 1.2).Moved(pixel.V(BaseCardWidth*0.5, BaseCardHeight*0.5 - float64(offset) * (text2.BasicAtlas.LineHeight() + 20.))))
 }

@@ -23,14 +23,17 @@ func NewTargetSelect() *TargetSelect {
 	return &TargetSelect{}
 }
 
-func (t *TargetSelect) Init(origin world.Coords, input *input.Input, values actions.ActionValues) {
+func (t *TargetSelect) Init(input *input.Input) {
 	t.isDone = false
 	t.cancel = false
-	t.origin = origin
 	t.input = input
+	t.clicked = []world.Coords{}
+}
+
+func (t *TargetSelect) SetValues(values actions.ActionValues) {
+	t.origin = values.Source.Coords
 	t.Count = values.Targets
 	t.MaxRange = values.Range
-	t.clicked = []world.Coords{}
 }
 
 func (t *TargetSelect) Update() {
@@ -43,7 +46,7 @@ func (t *TargetSelect) Update() {
 			if _, ok := occ.(objects.Targetable); ok {
 				if !inRange {
 					// todo: highlight
-				} else if t.input.Select.JustReleased() {
+				} else if t.input.Select.JustPressed() {
 					t.input.Select.Consume()
 					t.clicked = append(t.clicked, t.input.Coords)
 					t.isDone = true
