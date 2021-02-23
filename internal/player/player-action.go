@@ -9,12 +9,12 @@ import (
 
 type PlayerAction struct {
 	Selector selectors.Selector
-	Actions  []func([]world.Coords, actions.ActionValues)
+	Action   func([]world.Coords, actions.ActionValues)
 	Values   actions.ActionValues
 	Complete bool
 }
 
-func NewPlayerAction(sel selectors.Selector, values actions.ActionValues, act []func([]world.Coords, actions.ActionValues)) *PlayerAction {
+func NewPlayerAction(sel selectors.Selector, values actions.ActionValues, act func([]world.Coords, actions.ActionValues)) *PlayerAction {
 	if sel == nil {
 		return nil
 	}
@@ -26,7 +26,7 @@ func NewPlayerAction(sel selectors.Selector, values actions.ActionValues, act []
 	}
 	return &PlayerAction{
 		Selector: sel,
-		Actions:  act,
+		Action:   act,
 		Values:   values,
 	}
 }
@@ -38,9 +38,7 @@ func (p *PlayerAction) Update() {
 	p.Selector.Update()
 	if p.Selector.IsCancelled() || p.Selector.IsDone() {
 		result := p.Selector.Finish()
-		for _, act := range p.Actions {
-			act(result, p.Values)
-		}
+		p.Action(result, p.Values)
 		p.Complete = true
 	}
 }

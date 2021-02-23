@@ -38,7 +38,7 @@ func (p *Player) Update(win *pixelgl.Window) {
 			Targets: 1,
 		}
 		sel := selectors.NewTargetSelect()
-		p.SetPlayerAction(NewPlayerAction(sel, values, []func([]world.Coords, actions.ActionValues) {BasicAttack}))
+		p.SetPlayerAction(NewPlayerAction(sel, values, BasicAttack))
 	}
 	if win.JustPressed(pixelgl.KeyM) {
 		values := actions.ActionValues{
@@ -51,7 +51,7 @@ func (p *Player) Update(win *pixelgl.Window) {
 		sel := selectors.NewPathSelect()
 		sel.Unoccupied = true
 		sel.Nonempty = true
-		p.SetPlayerAction(NewPlayerAction(sel, values, []func([]world.Coords, actions.ActionValues) {BasicMove}))
+		p.SetPlayerAction(NewPlayerAction(sel, values, BasicMove))
 	}
 	if p.CurrAction != nil {
 		p.CurrAction.Update()

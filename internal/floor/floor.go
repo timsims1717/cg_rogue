@@ -5,6 +5,7 @@ import (
 	"github.com/beefsack/go-astar"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
+	"github.com/phf/go-queue/queue"
 	"github.com/timsims1717/cg_rogue_go/internal/cfg"
 	"github.com/timsims1717/cg_rogue_go/internal/objects"
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
@@ -18,13 +19,21 @@ type Floor struct{
 	floor  [][]Hex
 	batch  *pixel.Batch
 	update bool
-	checks pathChecks
+	checks PathChecks
 }
 
-type pathChecks struct {
-	unoccupied bool
-	nonEmpty   bool
-	orig       world.Coords
+type PathChecks struct {
+	NotFilled  bool // true: must not be filled, false: can be a filled tile
+	Unoccupied bool // true: must be unoccupied, false: can have an occupant
+	NonEmpty   bool // true: must not be empty, false: can be an empty tile (a pit, or something)
+	Orig       world.Coords
+}
+
+var defaultCheck = PathChecks{
+	NotFilled:  true,
+	Unoccupied: false,
+	NonEmpty:   false,
+	Orig:       world.Coords{},
 }
 
 func DefaultFloor(w, h int, spriteSheet *img.SpriteSheet) {
@@ -125,80 +134,87 @@ func (f *Floor) MoveOccupant(o objects.Occupant, a, b world.Coords) bool {
 	return success
 }
 
-func (f *Floor) IfLegal(a world.Coords) *Hex {
+func (f *Floor) IsLegal(a world.Coords) *Hex {
 	hex := f.Get(a)
 	if hex != nil {
-		if (a.X == f.checks.orig.X && a.Y == f.checks.orig.Y) || ((!f.checks.unoccupied || hex.Occupant == nil) && (!f.checks.nonEmpty || !hex.Empty)) {
+		if (a.X == f.checks.Orig.X && a.Y == f.checks.Orig.Y) || ((!f.checks.Unoccupied || hex.Occupant == nil) && (!f.checks.NonEmpty || !hex.Empty)) {
 			return hex
 		}
 	}
 	return nil
 }
 
-func (f *Floor) FindPath(a, b world.Coords, unoccupied, nonEmpty bool) ([]*Hex, int, bool) {
-	f.checks = pathChecks{
-		unoccupied: unoccupied,
-		nonEmpty:   nonEmpty,
-		orig:       a,
+func (f *Floor) AllWithin(o world.Coords, d int, check *PathChecks) ([]world.Coords) {
+	if check != nil {
+		f.checks = *check
 	}
+	width, height := f.Dimensions()
+	type cont struct{
+		c world.Coords
+		w int
+	}
+	all := make([]world.Coords, 0)
+	qu := queue.New()
+	marked := make(map[world.Coords]bool)
+	qu.PushFront(cont{ c: o, w: 0 })
+	for n := qu.PopFront(); n != nil; {
+		if c, ok := n.(cont); ok {
+			if c.w+1 <= d {
+				all = append(all, c.c)
+				neighbors := c.c.Neighbors(width, height)
+				for _, nb := range neighbors {
+					if !marked[nb] {
+						marked[nb] = true
+						if f.IsLegal(nb) != nil {
+							qu.PushBack(nb)
+						}
+					}
+				}
+			}
+		}
+	}
+	f.checks = defaultCheck
+	return all
+}
+
+func (f *Floor) FindPath(a, b world.Coords, check PathChecks) ([]world.Coords, int, bool) {
+	f.checks = check
 	pathA, distance, found := astar.Path(f.Get(b), f.Get(a))
 	var path []*Hex
 	for _, h := range pathA {
 		path = append(path, h.(*Hex))
 	}
-	f.checks = pathChecks{
-		unoccupied: false,
-		nonEmpty:   false,
-		orig:       world.Coords{},
+	f.checks = defaultCheck
+	var cpath []world.Coords
+	for _, p := range path {
+		cpath = append(cpath, world.Coords{
+			X: p.X,
+			Y: p.Y,
+		})
 	}
+	return cpath, int(distance), found
+}
+
+func (f *Floor) FindPathHex(a, b world.Coords, check PathChecks) ([]*Hex, int, bool) {
+	f.checks = check
+	pathA, distance, found := astar.Path(f.Get(b), f.Get(a))
+	var path []*Hex
+	for _, h := range pathA {
+		path = append(path, h.(*Hex))
+	}
+	f.checks = defaultCheck
 	return path, int(distance), found
 }
 
 // Neighbors returns each legal hex
 func (f *Floor) Neighbors(hex *Hex) []*Hex {
 	width, height := f.Dimensions()
+	co := world.Coords{X: hex.X, Y: hex.Y}
+	cNeighbors := co.Neighbors(width, height)
 	neighbors := make([]*Hex, 0)
-	if hex.Y > 0 {
-		if n := f.IfLegal(world.Coords{hex.X, hex.Y-1}); n != nil {
+	for _, c := range cNeighbors {
+		if n := f.IsLegal(c); n != nil {
 			neighbors = append(neighbors, n)
-		}
-	}
-	if hex.X < width - 1 {
-		if n := f.IfLegal(world.Coords{hex.X+1, hex.Y}); n != nil {
-			neighbors = append(neighbors, n)
-		}
-	}
-	if hex.Y < height - 1 {
-		if n := f.IfLegal(world.Coords{hex.X, hex.Y+1}); n != nil {
-			neighbors = append(neighbors, n)
-		}
-	}
-	if hex.X > 0 {
-		if n := f.IfLegal(world.Coords{hex.X-1, hex.Y}); n != nil {
-			neighbors = append(neighbors, n)
-		}
-	}
-	if hex.X % 2 == 0 {
-		if hex.X < width - 1 && hex.Y > 0 {
-			if n := f.IfLegal(world.Coords{hex.X+1, hex.Y-1}); n != nil {
-				neighbors = append(neighbors, n)
-			}
-		}
-		if hex.X > 0 && hex.Y > 0 {
-			if n := f.IfLegal(world.Coords{hex.X-1, hex.Y-1}); n != nil {
-				neighbors = append(neighbors, n)
-			}
-		}
-	} else {
-		if hex.X < width - 1 && hex.Y < height - 1 {
-			if n := f.IfLegal(world.Coords{hex.X+1, hex.Y+1}); n != nil {
-				neighbors = append(neighbors, n)
-			}
-		}
-		if hex.X > 0 && hex.Y < height - 1 {
-			if n := f.IfLegal(world.Coords{hex.X-1, hex.Y+1}); n != nil {
-				neighbors = append(neighbors, n)
-			}
 		}
 	}
 	return neighbors

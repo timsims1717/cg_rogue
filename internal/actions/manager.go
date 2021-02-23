@@ -17,10 +17,6 @@ type actionManager struct {
 	act Action
 }
 
-type Source interface {
-
-}
-
 type ActionValues struct {
 	Source  *characters.Character
 	Damage  int
@@ -53,7 +49,7 @@ func AddToTop(a Action) {
 }
 
 // AddToTop adds an Action to the bottom of the queue
-// to be processed after all other Actions are complete.
+// to be processed after all other Action are complete.
 func AddToBot(a Action) {
 	ActionManager.mu.Lock()
 	defer ActionManager.mu.Unlock()

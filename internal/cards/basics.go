@@ -21,7 +21,7 @@ func CreateStrike() *player.Card {
 			}
 		}
 	}
-	act := player.NewPlayerAction(selectors.NewTargetSelect(), values, []func([]world.Coords, actions.ActionValues) {fn})
+	act := player.NewPlayerAction(selectors.NewTargetSelect(), values, fn)
 	sec := player.NewCardSection("Deal 4 damage.", act)
 	return player.NewCard("Strike", []*player.CardSection{sec})
 }
@@ -58,7 +58,7 @@ func CreateManeuver() *player.Card {
 	sel := selectors.NewPathSelect()
 	sel.Unoccupied = true
 	sel.Nonempty = true
-	act := player.NewPlayerAction(sel, values, []func([]world.Coords, actions.ActionValues) {fn})
+	act := player.NewPlayerAction(sel, values, fn)
 	sec := player.NewCardSection("Move 3.", act)
 	return player.NewCard("Maneuver", []*player.CardSection{sec})
 }
@@ -88,8 +88,8 @@ func CreateCharge() *player.Card {
 	selMov := selectors.NewPathSelect()
 	selMov.Unoccupied = true
 	selMov.Nonempty = true
-	actMov := player.NewPlayerAction(selMov, valMov, []func([]world.Coords, actions.ActionValues) {fnMov})
-	actAtk := player.NewPlayerAction(selectors.NewTargetSelect(), valAtk, []func([]world.Coords, actions.ActionValues) {fnAtk})
+	actMov := player.NewPlayerAction(selMov, valMov, fnMov)
+	actAtk := player.NewPlayerAction(selectors.NewTargetSelect(), valAtk, fnAtk)
 	secMov := player.NewCardSection("Move 1.", actMov)
 	secAtk := player.NewCardSection("Deal 2 damage.", actAtk)
 	return player.NewCard("Charge", []*player.CardSection{secMov, secAtk})

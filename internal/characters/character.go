@@ -10,6 +10,40 @@ import (
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
+var Characters characters
+
+type characters struct{
+	Set []*Character
+}
+
+func (c *characters) Add(character *Character) {
+	character.index = len(c.Set)
+	c.Set = append(c.Set, character)
+}
+
+func (c *characters) Remove(character *Character) {
+	c.Set = append(c.Set[:character.index], c.Set[character.index+1:]...)
+	c.update()
+}
+
+func (c *characters) update() {
+	for i, ch := range c.Set {
+		ch.index = i
+	}
+}
+
+func (c *characters) Update() {
+	for _, ch := range c.Set {
+		ch.Update()
+	}
+}
+
+func (c *characters) Draw(win *pixelgl.Window) {
+	for _, ch := range c.Set {
+		ch.Draw(win)
+	}
+}
+
 type Character struct {
 	Coords world.Coords
 	Mat pixel.Matrix
@@ -21,7 +55,8 @@ type Character struct {
 	LastDmg int
 	Dead    bool
 
-	id      uuid.UUID
+	id    uuid.UUID
+	index int
 }
 
 func NewCharacter(sprite *pixel.Sprite, coords world.Coords, maxHP int) *Character {

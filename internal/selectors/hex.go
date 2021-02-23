@@ -126,13 +126,19 @@ func (p *PathSelect) Update() {
 		hex := floor.CurrentFloor.Get(p.input.Coords)
 		legal := hex != nil && (p.EndUnocc || hex.Occupant == nil) && (p.EndNonemp || !hex.Empty) && world.DistanceHex(p.origin.X, p.origin.Y, x, y) <= p.maxRange
 		if legal {
-			path, dist, found := floor.CurrentFloor.FindPath(p.origin, p.input.Coords, p.Unoccupied, p.Nonempty)
+			checks := floor.PathChecks{
+				NotFilled:  true,
+				Unoccupied: p.Unoccupied,
+				NonEmpty:   p.Nonempty,
+				Orig:       p.origin,
+			}
+			path, dist, found := floor.CurrentFloor.FindPath(p.origin, p.input.Coords, checks)
 			if found && dist <= p.maxRange {
 				if p.input.Select.JustPressed() {
 					p.input.Select.Consume()
 					for _, h := range path {
 						if h.X != p.origin.X || h.Y != p.origin.Y {
-							p.picked = append(p.picked, h.GetCoords())
+							p.picked = append(p.picked, h)
 						}
 					}
 				}
