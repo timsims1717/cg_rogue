@@ -20,7 +20,7 @@ func NewHand(player *Player) *Hand {
 	}
 }
 
-func (h *Hand) Update() {
+func (h *Hand) Update(turn bool) {
 	if h.isHovered() {
 		if !h.Group[h.Hovered].PointInside(h.player.Input.World) {
 			h.Hovered = -1
@@ -48,7 +48,7 @@ func (h *Hand) Update() {
 		}
 		card.Update()
 	}
-	if h.isHovered() && h.player.Input.Select.JustPressed() {
+	if h.isHovered() && h.player.Input.Select.JustPressed() && turn {
 		h.player.Input.Select.Consume()
 		CardManager.Move(h.player.PlayCard, h, h.Hovered)
 		CardManager.Move(h, h.player.PlayCard, h.Hovered)

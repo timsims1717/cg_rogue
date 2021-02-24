@@ -18,19 +18,21 @@ func NewPlayCard(player *Player) *PlayCard {
 	}
 }
 
-func (p *PlayCard) Update() {
+func (p *PlayCard) Update(turn bool) {
 	if p.Card != nil {
-		if p.update {
-			p.Card.setXY(pixel.V(float64(cfg.WindowWidth) -PlayRightPad, PlayBottomPad))
-			p.Card.setScalar(PlayCardScale)
-			p.update = false
+		if turn {
+			if p.update {
+				p.Card.setXY(pixel.V(float64(cfg.WindowWidth)-PlayRightPad, PlayBottomPad))
+				p.Card.setScalar(PlayCardScale)
+				p.update = false
+			}
+			p.Card.Update()
+			if p.Card.PointInside(p.player.Input.World) && p.player.Input.Cancel.JustPressed() && p.Card.canCancel {
+				p.player.Input.Cancel.Consume()
+				p.Card.stop()
+			}
 		}
-		p.Card.Update()
-		if p.Card.PointInside(p.player.Input.World) && p.player.Input.Cancel.JustPressed() && p.Card.canCancel {
-			p.player.Input.Cancel.Consume()
-			p.Card.stop()
-		}
-		if !p.Card.isPlay {
+		if !turn || !p.Card.isPlay {
 			CardManager.Move(p, p.player.Hand, 0)
 		}
 	}

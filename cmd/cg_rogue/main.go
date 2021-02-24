@@ -10,6 +10,7 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/debug"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
+	"github.com/timsims1717/cg_rogue_go/internal/game"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
 	"github.com/timsims1717/cg_rogue_go/internal/ui"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
@@ -38,8 +39,9 @@ func run() {
 	//win.SetSmooth(true)
 
 	debug.Initialize()
+	game.Initialize()
 
-	treesheet, err := img.LoadSpriteSheet("assets/img/trees.json")
+	treesheet, err := img.LoadSpriteSheet("assets/character/trees.json")
 	if err != nil {
 		panic(err)
 	}
@@ -61,13 +63,13 @@ func run() {
 
 	floor.DefaultFloor(10, 10, spritesheet)
 
+	tree := characters.NewCharacter(pixel.NewSprite(treesheet.Img, treesheet.Sprites[rand.Intn(len(treesheet.Sprites))]), world.Coords{8,4}, 10)
+	treeAI := ai.NewAI(ai.SpinnerDecision, ai.SpinnerAct, tree)
+	ai.AIManager.AddAI(treeAI)
+
+
 	character := characters.NewCharacter(pixel.NewSprite(charsheet.Img, charsheet.Sprites[rand.Intn(len(charsheet.Sprites))]), world.Coords{0,0}, 10)
 	player.Player1 = player.NewPlayer(character)
-
-	tree := characters.NewCharacter(pixel.NewSprite(treesheet.Img, treesheet.Sprites[rand.Intn(len(treesheet.Sprites))]), world.Coords{8,4}, 10)
-	tree_ai := ai.NewAI(ai.Tree1Decision, tree)
-	tree_ai.StartTurn()
-
 	player.Initialize()
 	player.Player1.Hand = player.NewHand(player.Player1)
 	player.Player1.Hand.AddCard(cards.CreateStrike())
@@ -81,17 +83,16 @@ func run() {
 		timing.Update()
 
 		debug.Update(win)
+		game.Update()
 		player.Player1.Input.Update(win)
 		camera.Cam.Update(win)
 
 		player.CardManager.Update()
 		actions.Update()
 
-		tree_ai.Update()
+		ai.Update()
 		tree.Update()
 		character.Update()
-		player.Player1.Hand.Update()
-		player.Player1.PlayCard.Update()
 		player.Player1.Update(win)
 
 		win.Clear(colornames.Forestgreen)

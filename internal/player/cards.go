@@ -117,6 +117,7 @@ func (c *Card) Update() {
 
 	if c.isPlay {
 		if c.actPtr >= len(c.sections) {
+			c.player.CardPlayed()
 			c.stop()
 		} else {
 			section := c.sections[c.actPtr]

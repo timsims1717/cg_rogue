@@ -14,11 +14,13 @@ import (
 var Player1 *Player
 
 type Player struct {
-	Character  *characters.Character
-	CurrAction *PlayerAction
-	Input      *input.Input
-	Hand       *Hand
-	PlayCard   *PlayCard
+	Character   *characters.Character
+	CurrAction  *PlayerAction
+	Input       *input.Input
+	Hand        *Hand
+	PlayCard    *PlayCard
+	CardsPlayed int
+	IsTurn      bool
 }
 
 func NewPlayer(character *characters.Character) *Player {
@@ -28,35 +30,49 @@ func NewPlayer(character *characters.Character) *Player {
 	}
 }
 
+func (p *Player) StartTurn() {
+	p.CardsPlayed = 0
+	p.IsTurn = true
+}
+
+func (p *Player) EndTurn() {
+	p.IsTurn = false
+	p.CurrAction = nil
+}
+
 func (p *Player) Update(win *pixelgl.Window) {
-	if win.JustPressed(pixelgl.KeyA) {
-		values := actions.ActionValues{
-			Source:  p.Character,
-			Damage:  5,
-			Move:    0,
-			Range:   1,
-			Targets: 1,
+	p.Hand.Update(p.IsTurn)
+	p.PlayCard.Update(p.IsTurn)
+	if p.IsTurn {
+		if win.JustPressed(pixelgl.KeyA) {
+			values := actions.ActionValues{
+				Source:  p.Character,
+				Damage:  5,
+				Move:    0,
+				Range:   1,
+				Targets: 1,
+			}
+			sel := selectors.NewTargetSelect()
+			p.SetPlayerAction(NewPlayerAction(sel, values, BasicAttack))
 		}
-		sel := selectors.NewTargetSelect()
-		p.SetPlayerAction(NewPlayerAction(sel, values, BasicAttack))
-	}
-	if win.JustPressed(pixelgl.KeyM) {
-		values := actions.ActionValues{
-			Source:  p.Character,
-			Damage:  0,
-			Move:    5,
-			Range:   0,
-			Targets: 0,
+		if win.JustPressed(pixelgl.KeyM) {
+			values := actions.ActionValues{
+				Source:  p.Character,
+				Damage:  0,
+				Move:    5,
+				Range:   0,
+				Targets: 0,
+			}
+			sel := selectors.NewPathSelect()
+			sel.Unoccupied = true
+			sel.Nonempty = true
+			p.SetPlayerAction(NewPlayerAction(sel, values, BasicMove))
 		}
-		sel := selectors.NewPathSelect()
-		sel.Unoccupied = true
-		sel.Nonempty = true
-		p.SetPlayerAction(NewPlayerAction(sel, values, BasicMove))
-	}
-	if p.CurrAction != nil {
-		p.CurrAction.Update()
-		if p.CurrAction.Complete {
-			p.CurrAction = nil
+		if p.CurrAction != nil {
+			p.CurrAction.Update()
+			if p.CurrAction.Complete {
+				p.CurrAction = nil
+			}
 		}
 	}
 }
@@ -66,6 +82,10 @@ func (p *Player) SetPlayerAction(act *PlayerAction) {
 	act.Selector.Init(p.Input)
 	act.Selector.SetValues(act.Values)
 	p.CurrAction = act
+}
+
+func (p *Player) CardPlayed() {
+	p.CardsPlayed += 1
 }
 
 func BasicMove(path []world.Coords, values actions.ActionValues) {

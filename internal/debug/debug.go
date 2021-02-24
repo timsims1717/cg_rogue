@@ -8,6 +8,7 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/cfg"
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
+	"github.com/timsims1717/cg_rogue_go/internal/game"
 	"github.com/timsims1717/cg_rogue_go/internal/objects"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
@@ -27,6 +28,7 @@ var (
 	mouse  *text.Text
 	worlds *text.Text
 	maps   *text.Text
+	phase  *text.Text
 	health *text.Text
 	dispHP bool
 	cards  *text.Text
@@ -40,8 +42,9 @@ func Initialize() {
 	mouse = text.New(pixel.V(20., float64(cfg.WindowHeight) - (text2.BasicAtlas.LineHeight() + 20.) * 2.0), text2.BasicAtlas)
 	worlds = text.New(pixel.V(20., float64(cfg.WindowHeight) - (text2.BasicAtlas.LineHeight() + 20.) * 3.0), text2.BasicAtlas)
 	maps = text.New(pixel.V(20., float64(cfg.WindowHeight) - (text2.BasicAtlas.LineHeight() + 20.) * 4.0), text2.BasicAtlas)
-	health = text.New(pixel.V(20., float64(cfg.WindowHeight) - (text2.BasicAtlas.LineHeight() + 20.) * 5.0), text2.BasicAtlas)
-	cards = text.New(pixel.V(20., float64(cfg.WindowHeight) - (text2.BasicAtlas.LineHeight() + 20.) * 6.0), text2.BasicAtlas)
+	phase = text.New(pixel.V(20., float64(cfg.WindowHeight) - (text2.BasicAtlas.LineHeight() + 20.) * 5.0), text2.BasicAtlas)
+	health = text.New(pixel.V(20., float64(cfg.WindowHeight) - (text2.BasicAtlas.LineHeight() + 20.) * 6.0), text2.BasicAtlas)
+	cards = text.New(pixel.V(20., float64(cfg.WindowHeight) - (text2.BasicAtlas.LineHeight() + 20.) * 7.0), text2.BasicAtlas)
 }
 
 // Update clears the text containers and updates them with the correct information.
@@ -63,6 +66,8 @@ func Update(win *pixelgl.Window) {
 	fmt.Fprintf(mouse, "Mouse (X,Y): (%d,%d)", int(mousePtr.X), int(mousePtr.Y))
 	fmt.Fprintf(worlds, "World (X,Y): (%d,%d)", int(wrldPtr.X), int(wrldPtr.Y))
 	fmt.Fprintf(maps, "Map (X,Y): (%d,%d)", mapX, mapY)
+	phase.Clear()
+	fmt.Fprintf(phase, "Phase: %s", game.StateMachine.State.Phase.String())
 	dispHP = false
 	health.Clear()
 	occ := floor.CurrentFloor.GetOccupant(world.Coords{mapX, mapY})
@@ -88,6 +93,7 @@ func Draw(win *pixelgl.Window) {
 	mouse.Draw(canvas, pixel.IM.Scaled(mouse.Orig, 2.))
 	worlds.Draw(canvas, pixel.IM.Scaled(worlds.Orig, 2.))
 	maps.Draw(canvas, pixel.IM.Scaled(maps.Orig, 2.))
+	phase.Draw(canvas, pixel.IM.Scaled(phase.Orig, 2.))
 	if dispHP {
 		health.Draw(canvas, pixel.IM.Scaled(health.Orig, 2.))
 	}
