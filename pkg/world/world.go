@@ -85,47 +85,6 @@ func (a *Coords) PathFrom(path []Coords) []Coords {
 			np = append(np, n)
 		}
 	}
-	//if a.X % 2 == orig.X % 2 {
-	//	for _, p := range path {
-	//		n := Coords{
-	//			X: p.X + dx,
-	//			Y: p.Y + dy,
-	//		}
-	//		np = append(np, n)
-	//	}
-	//} else if a.X % 2 == 0 {
-	//	for _, p := range path {
-	//		if p.X % 2 == 0 {
-	//			n := Coords{
-	//				X: p.X + dx,
-	//				Y: p.Y + dy - 1,
-	//			}
-	//			np = append(np, n)
-	//		} else {
-	//			n := Coords{
-	//				X: p.X + dx,
-	//				Y: p.Y + dy,
-	//			}
-	//			np = append(np, n)
-	//		}
-	//	}
-	//} else {
-	//	for _, p := range path {
-	//		if p.X % 2 == 0 {
-	//			n := Coords{
-	//				X: p.X + dx,
-	//				Y: p.Y + dy,
-	//			}
-	//			np = append(np, n)
-	//		} else {
-	//			n := Coords{
-	//				X: p.X + dx,
-	//				Y: p.Y + dy + 1,
-	//			}
-	//			np = append(np, n)
-	//		}
-	//	}
-	//}
 	return np
 }
 
@@ -218,23 +177,23 @@ func WorldToMapHex(x, y float64) (int, int) {
 	return int(mapXf), int(mapYf)
 }
 
-func DistanceHex(ax, ay, bx, by int) int {
+func DistanceHex(a, b Coords) int {
 	dist := 0
-	x, y := ax, ay
-	for x != bx {
-		if x % 2 == 0 && y > by {
+	x, y := a.X, a.Y
+	for x != b.X {
+		if x % 2 == 0 && y > b.Y {
 			y -= 1
-		} else if x % 2 != 0 && y < by {
+		} else if x % 2 != 0 && y < b.Y {
 			y += 1
 		}
-		if x > bx {
+		if x > b.X {
 			x -= 1
 		} else {
 			x += 1
 		}
 		dist += 1
 	}
-	return dist + util.Abs(y - by)
+	return dist + util.Abs(y - b.Y)
 }
 
 func DistanceWorldHex(ax, ay, bx, by int) float64 {

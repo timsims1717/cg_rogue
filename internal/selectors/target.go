@@ -23,33 +23,33 @@ func NewTargetSelect() *TargetSelect {
 	return &TargetSelect{}
 }
 
-func (t *TargetSelect) Init(input *input.Input) {
-	t.isDone = false
-	t.cancel = false
-	t.input = input
-	t.clicked = []world.Coords{}
+func (s *TargetSelect) Init(input *input.Input) {
+	s.isDone = false
+	s.cancel = false
+	s.input = input
+	s.clicked = []world.Coords{}
 }
 
-func (t *TargetSelect) SetValues(values actions.ActionValues) {
-	t.origin = values.Source.Coords
-	t.Count = values.Targets
-	t.MaxRange = values.Range
+func (s *TargetSelect) SetValues(values actions.ActionValues) {
+	s.origin = values.Source.Coords
+	s.Count = values.Targets
+	s.MaxRange = values.Range
 }
 
-func (t *TargetSelect) Update() {
-	if !t.isDone {
-		x := t.input.Coords.X
-		y := t.input.Coords.Y
-		inRange := world.DistanceHex(t.origin.X, t.origin.Y, x, y) <= t.MaxRange
-		occ := floor.CurrentFloor.GetOccupant(t.input.Coords)
+func (s *TargetSelect) Update() {
+	if !s.isDone {
+		x := s.input.Coords.X
+		y := s.input.Coords.Y
+		inRange := world.DistanceHex(s.origin, s.input.Coords) <= s.MaxRange
+		occ := floor.CurrentFloor.GetOccupant(s.input.Coords)
 		if occ != nil {
 			if _, ok := occ.(objects.Targetable); ok {
 				if !inRange {
 					// todo: highlight
-				} else if t.input.Select.JustPressed() {
-					t.input.Select.Consume()
-					t.clicked = append(t.clicked, t.input.Coords)
-					t.isDone = true
+				} else if s.input.Select.JustPressed() {
+					s.input.Select.Consume()
+					s.clicked = append(s.clicked, s.input.Coords)
+					s.isDone = true
 				} else {
 					ui.AddSelectUI(ui.MoveSolid, x, y)
 				}
@@ -62,21 +62,21 @@ func (t *TargetSelect) Update() {
 			}
 		}
 	}
-	if t.input.Cancel.JustPressed() {
-		t.input.Cancel.Consume()
+	if s.input.Cancel.JustPressed() {
+		s.input.Cancel.Consume()
 		// cancel
-		t.cancel = true
+		s.cancel = true
 	}
 }
 
-func (t *TargetSelect) IsCancelled() bool {
-	return t.cancel
+func (s *TargetSelect) IsCancelled() bool {
+	return s.cancel
 }
 
-func (t *TargetSelect) IsDone() bool {
-	return len(t.clicked) > 0
+func (s *TargetSelect) IsDone() bool {
+	return len(s.clicked) > 0
 }
 
-func (t *TargetSelect) Finish() []world.Coords {
-	return t.clicked
+func (s *TargetSelect) Finish() []world.Coords {
+	return s.clicked
 }

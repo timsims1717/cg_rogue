@@ -4,7 +4,6 @@ import (
 	"github.com/phf/go-queue/queue"
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"reflect"
-	"sync"
 )
 
 // ActionManager is the singleton access point to the actionManager struct
@@ -12,7 +11,6 @@ var ActionManager *actionManager
 
 // actionManager stores the action queue and the current Action
 type actionManager struct {
-	mu  sync.Mutex
 	qu  queue.Queue
 	act Action
 }
@@ -41,8 +39,6 @@ func init() {
 // AddToTop adds an Action to the top of the queue
 // to be processed after the current Action is complete.
 func AddToTop(a Action) {
-	ActionManager.mu.Lock()
-	defer ActionManager.mu.Unlock()
 	if notNil(a) {
 		ActionManager.qu.PushFront(a)
 	}
@@ -51,8 +47,6 @@ func AddToTop(a Action) {
 // AddToTop adds an Action to the bottom of the queue
 // to be processed after all other Action are complete.
 func AddToBot(a Action) {
-	ActionManager.mu.Lock()
-	defer ActionManager.mu.Unlock()
 	if notNil(a) {
 		ActionManager.qu.PushBack(a)
 	}
@@ -62,8 +56,6 @@ func AddToBot(a Action) {
 // is not already being processed, then processes the next
 // Action.
 func Update() {
-	ActionManager.mu.Lock()
-	defer ActionManager.mu.Unlock()
 	if !notNil(ActionManager.act) {
 		if ActionManager.qu.Front() != nil {
 			inter := ActionManager.qu.PopFront()

@@ -2,10 +2,8 @@ package floor
 
 import (
 	"fmt"
-	"github.com/beefsack/go-astar"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
-	"github.com/phf/go-queue/queue"
 	"github.com/timsims1717/cg_rogue_go/internal/cfg"
 	"github.com/timsims1717/cg_rogue_go/internal/objects"
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
@@ -29,8 +27,15 @@ type PathChecks struct {
 	Orig       world.Coords
 }
 
-var defaultCheck = PathChecks{
+var DefaultCheck = PathChecks{
 	NotFilled:  true,
+	Unoccupied: false,
+	NonEmpty:   false,
+	Orig:       world.Coords{},
+}
+
+var NoCheck = PathChecks{
+	NotFilled:  false,
 	Unoccupied: false,
 	NonEmpty:   false,
 	Orig:       world.Coords{},
@@ -94,21 +99,21 @@ func (f *Floor) Exists(a world.Coords) bool {
 
 func (f *Floor) IsOccupied(a world.Coords) bool {
 	hex := f.Get(a)
-	return hex == nil || objects.NotNilOcc(hex.Occupant)
+	return hex == nil || objects.NotNilMov(hex.Occupant)
 }
 
-func (f *Floor) GetOccupant(a world.Coords) objects.Occupant {
+func (f *Floor) GetOccupant(a world.Coords) objects.Moveable {
 	hex := f.Get(a)
-	if hex != nil && objects.NotNilOcc(hex.Occupant) {
+	if hex != nil && objects.NotNilMov(hex.Occupant) {
 		return hex.Occupant
 	}
 	return nil
 }
 
-func (f *Floor) PutOccupant(o objects.Occupant, a world.Coords) bool {
+func (f *Floor) PutOccupant(m objects.Moveable, a world.Coords) bool {
 	hex := f.Get(a)
-	if hex != nil && !objects.NotNilOcc(hex.Occupant) {
-		hex.Occupant = o
+	if hex != nil && !objects.NotNilMov(hex.Occupant) {
+		hex.Occupant = m
 		return true
 	}
 	return false
@@ -116,106 +121,20 @@ func (f *Floor) PutOccupant(o objects.Occupant, a world.Coords) bool {
 
 func (f *Floor) RemoveOccupant(a world.Coords) bool {
 	hex := f.Get(a)
-	if hex != nil && objects.NotNilOcc(hex.Occupant) {
+	if hex != nil && objects.NotNilMov(hex.Occupant) {
 		hex.Occupant = nil
 		return true
 	}
 	return false
 }
 
-func (f *Floor) MoveOccupant(o objects.Occupant, a, b world.Coords) bool {
+func (f *Floor) MoveOccupant(m objects.Moveable, a, b world.Coords) bool {
 	if !f.Exists(a) || !f.Exists(b) {
 		return false
 	}
 	success := f.RemoveOccupant(a)
 	if success {
-		success = f.PutOccupant(o, b)
+		success = f.PutOccupant(m, b)
 	}
 	return success
-}
-
-func (f *Floor) IsLegal(a world.Coords) *Hex {
-	hex := f.Get(a)
-	if hex != nil {
-		if (a.X == f.checks.Orig.X && a.Y == f.checks.Orig.Y) || ((!f.checks.Unoccupied || hex.Occupant == nil) && (!f.checks.NonEmpty || !hex.Empty)) {
-			return hex
-		}
-	}
-	return nil
-}
-
-func (f *Floor) AllWithin(o world.Coords, d int, check *PathChecks) ([]world.Coords) {
-	if check != nil {
-		f.checks = *check
-	}
-	width, height := f.Dimensions()
-	type cont struct{
-		c world.Coords
-		w int
-	}
-	all := make([]world.Coords, 0)
-	qu := queue.New()
-	marked := make(map[world.Coords]bool)
-	qu.PushFront(cont{ c: o, w: 0 })
-	for n := qu.PopFront(); n != nil; {
-		if c, ok := n.(cont); ok {
-			if c.w+1 <= d {
-				all = append(all, c.c)
-				neighbors := c.c.Neighbors(width, height)
-				for _, nb := range neighbors {
-					if !marked[nb] {
-						marked[nb] = true
-						if f.IsLegal(nb) != nil {
-							qu.PushBack(nb)
-						}
-					}
-				}
-			}
-		}
-	}
-	f.checks = defaultCheck
-	return all
-}
-
-func (f *Floor) FindPath(a, b world.Coords, check PathChecks) ([]world.Coords, int, bool) {
-	f.checks = check
-	pathA, distance, found := astar.Path(f.Get(b), f.Get(a))
-	var path []*Hex
-	for _, h := range pathA {
-		path = append(path, h.(*Hex))
-	}
-	f.checks = defaultCheck
-	var cpath []world.Coords
-	for _, p := range path {
-		cpath = append(cpath, world.Coords{
-			X: p.X,
-			Y: p.Y,
-		})
-	}
-	return cpath, int(distance), found
-}
-
-func (f *Floor) FindPathHex(a, b world.Coords, check PathChecks) ([]*Hex, int, bool) {
-	f.checks = check
-	pathA, distance, found := astar.Path(f.Get(b), f.Get(a))
-	var path []*Hex
-	for _, h := range pathA {
-		path = append(path, h.(*Hex))
-	}
-	f.checks = defaultCheck
-	return path, int(distance), found
-}
-
-// Neighbors returns each legal hex
-func (f *Floor) Neighbors(hex *Hex) []*Hex {
-	width, height := f.Dimensions()
-	co := world.Coords{X: hex.X, Y: hex.Y}
-	cNeighbors := co.Neighbors(width, height)
-	neighbors := make([]*Hex, 0)
-	for _, c := range cNeighbors {
-		if n := f.IsLegal(c); n != nil {
-			neighbors = append(neighbors, n)
-		}
-	}
-	return neighbors
 }

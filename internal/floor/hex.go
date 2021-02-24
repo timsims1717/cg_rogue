@@ -14,7 +14,7 @@ type Hex struct {
 	Y        int
 	f        *Floor
 	Tile     *pixel.Sprite
-	Occupant objects.Occupant
+	Occupant objects.Moveable
 	Empty    bool
 }
 

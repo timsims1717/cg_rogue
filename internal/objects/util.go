@@ -1,25 +1,9 @@
 package objects
 
-import "reflect"
-
-type Occupant interface {
-	TryToOccupy()
-}
-
-// notNil checks both if o is nil, and if the underlying
-// Occupant is nil.
-func NotNilOcc(o Occupant) bool {
-	if o == nil {
-		return false
-	}
-	switch reflect.TypeOf(o).Kind() {
-	case reflect.Ptr:
-		if reflect.ValueOf(o).IsNil() {
-			return false
-		}
-	}
-	return true
-}
+import (
+	"github.com/timsims1717/cg_rogue_go/pkg/world"
+	"reflect"
+)
 
 type Targetable interface {
 	Damage(dmg int)
@@ -35,6 +19,28 @@ func NotNil(i interface{}) bool {
 	switch reflect.TypeOf(i).Kind() {
 	case reflect.Ptr:
 		if reflect.ValueOf(i).IsNil() {
+			return false
+		}
+	}
+	return true
+}
+
+type Moveable interface {
+	GetCoords() world.Coords
+	SetCoords(world.Coords)
+	GetXY() (float64, float64)
+	SetXY(float64, float64)
+}
+
+// notNil checks both if o is nil, and if the underlying
+// Occupant is nil.
+func NotNilMov(m Moveable) bool {
+	if m == nil {
+		return false
+	}
+	switch reflect.TypeOf(m).Kind() {
+	case reflect.Ptr:
+		if reflect.ValueOf(m).IsNil() {
 			return false
 		}
 	}

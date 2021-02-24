@@ -69,7 +69,7 @@ func (p *Player) SetPlayerAction(act *PlayerAction) {
 }
 
 func BasicMove(path []world.Coords, values actions.ActionValues) {
-	actions.AddToBot(actions.NewMoveSeriesAction(values.Source, path))
+	actions.AddToBot(actions.NewMoveSeriesAction(values.Source, values.Source, path))
 }
 
 func BasicAttack(targets []world.Coords, values actions.ActionValues) {

@@ -28,17 +28,17 @@ func NewDamageAction(s *characters.Character, t objects.Targetable, d int) *Dama
 	}
 }
 
-func (d *DamageAction) Update() {
-	if d.start {
+func (a *DamageAction) Update() {
+	if a.start {
 		// todo: add an effect
 
 		// todo: this is where the damage modification happens
-		d.target.Damage(d.dmg)
-		d.start = false
-		d.isDone = true
+		a.target.Damage(a.dmg)
+		a.start = false
+		a.isDone = true
 	}
 }
 
-func (d *DamageAction) IsDone() bool {
-	return d.isDone
+func (a *DamageAction) IsDone() bool {
+	return a.isDone
 }

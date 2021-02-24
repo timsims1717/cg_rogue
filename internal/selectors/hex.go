@@ -23,31 +23,31 @@ func NewEmptyHexSelect() *EmptyHexSelect {
 	return &EmptyHexSelect{}
 }
 
-func (h *EmptyHexSelect) Init(input *input.Input) {
-	h.isDone = false
-	h.cancel = false
-	h.input = input
-	h.clicked = []world.Coords{}
+func (s *EmptyHexSelect) Init(input *input.Input) {
+	s.isDone = false
+	s.cancel = false
+	s.input = input
+	s.clicked = []world.Coords{}
 }
 
-func (h *EmptyHexSelect) SetValues(values actions.ActionValues) {
-	h.origin = values.Source.Coords
-	h.maxRange = util.Max(values.Range, values.Move)
-	h.count = values.Targets
+func (s *EmptyHexSelect) SetValues(values actions.ActionValues) {
+	s.origin = values.Source.Coords
+	s.maxRange = util.Max(values.Range, values.Move)
+	s.count = values.Targets
 }
 
-func (h *EmptyHexSelect) Update() {
-	if !h.isDone {
-		x := h.input.Coords.X
-		y := h.input.Coords.Y
-		hex := floor.CurrentFloor.Get(h.input.Coords)
-		legal := hex != nil && hex.Occupant == nil && !hex.Empty && world.DistanceHex(h.origin.X, h.origin.Y, x, y) <= h.maxRange
+func (s *EmptyHexSelect) Update() {
+	if !s.isDone {
+		x := s.input.Coords.X
+		y := s.input.Coords.Y
+		hex := floor.CurrentFloor.Get(s.input.Coords)
+		legal := hex != nil && hex.Occupant == nil && !hex.Empty && world.DistanceHex(s.origin, s.input.Coords) <= s.maxRange
 		if legal {
-			if h.input.Select.JustPressed() {
-				h.input.Select.Consume()
+			if s.input.Select.JustPressed() {
+				s.input.Select.Consume()
 				// add to or remove from the clicked array
 				found := -1
-				for i, hex := range h.clicked {
+				for i, hex := range s.clicked {
 					if hex.X == x && hex.Y == y {
 						found = i
 						break
@@ -55,15 +55,15 @@ func (h *EmptyHexSelect) Update() {
 				}
 				if found == -1 {
 					// add to clicked array
-					h.clicked = append(h.clicked, h.input.Coords)
+					s.clicked = append(s.clicked, s.input.Coords)
 				} else {
 					// remove from clicked array
-					h.clicked[len(h.clicked)-1], h.clicked[found] = h.clicked[found], h.clicked[len(h.clicked)-1]
-					h.clicked = h.clicked[:len(h.clicked)-1]
+					s.clicked[len(s.clicked)-1], s.clicked[found] = s.clicked[found], s.clicked[len(s.clicked)-1]
+					s.clicked = s.clicked[:len(s.clicked)-1]
 				}
 			}
 		}
-		for _, sel := range h.clicked {
+		for _, sel := range s.clicked {
 			ui.AddSelectUI(ui.Move, sel.X, sel.Y)
 		}
 		if legal {
@@ -72,23 +72,23 @@ func (h *EmptyHexSelect) Update() {
 			ui.AddSelectUI(ui.Blank, x, y)
 		}
 	}
-	if h.input.Cancel.JustPressed() {
-		h.input.Cancel.Consume()
+	if s.input.Cancel.JustPressed() {
+		s.input.Cancel.Consume()
 		// cancel
-		h.cancel = true
+		s.cancel = true
 	}
 }
 
-func (h *EmptyHexSelect) IsCancelled() bool {
-	return h.cancel
+func (s *EmptyHexSelect) IsCancelled() bool {
+	return s.cancel
 }
 
-func (h *EmptyHexSelect) IsDone() bool {
-	return len(h.clicked) == h.count || h.isDone
+func (s *EmptyHexSelect) IsDone() bool {
+	return len(s.clicked) == s.count || s.isDone
 }
 
-func (h *EmptyHexSelect) Finish() []world.Coords {
-	return h.clicked
+func (s *EmptyHexSelect) Finish() []world.Coords {
+	return s.clicked
 }
 
 type PathSelect struct {
@@ -108,37 +108,37 @@ func NewPathSelect() *PathSelect {
 	return &PathSelect{}
 }
 
-func (p *PathSelect) Init(input *input.Input) {
-	p.isDone = false
-	p.cancel = false
-	p.input = input
-	p.picked = []world.Coords{}
+func (s *PathSelect) Init(input *input.Input) {
+	s.isDone = false
+	s.cancel = false
+	s.input = input
+	s.picked = []world.Coords{}
 }
 
-func (p *PathSelect) SetValues(values actions.ActionValues) {
-	p.origin = values.Source.Coords
-	p.maxRange = util.Max(values.Range, values.Move)
+func (s *PathSelect) SetValues(values actions.ActionValues) {
+	s.origin = values.Source.Coords
+	s.maxRange = util.Max(values.Range, values.Move)
 }
 
-func (p *PathSelect) Update() {
-	if !p.isDone {
-		x, y := p.input.Coords.X, p.input.Coords.Y
-		hex := floor.CurrentFloor.Get(p.input.Coords)
-		legal := hex != nil && (p.EndUnocc || hex.Occupant == nil) && (p.EndNonemp || !hex.Empty) && world.DistanceHex(p.origin.X, p.origin.Y, x, y) <= p.maxRange
+func (s *PathSelect) Update() {
+	if !s.isDone {
+		x, y := s.input.Coords.X, s.input.Coords.Y
+		hex := floor.CurrentFloor.Get(s.input.Coords)
+		legal := hex != nil && (s.EndUnocc || hex.Occupant == nil) && (s.EndNonemp || !hex.Empty) && world.DistanceHex(s.origin, s.input.Coords) <= s.maxRange
 		if legal {
 			checks := floor.PathChecks{
 				NotFilled:  true,
-				Unoccupied: p.Unoccupied,
-				NonEmpty:   p.Nonempty,
-				Orig:       p.origin,
+				Unoccupied: s.Unoccupied,
+				NonEmpty:   s.Nonempty,
+				Orig:       s.origin,
 			}
-			path, dist, found := floor.CurrentFloor.FindPath(p.origin, p.input.Coords, checks)
-			if found && dist <= p.maxRange {
-				if p.input.Select.JustPressed() {
-					p.input.Select.Consume()
+			path, dist, found := floor.CurrentFloor.FindPath(s.origin, s.input.Coords, checks)
+			if found && dist <= s.maxRange {
+				if s.input.Select.JustPressed() {
+					s.input.Select.Consume()
 					for _, h := range path {
-						if h.X != p.origin.X || h.Y != p.origin.Y {
-							p.picked = append(p.picked, h)
+						if h.X != s.origin.X || h.Y != s.origin.Y {
+							s.picked = append(s.picked, h)
 						}
 					}
 				}
@@ -151,22 +151,22 @@ func (p *PathSelect) Update() {
 				}
 			}
 		}
-		if p.input.Cancel.JustPressed() {
-			p.input.Cancel.Consume()
+		if s.input.Cancel.JustPressed() {
+			s.input.Cancel.Consume()
 			// cancel
-			p.cancel = true
+			s.cancel = true
 		}
 	}
 }
 
-func (p *PathSelect) IsCancelled() bool {
-	return p.cancel
+func (s *PathSelect) IsCancelled() bool {
+	return s.cancel
 }
 
-func (p *PathSelect) IsDone() bool {
-	return len(p.picked) > 0
+func (s *PathSelect) IsDone() bool {
+	return len(s.picked) > 0
 }
 
-func (p *PathSelect) Finish() []world.Coords {
-	return p.picked
+func (s *PathSelect) Finish() []world.Coords {
+	return s.picked
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/timsims1717/cg_rogue_go/internal/actions"
+	"github.com/timsims1717/cg_rogue_go/internal/ai"
 	"github.com/timsims1717/cg_rogue_go/internal/cards"
 	"github.com/timsims1717/cg_rogue_go/internal/cfg"
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
@@ -63,13 +64,16 @@ func run() {
 	character := characters.NewCharacter(pixel.NewSprite(charsheet.Img, charsheet.Sprites[rand.Intn(len(charsheet.Sprites))]), world.Coords{0,0}, 10)
 	player.Player1 = player.NewPlayer(character)
 
-	obj := characters.NewCharacter(pixel.NewSprite(treesheet.Img, treesheet.Sprites[rand.Intn(len(treesheet.Sprites))]), world.Coords{8,4}, 10)
+	tree := characters.NewCharacter(pixel.NewSprite(treesheet.Img, treesheet.Sprites[rand.Intn(len(treesheet.Sprites))]), world.Coords{8,4}, 10)
+	tree_ai := ai.NewAI(ai.Tree1Decision, tree)
+	tree_ai.StartTurn()
 
 	player.Initialize()
 	player.Player1.Hand = player.NewHand(player.Player1)
 	player.Player1.Hand.AddCard(cards.CreateStrike())
 	player.Player1.Hand.AddCard(cards.CreateManeuver())
 	player.Player1.Hand.AddCard(cards.CreateCharge())
+	player.Player1.Hand.AddCard(cards.CreateShove())
 	player.Player1.PlayCard = player.NewPlayCard(player.Player1)
 
 	timing.Reset()
@@ -83,7 +87,8 @@ func run() {
 		player.CardManager.Update()
 		actions.Update()
 
-		obj.Update()
+		tree_ai.Update()
+		tree.Update()
 		character.Update()
 		player.Player1.Hand.Update()
 		player.Player1.PlayCard.Update()
@@ -92,7 +97,7 @@ func run() {
 		win.Clear(colornames.Forestgreen)
 
 		floor.CurrentFloor.Draw(win)
-		obj.Draw(win)
+		tree.Draw(win)
 		character.Draw(win)
 		ui.SelectionSet.Draw(win)
 		player.Player1.Hand.Draw(win)

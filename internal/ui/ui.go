@@ -6,13 +6,11 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/cfg"
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
-	"sync"
 )
 
 var SelectionSet selectionSet
 
 type selectionSet struct {
-	mu      sync.Mutex
 	sprites []*pixel.Sprite
 	batch   *pixel.Batch
 	set     []selectUI
@@ -34,8 +32,6 @@ type selectUI struct {
 }
 
 func AddSelectUI(t SelectionType, x, y int) {
-	SelectionSet.mu.Lock()
-	defer SelectionSet.mu.Unlock()
 	SelectionSet.set = append(SelectionSet.set, selectUI{
 		t: t,
 		x: x,

@@ -27,5 +27,5 @@ func (t *TargetArea) GetArea() []world.Coords {
 }
 
 func BasicHexArea(rad, _ int, orig world.Coords) []world.Coords {
-	return floor.CurrentFloor.AllWithin(orig, rad, nil)
+	return floor.CurrentFloor.AllWithin(orig, rad, floor.DefaultCheck)
 }

@@ -110,14 +110,27 @@ func (c *Character) IsTargeted() {
 
 }
 
-func (c *Character) TryToOccupy() {
-
-}
-
 func (c *Character) IsDestroyed() bool {
 	return c.Dead
 }
 
 func (c *Character) ID() uuid.UUID {
 	return c.id
+}
+
+func (c *Character) GetXY() (float64, float64) {
+	return c.Pos.X, c.Pos.Y
+}
+
+func (c *Character) SetXY(x, y float64) {
+	c.Pos.X = x
+	c.Pos.Y = y
+}
+
+func (c *Character) GetCoords() world.Coords {
+	return c.Coords
+}
+
+func (c *Character) SetCoords(a world.Coords) {
+	c.Coords = a
 }

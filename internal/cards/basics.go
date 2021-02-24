@@ -53,7 +53,7 @@ func StrikeLevel(level int) actions.ActionValues {
 func CreateManeuver() *player.Card {
 	values := ManeuverLevel(0)
 	fn := func (path []world.Coords, values actions.ActionValues) {
-		actions.AddToBot(actions.NewMoveSeriesAction(values.Source, path))
+		actions.AddToBot(actions.NewMoveSeriesAction(values.Source, values.Source, path))
 	}
 	sel := selectors.NewPathSelect()
 	sel.Unoccupied = true
@@ -73,7 +73,7 @@ func ManeuverLevel(level int) actions.ActionValues {
 func CreateCharge() *player.Card {
 	valMov, valAtk := ChargeLevel(0)
 	fnMov := func (path []world.Coords, values actions.ActionValues) {
-		actions.AddToBot(actions.NewMoveSeriesAction(values.Source, path))
+		actions.AddToBot(actions.NewMoveSeriesAction(values.Source, values.Source, path))
 	}
 	fnAtk := func (targets []world.Coords, values actions.ActionValues) {
 		if len(targets) > 0 {
@@ -122,4 +122,29 @@ func ChargeLevel(level int) (actions.ActionValues, actions.ActionValues) {
 		valMov.Move += 1
 	}
 	return valMov, valAtk
+}
+
+func CreateShove() *player.Card {
+	values := ShoveLevel(0)
+	fn := func (targets []world.Coords, values actions.ActionValues) {
+		if len(targets) > 0 {
+			occ := floor.CurrentFloor.GetOccupant(targets[0])
+			if occ != nil {
+				if target, ok := occ.(objects.Moveable); ok {
+					actions.AddToBot(actions.NewPushAction(values.Source, target, values.Damage))
+				}
+			}
+		}
+	}
+	act := player.NewPlayerAction(selectors.NewTargetSelect(), values, fn)
+	sec := player.NewCardSection("Move a target 1 Space away.", act)
+	return player.NewCard("Shove", []*player.CardSection{sec})
+}
+
+func ShoveLevel(level int) actions.ActionValues {
+	values := actions.ActionValues{
+		Damage: 1,
+		Range:  1,
+	}
+	return values
 }
