@@ -64,7 +64,7 @@ func run() {
 	floor.DefaultFloor(10, 10, spritesheet)
 
 	tree := characters.NewCharacter(pixel.NewSprite(treesheet.Img, treesheet.Sprites[rand.Intn(len(treesheet.Sprites))]), world.Coords{8,4}, 10)
-	treeAI := ai.NewAI(ai.SpinnerDecision, ai.SpinnerAct, tree)
+	treeAI := ai.NewAI(ai.RandomWalkerDecision, ai.RandomWalkerAct, tree)
 	ai.AIManager.AddAI(treeAI)
 
 

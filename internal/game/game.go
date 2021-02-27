@@ -46,8 +46,7 @@ func Update() {
 			// todo: effects?
 			player.Player1.StartTurn()
 			StateMachine.State.Start = false
-		}
-		if player.Player1.CardsPlayed > 0 && actions.IsActing() {
+		} else if player.Player1.CardsPlayed > 0 && !actions.IsActing() {
 			player.Player1.EndTurn()
 			StateMachine.State.Phase = EnemyTurn
 			StateMachine.State.Start = true
@@ -57,8 +56,7 @@ func Update() {
 			// todo: effects?
 			StateMachine.State.Start = false
 			ai.AIManager.StartAITurn()
-		}
-		if !actions.IsActing() {
+		} else if !actions.IsActing() {
 			ai.AIManager.EndAITurn()
 			StateMachine.State.Phase = PlayerTurn
 			StateMachine.State.Start = true

@@ -88,6 +88,36 @@ func (a *Coords) PathFrom(path []Coords) []Coords {
 	return np
 }
 
+func NextHex(a, b Coords) Coords {
+	var y int
+	var x int
+	if a.X == b.X {
+		x = b.X
+		if a.Y > b.Y {
+			y = b.Y - 1
+		} else {
+			y = b.Y + 1
+		}
+	} else {
+		if a.X < b.X {
+			x = b.X + 1
+		} else {
+			x = b.X - 1
+		}
+		if (a.X % 2 == 0 && a.Y > b.Y) || (a.X % 2 != 0 && a.Y < b.Y) {
+			y = b.Y
+		} else if a.X % 2 == 0 {
+			y = b.Y + 1
+		} else {
+			y = b.Y - 1
+		}
+	}
+	return Coords{
+		X: x,
+		Y: y,
+	}
+}
+
 func MapToWorldHex(x, y int) (float64, float64) {
 	if x % 2 != 0 {
 		return (float64(x) + 0.5) * ScaledTileSize, (float64(y) + 1.0) * ScaledTileSize

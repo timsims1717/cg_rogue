@@ -18,7 +18,7 @@ type Selector interface {
 }
 
 type TargetArea struct {
-	SetArea func(int, int, world.Coords) []world.Coords
+	SetArea func(int, int, world.Coords, floor.PathChecks) []world.Coords
 	area    []world.Coords
 }
 
@@ -26,6 +26,13 @@ func (t *TargetArea) GetArea() []world.Coords {
 	return t.area
 }
 
-func BasicHexArea(rad, _ int, orig world.Coords) []world.Coords {
-	return floor.CurrentFloor.AllWithin(orig, rad, floor.DefaultCheck)
+func SingleTile(_, _ int, orig world.Coords, check floor.PathChecks) []world.Coords {
+	if floor.CurrentFloor.IsLegal(orig, check) != nil {
+		return []world.Coords{orig}
+	}
+	return []world.Coords{}
+}
+
+func BasicHexArea(rad, _ int, orig world.Coords, check floor.PathChecks) []world.Coords {
+	return floor.CurrentFloor.AllWithin(orig, rad, check)
 }

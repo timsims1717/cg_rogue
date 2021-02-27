@@ -6,8 +6,20 @@ import (
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
+
 // IsLegal checks if a Hex is a legal candidate according to the current PathCheck
-func (f *Floor) IsLegal(a world.Coords) *Hex {
+func (f *Floor) IsLegal(a world.Coords, checks PathChecks) *Hex {
+	hex := f.Get(a)
+	if hex != nil {
+		if (a.X == checks.Orig.X && a.Y == checks.Orig.Y) || ((!checks.Unoccupied || hex.Occupant == nil) && (!checks.NonEmpty || !hex.Empty)) {
+			return hex
+		}
+	}
+	return nil
+}
+
+// isLegal checks if a Hex is a legal candidate according to the current PathCheck
+func (f *Floor) isLegal(a world.Coords) *Hex {
 	hex := f.Get(a)
 	if hex != nil {
 		if (a.X == f.checks.Orig.X && a.Y == f.checks.Orig.Y) || ((!f.checks.Unoccupied || hex.Occupant == nil) && (!f.checks.NonEmpty || !hex.Empty)) {
@@ -48,7 +60,8 @@ func (f *Floor) AllWithin(o world.Coords, d int, check PathChecks) []world.Coord
 	qu := queue.New()
 	marked := make(map[world.Coords]bool)
 	qu.PushFront(cont{ c: o, w: 0 })
-	for n := qu.PopFront(); n != nil; {
+	for qu.Front() != nil {
+		n := qu.PopFront()
 		if c, ok := n.(cont); ok {
 			if c.w+1 <= d {
 				all = append(all, c.c)
@@ -56,7 +69,7 @@ func (f *Floor) AllWithin(o world.Coords, d int, check PathChecks) []world.Coord
 				for _, nb := range neighbors {
 					if !marked[nb] {
 						marked[nb] = true
-						if f.IsLegal(nb) != nil {
+						if f.isLegal(nb) != nil {
 							qu.PushBack(nb)
 						}
 					}
@@ -74,7 +87,7 @@ func (f *Floor) AllWithin(o world.Coords, d int, check PathChecks) []world.Coord
 func (f *Floor) LegalPath(path []world.Coords, check PathChecks) []world.Coords {
 	f.checks = check
 	for i, c := range path {
-		if f.IsLegal(c) == nil {
+		if f.isLegal(c) == nil {
 			f.checks = DefaultCheck
 			return path[:i]
 		}
@@ -121,7 +134,7 @@ func (f *Floor) Neighbors(hex *Hex) []*Hex {
 	cNeighbors := co.Neighbors(width, height)
 	neighbors := make([]*Hex, 0)
 	for _, c := range cNeighbors {
-		if n := f.IsLegal(c); n != nil {
+		if n := f.isLegal(c); n != nil {
 			neighbors = append(neighbors, n)
 		}
 	}
