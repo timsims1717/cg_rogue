@@ -51,7 +51,7 @@ func (s *TargetSelect) Update() {
 					s.clicked = append(s.clicked, s.input.Coords)
 					s.isDone = true
 				} else {
-					ui.AddSelectUI(ui.MoveSolid, x, y)
+					ui.AddSelectUI(ui.Attack, x, y)
 				}
 			}
 		} else {

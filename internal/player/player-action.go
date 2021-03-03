@@ -12,6 +12,7 @@ type PlayerAction struct {
 	Action   func([]world.Coords, actions.ActionValues)
 	Values   actions.ActionValues
 	Complete bool
+	Cancel   bool
 }
 
 func NewPlayerAction(sel selectors.Selector, values actions.ActionValues, act func([]world.Coords, actions.ActionValues)) *PlayerAction {
@@ -36,9 +37,11 @@ func (p *PlayerAction) Update() {
 		return
 	}
 	p.Selector.Update()
-	if p.Selector.IsCancelled() || p.Selector.IsDone() {
+	if p.Selector.IsDone() {
 		result := p.Selector.Finish()
 		p.Action(result, p.Values)
 		p.Complete = true
+	} else if p.Selector.IsCancelled() {
+		p.Cancel = true
 	}
 }

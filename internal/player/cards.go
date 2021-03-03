@@ -128,6 +128,9 @@ func (c *Card) Update() {
 			} else if section.action.Complete {
 				section.isDone = true
 				c.actPtr++
+				c.canCancel = false
+			} else if section.action.Cancel {
+				section.start = false
 			} else {
 				section.action.Selector.SetValues(section.action.Values)
 			}
@@ -154,6 +157,7 @@ func (c *Card) play(player *Player) {
 	c.actPtr = 0
 	c.isPlay = true
 	c.player = player
+	c.canCancel = true
 	for _, section := range c.sections {
 		section.start = false
 		section.isDone = false
@@ -164,6 +168,7 @@ func (c *Card) play(player *Player) {
 func (c *Card) stop() {
 	c.actPtr = -1
 	c.isPlay = false
+	c.canCancel = true
 	for _, section := range c.sections {
 		section.start = true
 		section.isDone = true

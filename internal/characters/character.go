@@ -16,22 +16,6 @@ type characters struct{
 	Set []*Character
 }
 
-func (c *characters) Add(character *Character) {
-	character.index = len(c.Set)
-	c.Set = append(c.Set, character)
-}
-
-func (c *characters) Remove(character *Character) {
-	c.Set = append(c.Set[:character.index], c.Set[character.index+1:]...)
-	c.update()
-}
-
-func (c *characters) update() {
-	for i, ch := range c.Set {
-		ch.index = i
-	}
-}
-
 func (c *characters) Update() {
 	for _, ch := range c.Set {
 		ch.Update()
@@ -53,13 +37,15 @@ type Character struct {
 	CurrHP  int
 	MaxHP   int
 	LastDmg int
-	Dead    bool
+	Alive   bool
+
+	Diplomacy Diplomacy
 
 	id    uuid.UUID
 	index int
 }
 
-func NewCharacter(sprite *pixel.Sprite, coords world.Coords, maxHP int) *Character {
+func NewCharacter(sprite *pixel.Sprite, coords world.Coords, diplomacy Diplomacy, maxHP int) *Character {
 	if floor.CurrentFloor.IsOccupied(coords) {
 		return nil
 	}
@@ -71,7 +57,8 @@ func NewCharacter(sprite *pixel.Sprite, coords world.Coords, maxHP int) *Charact
 		CurrHP:  maxHP,
 		MaxHP:   maxHP,
 		LastDmg: 0,
-		Dead:    false,
+		Alive:   true,
+		Diplomacy: diplomacy,
 		id:      uuid.NewV4(),
 	}
 	floor.CurrentFloor.PutOccupant(c, coords)
@@ -99,19 +86,15 @@ func (c *Character) Damage(dmg int) {
 		c.LastDmg = util.Min(thisDmg, c.CurrHP)
 		c.CurrHP -= c.LastDmg
 		if c.CurrHP < 1 {
-			c.Dead = true
+			c.Alive = false
 			c.CurrHP = 0
 			floor.CurrentFloor.RemoveOccupant(c.Coords)
 		}
 	}
 }
 
-func (c *Character) IsTargeted() {
-
-}
-
 func (c *Character) IsDestroyed() bool {
-	return c.Dead
+	return !c.Alive
 }
 
 func (c *Character) ID() uuid.UUID {

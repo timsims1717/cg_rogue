@@ -41,51 +41,61 @@ func NewAI(makeDecision func(*characters.Character, []int) ([]*AIAction, int), a
 }
 
 func (ai *AI) Decide() {
-	var next int
-	ai.Actions, next = ai.MakeDecision(ai.Character, ai.PrevDecicions)
-	ai.PrevDecicions = append(ai.PrevDecicions, next)
-	for _, act := range ai.Actions {
-		act.Values.Source = ai.Character
+	if ai.Character.Alive {
+		var next int
+		ai.Actions, next = ai.MakeDecision(ai.Character, ai.PrevDecicions)
+		ai.PrevDecicions = append(ai.PrevDecicions, next)
+		for _, act := range ai.Actions {
+			act.Values.Source = ai.Character
+		}
 	}
 }
 
 func (ai *AI) TakeTurn() {
-	ai.Act(ai.TempActions)
+	if ai.Character.Alive {
+		ai.Act(ai.TempActions)
+	}
 }
 
 func (ai *AI) Update() {
-	ai.TempActions = make([]*TempAIAction, len(ai.Actions))
-	ai.TempCoords = ai.Character.GetCoords()
-	for i, act := range ai.Actions {
-		// check the path
-		var tArea []world.Coords
-		var tPath []world.Coords
-		if act.Path != nil {
-			tCheck := act.PathCheck
-			tCheck.Orig = ai.TempCoords
-			tPath = floor.CurrentFloor.LegalPath(tCheck.Orig.PathFrom(act.Path), tCheck)
-			tArea = tPath
+	if ai.Character.Alive {
+		ai.TempActions = make([]*TempAIAction, len(ai.Actions))
+		ai.TempCoords = ai.Character.GetCoords()
+		for i, act := range ai.Actions {
+			// check the path
+			var tArea []world.Coords
+			var tPath []world.Coords
+			if act.Path != nil {
+				tCheck := act.PathCheck
+				tCheck.Orig = ai.TempCoords
+				tPath = floor.CurrentFloor.LongestLegalPath(tCheck.Orig.PathFrom(act.Path), tCheck)
+				tArea = tPath
+			}
+			// check the target area
+			if act.TargetArea != nil && len(tPath) > 0 {
+				tCheck := act.TargetCheck
+				target := tPath[len(tPath)-1]
+				tCheck.Orig = target
+				tArea = act.TargetArea.SetArea(0, 0, target, tCheck)
+			}
+			// update the temp actions with the results of the check
+			ai.TempActions[i] = &TempAIAction{
+				Area:   tArea,
+				Values: act.Values,
+			}
+			if act.Values.Move > 0 && len(tPath) > 0 {
+				ai.TempCoords = tPath[len(tPath)-1]
+			}
 		}
-		// check the target area
-		if act.TargetArea != nil && len(tPath) > 0 {
-			tCheck := act.TargetCheck
-			target := tPath[len(tPath)-1]
-			tCheck.Orig = target
-			tArea = act.TargetArea.SetArea(0,0,target,tCheck)
-		}
-		// update the temp actions with the results of the check
-		ai.TempActions[i] = &TempAIAction{
-			Area:   tArea,
-			Values: act.Values,
-		}
-		if act.Values.Move > 0 && len(tPath) > 0 {
-			ai.TempCoords = tPath[len(tPath)-1]
-		}
-	}
-	for _, act := range ai.TempActions {
-		if act.Area != nil && len(act.Area) > 0 {
-			for _, c := range act.Area {
-				ui.AddSelectUI(ui.Move, c.X, c.Y)
+		for _, act := range ai.TempActions {
+			if act.Area != nil && len(act.Area) > 0 {
+				for _, c := range act.Area {
+					if act.Values.Move > 0 {
+						ui.AddSelectUI(ui.Move, c.X, c.Y)
+					} else {
+						ui.AddSelectUI(ui.Attack, c.X, c.Y)
+					}
+				}
 			}
 		}
 	}

@@ -70,7 +70,7 @@ func (p *Player) Update(win *pixelgl.Window) {
 		}
 		if p.CurrAction != nil {
 			p.CurrAction.Update()
-			if p.CurrAction.Complete {
+			if p.CurrAction.Complete || p.CurrAction.Cancel {
 				p.CurrAction = nil
 			}
 		}

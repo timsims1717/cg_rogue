@@ -63,12 +63,15 @@ func run() {
 
 	floor.DefaultFloor(10, 10, spritesheet)
 
-	tree := characters.NewCharacter(pixel.NewSprite(treesheet.Img, treesheet.Sprites[rand.Intn(len(treesheet.Sprites))]), world.Coords{8,4}, 10)
+	tree := characters.NewCharacter(pixel.NewSprite(treesheet.Img, treesheet.Sprites[rand.Intn(len(treesheet.Sprites))]), world.Coords{8,4}, characters.Enemy, 10)
 	treeAI := ai.NewAI(ai.RandomWalkerDecision, ai.RandomWalkerAct, tree)
+	flyer := characters.NewCharacter(pixel.NewSprite(treesheet.Img, treesheet.Sprites[rand.Intn(len(treesheet.Sprites))]), world.Coords{2,9}, characters.Enemy, 10)
+	flyerAI := ai.NewAI(ai.FlyChaserDecision, ai.FlyChaserAct, flyer)
 	ai.AIManager.AddAI(treeAI)
+	ai.AIManager.AddAI(flyerAI)
 
 
-	character := characters.NewCharacter(pixel.NewSprite(charsheet.Img, charsheet.Sprites[rand.Intn(len(charsheet.Sprites))]), world.Coords{0,0}, 10)
+	character := characters.NewCharacter(pixel.NewSprite(charsheet.Img, charsheet.Sprites[rand.Intn(len(charsheet.Sprites))]), world.Coords{0,0}, characters.Ally, 10)
 	player.Player1 = player.NewPlayer(character)
 	player.Initialize()
 	player.Player1.Hand = player.NewHand(player.Player1)
@@ -77,6 +80,10 @@ func run() {
 	player.Player1.Hand.AddCard(cards.CreateCharge())
 	player.Player1.Hand.AddCard(cards.CreateShove())
 	player.Player1.PlayCard = player.NewPlayCard(player.Player1)
+
+	characters.CharacterManager.Add(tree)
+	characters.CharacterManager.Add(flyer)
+	characters.CharacterManager.Add(character)
 
 	timing.Reset()
 	for !win.Closed() {
@@ -91,15 +98,13 @@ func run() {
 		actions.Update()
 
 		ai.Update()
-		tree.Update()
-		character.Update()
+		characters.Update()
 		player.Player1.Update(win)
 
 		win.Clear(colornames.Forestgreen)
 
 		floor.CurrentFloor.Draw(win)
-		tree.Draw(win)
-		character.Draw(win)
+		characters.Draw(win)
 		ui.SelectionSet.Draw(win)
 		player.Player1.Hand.Draw(win)
 		player.Player1.PlayCard.Draw(win)

@@ -233,3 +233,21 @@ func DistanceWorldHex(ax, ay, bx, by int) float64 {
 	y := ayf - byf
 	return x * x + y * y
 }
+
+func OrderByDist(orig Coords, ul []Coords) []Coords {
+	ol := make([]Coords, 0)
+	for len(ul) > 0 {
+		near := 10000
+		index := 0
+		for i, c := range ul {
+			dist := DistanceHex(orig, c)
+			if dist < near {
+				index = i
+				near = dist
+			}
+		}
+		ol = append(ol, ul[index])
+		ul = append(ul[:index], ul[index+1:]...)
+	}
+	return ol
+}

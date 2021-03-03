@@ -23,3 +23,11 @@ func Max(a, b int) int {
 	}
 	return b
 }
+
+type Trillian int
+
+const (
+	True = iota
+	Maybe
+	False
+)

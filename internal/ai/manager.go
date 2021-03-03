@@ -24,10 +24,11 @@ func Update() {
 	for _, ai := range AIManager.set {
 		if AIManager.decide {
 			ai.Decide()
-		} else if AIManager.takeTurn {
-			ai.TakeTurn()
 		}
 		ai.Update()
+		if AIManager.takeTurn {
+			ai.TakeTurn()
+		}
 	}
 	AIManager.takeTurn = false
 	AIManager.decide = false

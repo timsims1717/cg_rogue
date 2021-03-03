@@ -7,7 +7,6 @@ import (
 
 type Targetable interface {
 	Damage(dmg int)
-	IsTargeted()
 }
 
 // NotNil checks both if i is nil, and if the underlying

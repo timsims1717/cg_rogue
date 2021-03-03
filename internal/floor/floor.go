@@ -21,24 +21,27 @@ type Floor struct{
 }
 
 type PathChecks struct {
-	NotFilled  bool // true: must not be filled, false: can be a filled tile
-	Unoccupied bool // true: must be unoccupied, false: can have an occupant
-	NonEmpty   bool // true: must not be empty, false: can be an empty tile (a pit, or something)
-	Orig       world.Coords
+	NotFilled     bool // true: must not be filled, false: can be a filled tile
+	Unoccupied    bool // true: must be unoccupied, false: can have an occupant
+	NonEmpty      bool // true: must not be empty, false: can be an empty tile (a pit, or something)
+	EndUnoccupied bool // true: last tile must be unoccupied, false: last tile can have an occupant
+	Orig          world.Coords
 }
 
 var DefaultCheck = PathChecks{
-	NotFilled:  true,
-	Unoccupied: false,
-	NonEmpty:   false,
-	Orig:       world.Coords{},
+	NotFilled:     true,
+	Unoccupied:    false,
+	NonEmpty:      false,
+	EndUnoccupied: false,
+	Orig:          world.Coords{},
 }
 
 var NoCheck = PathChecks{
-	NotFilled:  false,
-	Unoccupied: false,
-	NonEmpty:   false,
-	Orig:       world.Coords{},
+	NotFilled:     false,
+	Unoccupied:    false,
+	NonEmpty:      false,
+	EndUnoccupied: false,
+	Orig:          world.Coords{},
 }
 
 func DefaultFloor(w, h int, spriteSheet *img.SpriteSheet) {
@@ -85,6 +88,10 @@ func (f *Floor) Dimensions() (int, int) {
 	return width, height
 }
 
+func (f *Floor) SetDefaultChecks() {
+	f.checks = DefaultCheck
+}
+
 func (f *Floor) Get(a world.Coords) *Hex {
 	if f.Exists(a) {
 		return &(f.floor[a.X][a.Y])
@@ -108,6 +115,11 @@ func (f *Floor) GetOccupant(a world.Coords) objects.Moveable {
 		return hex.Occupant
 	}
 	return nil
+}
+
+func (f *Floor) HasOccupant(a world.Coords) bool {
+	hex := f.Get(a)
+	return hex != nil && objects.NotNilMov(hex.Occupant)
 }
 
 func (f *Floor) PutOccupant(m objects.Moveable, a world.Coords) bool {

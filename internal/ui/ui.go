@@ -22,6 +22,7 @@ const (
 	Default SelectionType = iota
 	Move
 	MoveSolid
+	Attack
 	Blank
 )
 

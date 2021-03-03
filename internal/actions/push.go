@@ -41,10 +41,11 @@ func (a *PushAction) Update() {
 			return
 		}
 		path := floor.CurrentFloor.Line(a.target.GetCoords(), nPath[len(nPath)-1], a.push, floor.PathChecks{
-			NotFilled:  true,
-			Unoccupied: true,
-			NonEmpty:   false,
-			Orig:       a.target.GetCoords(),
+			NotFilled:     true,
+			Unoccupied:    true,
+			NonEmpty:      false,
+			EndUnoccupied: true,
+			Orig:          a.target.GetCoords(),
 		})
 		if len(path) == 0 {
 			a.isDone = true
