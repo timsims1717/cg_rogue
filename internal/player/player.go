@@ -14,14 +14,14 @@ import (
 var Player1 *Player
 
 type Player struct {
-	Character   *characters.Character
-	CurrAction  *PlayerAction
-	Input       *input.Input
-	Hand        *Hand
-	PlayCard    *PlayCard
-	Discard     *Discard
-	CardsPlayed int
-	IsTurn      bool
+	Character       *characters.Character
+	CurrAction      *PlayerAction
+	Input           *input.Input
+	Hand            *Hand
+	PlayCard        *PlayCard
+	Discard         *Discard
+	ActionsThisTurn int
+	IsTurn          bool
 }
 
 func NewPlayer(character *characters.Character) *Player {
@@ -32,7 +32,7 @@ func NewPlayer(character *characters.Character) *Player {
 }
 
 func (p *Player) StartTurn() {
-	p.CardsPlayed = 0
+	p.ActionsThisTurn = 0
 	p.IsTurn = true
 }
 
@@ -75,9 +75,16 @@ func (p *Player) Update(win *pixelgl.Window) {
 			sel := selectors.NewNullSelect()
 			p.SetPlayerAction(NewPlayerAction(sel, values, p.Rest))
 		}
+		if p.CurrAction != nil && p.PlayCard.Card == nil && p.Input.Cancel.JustPressed() {
+			p.Input.Cancel.Consume()
+			p.CurrAction = nil
+		}
 		if p.CurrAction != nil {
 			p.CurrAction.Update()
-			if p.CurrAction.Complete || p.CurrAction.Cancel {
+			if p.CurrAction.Complete {
+				if p.CurrAction.Complete {
+					p.ActionsThisTurn += 1
+				}
 				p.CurrAction = nil
 			}
 		}
@@ -89,10 +96,6 @@ func (p *Player) SetPlayerAction(act *PlayerAction) {
 	act.Selector.Init(p.Input)
 	act.Selector.SetValues(act.Values)
 	p.CurrAction = act
-}
-
-func (p *Player) CardPlayed() {
-	p.CardsPlayed += 1
 }
 
 func BasicMove(path []world.Coords, values selectors.ActionValues) {

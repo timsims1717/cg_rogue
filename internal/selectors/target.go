@@ -15,7 +15,6 @@ type TargetSelect struct {
 	MaxRange   int
 	origin     world.Coords
 	isDone     bool
-	cancel     bool
 }
 
 func NewTargetSelect() *TargetSelect {
@@ -24,7 +23,6 @@ func NewTargetSelect() *TargetSelect {
 
 func (s *TargetSelect) Init(input *input.Input) {
 	s.isDone = false
-	s.cancel = false
 	s.input = input
 	s.clicked = []world.Coords{}
 }
@@ -61,15 +59,6 @@ func (s *TargetSelect) Update() {
 			}
 		}
 	}
-	if s.input.Cancel.JustPressed() {
-		s.input.Cancel.Consume()
-		// cancel
-		s.cancel = true
-	}
-}
-
-func (s *TargetSelect) IsCancelled() bool {
-	return s.cancel
 }
 
 func (s *TargetSelect) IsDone() bool {

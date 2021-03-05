@@ -48,7 +48,7 @@ func Update() {
 			player.Player1.StartTurn()
 			camera.Cam.MoveTo(player.Player1.Character.Pos, 0.2, true)
 			StateMachine.State.Start = false
-		} else if player.Player1.CardsPlayed > 0 && !actions.IsActing() {
+		} else if player.Player1.ActionsThisTurn > 0 && player.Player1.PlayCard.Card == nil && !actions.IsActing() {
 			player.Player1.EndTurn()
 			StateMachine.State.Phase = EnemyTurn
 			StateMachine.State.Start = true

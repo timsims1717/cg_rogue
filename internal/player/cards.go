@@ -118,7 +118,6 @@ func (c *Card) Update() {
 
 	if c.isPlay {
 		if c.actPtr >= len(c.sections) {
-			c.player.CardPlayed()
 			c.played = true
 			c.stop()
 		} else {
@@ -131,8 +130,6 @@ func (c *Card) Update() {
 				section.isDone = true
 				c.actPtr++
 				c.canCancel = false
-			} else if section.action.Cancel {
-				section.start = false
 			} else {
 				section.action.Selector.SetValues(section.action.Values)
 			}
@@ -172,10 +169,11 @@ func (c *Card) stop() {
 	c.actPtr = -1
 	c.isPlay = false
 	c.canCancel = true
+	c.player.CurrAction = nil
 	for _, section := range c.sections {
 		section.start = true
 		section.isDone = true
-		section.action.Complete = true
+		section.action.Complete = false
 	}
 }
 

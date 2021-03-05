@@ -15,7 +15,6 @@ type EmptyHexSelect struct {
 	maxRange   int
 	origin     world.Coords
 	isDone     bool
-	cancel     bool
 }
 
 func NewEmptyHexSelect() *EmptyHexSelect {
@@ -24,7 +23,6 @@ func NewEmptyHexSelect() *EmptyHexSelect {
 
 func (s *EmptyHexSelect) Init(input *input.Input) {
 	s.isDone = false
-	s.cancel = false
 	s.input = input
 	s.clicked = []world.Coords{}
 }
@@ -73,13 +71,8 @@ func (s *EmptyHexSelect) Update() {
 	}
 	if s.input.Cancel.JustPressed() {
 		s.input.Cancel.Consume()
-		// cancel
-		s.cancel = true
+		s.clicked = []world.Coords{}
 	}
-}
-
-func (s *EmptyHexSelect) IsCancelled() bool {
-	return s.cancel
 }
 
 func (s *EmptyHexSelect) IsDone() bool {
@@ -96,7 +89,6 @@ type PathSelect struct {
 	maxRange   int
 	origin     world.Coords
 	isDone     bool
-	cancel     bool
 	Unoccupied bool
 	Nonempty   bool
 	EndUnocc   bool
@@ -109,7 +101,6 @@ func NewPathSelect() *PathSelect {
 
 func (s *PathSelect) Init(input *input.Input) {
 	s.isDone = false
-	s.cancel = false
 	s.input = input
 	s.picked = []world.Coords{}
 }
@@ -150,16 +141,7 @@ func (s *PathSelect) Update() {
 				}
 			}
 		}
-		if s.input.Cancel.JustPressed() {
-			s.input.Cancel.Consume()
-			// cancel
-			s.cancel = true
-		}
 	}
-}
-
-func (s *PathSelect) IsCancelled() bool {
-	return s.cancel
 }
 
 func (s *PathSelect) IsDone() bool {

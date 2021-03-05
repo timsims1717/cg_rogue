@@ -12,7 +12,6 @@ type Selector interface {
 	Init(*input.Input)
 	SetValues(ActionValues)
 	Update()
-	IsCancelled() bool
 	IsDone() bool
 	Finish() []world.Coords
 }
