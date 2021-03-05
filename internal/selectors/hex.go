@@ -1,7 +1,6 @@
 package selectors
 
 import (
-	"github.com/timsims1717/cg_rogue_go/internal/actions"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/input"
 	"github.com/timsims1717/cg_rogue_go/internal/ui"
@@ -30,7 +29,7 @@ func (s *EmptyHexSelect) Init(input *input.Input) {
 	s.clicked = []world.Coords{}
 }
 
-func (s *EmptyHexSelect) SetValues(values actions.ActionValues) {
+func (s *EmptyHexSelect) SetValues(values ActionValues) {
 	s.origin = values.Source.Coords
 	s.maxRange = util.Max(values.Range, values.Move)
 	s.count = values.Targets
@@ -115,7 +114,7 @@ func (s *PathSelect) Init(input *input.Input) {
 	s.picked = []world.Coords{}
 }
 
-func (s *PathSelect) SetValues(values actions.ActionValues) {
+func (s *PathSelect) SetValues(values ActionValues) {
 	s.origin = values.Source.Coords
 	s.maxRange = util.Max(values.Range, values.Move)
 }

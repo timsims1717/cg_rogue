@@ -11,7 +11,7 @@ import (
 
 func CreateStrike() *player.Card {
 	values := StrikeLevel(0)
-	fn := func (targets []world.Coords, values actions.ActionValues) {
+	fn := func (targets []world.Coords, values selectors.ActionValues) {
 		if len(targets) > 0 {
 			occ := floor.CurrentFloor.GetOccupant(targets[0])
 			if occ != nil {
@@ -26,8 +26,8 @@ func CreateStrike() *player.Card {
 	return player.NewCard("Strike", []*player.CardSection{sec})
 }
 
-func StrikeLevel(level int) actions.ActionValues {
-	values := actions.ActionValues{
+func StrikeLevel(level int) selectors.ActionValues {
+	values := selectors.ActionValues{
 		Damage:  4,
 		Range:   1,
 		Targets: 1,
@@ -52,7 +52,7 @@ func StrikeLevel(level int) actions.ActionValues {
 
 func CreateManeuver() *player.Card {
 	values := ManeuverLevel(0)
-	fn := func (path []world.Coords, values actions.ActionValues) {
+	fn := func (path []world.Coords, values selectors.ActionValues) {
 		actions.AddToBot(actions.NewMoveSeriesAction(values.Source, values.Source, path))
 	}
 	sel := selectors.NewPathSelect()
@@ -63,8 +63,8 @@ func CreateManeuver() *player.Card {
 	return player.NewCard("Maneuver", []*player.CardSection{sec})
 }
 
-func ManeuverLevel(level int) actions.ActionValues {
-	values := actions.ActionValues{
+func ManeuverLevel(level int) selectors.ActionValues {
+	values := selectors.ActionValues{
 		Move:    3 + level,
 	}
 	return values
@@ -72,10 +72,10 @@ func ManeuverLevel(level int) actions.ActionValues {
 
 func CreateCharge() *player.Card {
 	valMov, valAtk := ChargeLevel(0)
-	fnMov := func (path []world.Coords, values actions.ActionValues) {
+	fnMov := func (path []world.Coords, values selectors.ActionValues) {
 		actions.AddToBot(actions.NewMoveSeriesAction(values.Source, values.Source, path))
 	}
-	fnAtk := func (targets []world.Coords, values actions.ActionValues) {
+	fnAtk := func (targets []world.Coords, values selectors.ActionValues) {
 		if len(targets) > 0 {
 			occ := floor.CurrentFloor.GetOccupant(targets[0])
 			if occ != nil {
@@ -95,11 +95,11 @@ func CreateCharge() *player.Card {
 	return player.NewCard("Charge", []*player.CardSection{secMov, secAtk})
 }
 
-func ChargeLevel(level int) (actions.ActionValues, actions.ActionValues) {
-	valMov := actions.ActionValues{
+func ChargeLevel(level int) (selectors.ActionValues, selectors.ActionValues) {
+	valMov := selectors.ActionValues{
 		Move:    1,
 	}
-	valAtk := actions.ActionValues{
+	valAtk := selectors.ActionValues{
 		Damage:  2,
 		Range:   1,
 		Targets: 1,
@@ -126,7 +126,7 @@ func ChargeLevel(level int) (actions.ActionValues, actions.ActionValues) {
 
 func CreateShove() *player.Card {
 	values := ShoveLevel(0)
-	fn := func (targets []world.Coords, values actions.ActionValues) {
+	fn := func (targets []world.Coords, values selectors.ActionValues) {
 		if len(targets) > 0 {
 			occ := floor.CurrentFloor.GetOccupant(targets[0])
 			if occ != nil {
@@ -141,8 +141,8 @@ func CreateShove() *player.Card {
 	return player.NewCard("Shove", []*player.CardSection{sec})
 }
 
-func ShoveLevel(level int) actions.ActionValues {
-	values := actions.ActionValues{
+func ShoveLevel(level int) selectors.ActionValues {
+	values := selectors.ActionValues{
 		Damage: 1,
 		Range:  1,
 	}

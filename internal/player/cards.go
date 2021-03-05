@@ -42,6 +42,7 @@ type Card struct {
 	trans  bool
 
 	isPlay    bool
+	played    bool
 	canCancel bool
 	sections  []*CardSection
 	actPtr    int
@@ -118,6 +119,7 @@ func (c *Card) Update() {
 	if c.isPlay {
 		if c.actPtr >= len(c.sections) {
 			c.player.CardPlayed()
+			c.played = true
 			c.stop()
 		} else {
 			section := c.sections[c.actPtr]
@@ -157,6 +159,7 @@ func (c *Card) play(player *Player) {
 	c.actPtr = 0
 	c.isPlay = true
 	c.player = player
+	c.played = false
 	c.canCancel = true
 	for _, section := range c.sections {
 		section.start = false

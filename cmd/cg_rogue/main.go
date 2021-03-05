@@ -36,7 +36,6 @@ func run() {
 	if err != nil {
 		panic(err)
 	}
-	//win.SetSmooth(true)
 
 	debug.Initialize()
 	game.Initialize()
@@ -80,11 +79,13 @@ func run() {
 	player.Player1.Hand.AddCard(cards.CreateCharge())
 	player.Player1.Hand.AddCard(cards.CreateShove())
 	player.Player1.PlayCard = player.NewPlayCard(player.Player1)
+	player.Player1.Discard = player.NewDiscard(player.Player1)
 
 	characters.CharacterManager.Add(tree)
 	characters.CharacterManager.Add(flyer)
 	characters.CharacterManager.Add(character)
 
+	camera.Cam.CenterOn([]pixel.Vec{character.Pos})
 	timing.Reset()
 	for !win.Closed() {
 		timing.Update()
@@ -106,9 +107,12 @@ func run() {
 		floor.CurrentFloor.Draw(win)
 		characters.Draw(win)
 		ui.SelectionSet.Draw(win)
+		win.SetSmooth(true)
 		player.Player1.Hand.Draw(win)
 		player.Player1.PlayCard.Draw(win)
+		player.Player1.Discard.Draw(win)
 		debug.Draw(win)
+		win.SetSmooth(false)
 		win.Update()
 	}
 }

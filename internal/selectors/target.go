@@ -1,7 +1,6 @@
 package selectors
 
 import (
-	"github.com/timsims1717/cg_rogue_go/internal/actions"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/input"
 	"github.com/timsims1717/cg_rogue_go/internal/objects"
@@ -30,7 +29,7 @@ func (s *TargetSelect) Init(input *input.Input) {
 	s.clicked = []world.Coords{}
 }
 
-func (s *TargetSelect) SetValues(values actions.ActionValues) {
+func (s *TargetSelect) SetValues(values ActionValues) {
 	s.origin = values.Source.Coords
 	s.Count = values.Targets
 	s.MaxRange = values.Range

@@ -4,6 +4,7 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/actions"
 	"github.com/timsims1717/cg_rogue_go/internal/ai"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
+	"github.com/timsims1717/cg_rogue_go/pkg/camera"
 )
 
 type state struct {
@@ -45,6 +46,7 @@ func Update() {
 		if StateMachine.State.Start {
 			// todo: effects?
 			player.Player1.StartTurn()
+			camera.Cam.MoveTo(player.Player1.Character.Pos, 0.2, true)
 			StateMachine.State.Start = false
 		} else if player.Player1.CardsPlayed > 0 && !actions.IsActing() {
 			player.Player1.EndTurn()

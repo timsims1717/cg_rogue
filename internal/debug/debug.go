@@ -23,28 +23,36 @@ var (
 	// The number of frames since a second has passed
 	frames = 0
 	second = time.Tick(time.Second)
-	// The text containers for fps, worlds coordinates, and maps coordinates
-	fps    *text.Text
-	mouse  *text.Text
-	worlds *text.Text
-	maps   *text.Text
-	phase  *text.Text
-	health *text.Text
-	dispHP bool
-	cards  *text.Text
+	// The text containers for the debug elements
+	fps     *text.Text
+	mouse   *text.Text
+	worlds  *text.Text
+	maps    *text.Text
+	phase   *text.Text
+	health  *text.Text
+	dispHP  bool
+	hand    *text.Text
+	handL   int
+	playing *text.Text
+	discard *text.Text
+	discL   int
 )
 
 // Initialize creates the debug canvas and all the text containers.
 // This is where the location of the text containers is set.
 func Initialize() {
 	canvas = pixelgl.NewCanvas(pixel.R(0, 0, float64(cfg.WindowWidth), float64(cfg.WindowHeight)))
-	fps = text.New(pixel.V(20., float64(cfg.WindowHeight) - text2.BasicAtlas.LineHeight() - 20.), text2.BasicAtlas)
-	mouse = text.New(pixel.V(20., float64(cfg.WindowHeight) - (text2.BasicAtlas.LineHeight() + 20.) * 2.0), text2.BasicAtlas)
-	worlds = text.New(pixel.V(20., float64(cfg.WindowHeight) - (text2.BasicAtlas.LineHeight() + 20.) * 3.0), text2.BasicAtlas)
-	maps = text.New(pixel.V(20., float64(cfg.WindowHeight) - (text2.BasicAtlas.LineHeight() + 20.) * 4.0), text2.BasicAtlas)
-	phase = text.New(pixel.V(20., float64(cfg.WindowHeight) - (text2.BasicAtlas.LineHeight() + 20.) * 5.0), text2.BasicAtlas)
-	health = text.New(pixel.V(20., float64(cfg.WindowHeight) - (text2.BasicAtlas.LineHeight() + 20.) * 6.0), text2.BasicAtlas)
-	cards = text.New(pixel.V(20., float64(cfg.WindowHeight) - (text2.BasicAtlas.LineHeight() + 20.) * 7.0), text2.BasicAtlas)
+	fps = text.New(pixel.ZV, text2.BasicAtlas)
+	mouse = text.New(pixel.ZV, text2.BasicAtlas)
+	worlds = text.New(pixel.ZV, text2.BasicAtlas)
+	maps = text.New(pixel.ZV, text2.BasicAtlas)
+	phase = text.New(pixel.ZV, text2.BasicAtlas)
+	health = text.New(pixel.ZV, text2.BasicAtlas)
+	hand = text.New(pixel.ZV, text2.BasicAtlas)
+	handL = 0
+	playing = text.New(pixel.ZV, text2.BasicAtlas)
+	discard = text.New(pixel.ZV, text2.BasicAtlas)
+	discL = 0
 }
 
 // Update clears the text containers and updates them with the correct information.
@@ -77,27 +85,52 @@ func Update(win *pixelgl.Window) {
 			dispHP = true
 		}
 	}
-	cards.Clear()
-	fmt.Fprintf(cards, "Player 1 Cards: (Hovered: %d)\n", player.Player1.Hand.Hovered)
+	hand.Clear()
+	fmt.Fprintf(hand, "Player 1 Hand: (Hovered: %d)\n", player.Player1.Hand.Hovered)
 	for i, card := range player.Player1.Hand.Group {
 		hovered := card.PointInside(wrldPtr)
-		fmt.Fprintf(cards, "   %s (%d): Hovered: %t\n", card.RawTitle, i, hovered)
+		fmt.Fprintf(hand, "   %s (%d): Hovered: %t\n", card.RawTitle, i, hovered)
 	}
+	handL = len(player.Player1.Hand.Group) + 1
+	playing.Clear()
+	playcard := "none"
+	if player.Player1.PlayCard.Card != nil {
+		playcard = player.Player1.PlayCard.Card.RawTitle
+	}
+	fmt.Fprintf(playing, "Player 1 Playing: %s", playcard)
+	discard.Clear()
+	fmt.Fprintf(discard, "Player 1 Discard: (Hovered: %t)\n", player.Player1.Discard.Hover)
+	for i := len(player.Player1.Discard.Group)-1; i >= 0; i-- {
+		card := player.Player1.Discard.Group[i]
+		fmt.Fprintf(discard, "   %s (%d)\n", card.RawTitle, i)
+	}
+	discL = len(player.Player1.Discard.Group)
 }
 
 // Draw draws each text container to the canvas.
 // This is where scaling happens.
 func Draw(win *pixelgl.Window) {
 	canvas.Clear(pixel.RGBA{R: 0, G: 0, B: 0, A: 0})
-	fps.Draw(canvas, pixel.IM.Scaled(fps.Orig, 2.))
-	mouse.Draw(canvas, pixel.IM.Scaled(mouse.Orig, 2.))
-	worlds.Draw(canvas, pixel.IM.Scaled(worlds.Orig, 2.))
-	maps.Draw(canvas, pixel.IM.Scaled(maps.Orig, 2.))
-	phase.Draw(canvas, pixel.IM.Scaled(phase.Orig, 2.))
+	height := float64(cfg.WindowHeight) - text2.BasicAtlas.LineHeight() - 20.
+	fps.Draw(canvas, pixel.IM.Scaled(fps.Orig, 2.).Moved(pixel.V(20., height)))
+	height -= text2.BasicAtlas.LineHeight() + 20.
+	mouse.Draw(canvas, pixel.IM.Scaled(mouse.Orig, 2.).Moved(pixel.V(20., height)))
+	height -= text2.BasicAtlas.LineHeight() + 20.
+	worlds.Draw(canvas, pixel.IM.Scaled(worlds.Orig, 2.).Moved(pixel.V(20., height)))
+	height -= text2.BasicAtlas.LineHeight() + 20.
+	maps.Draw(canvas, pixel.IM.Scaled(maps.Orig, 2.).Moved(pixel.V(20., height)))
+	height -= text2.BasicAtlas.LineHeight() + 20.
+	phase.Draw(canvas, pixel.IM.Scaled(phase.Orig, 2.).Moved(pixel.V(20., height)))
+	height -= text2.BasicAtlas.LineHeight() + 20.
 	if dispHP {
-		health.Draw(canvas, pixel.IM.Scaled(health.Orig, 2.))
+		health.Draw(canvas, pixel.IM.Scaled(health.Orig, 2.).Moved(pixel.V(20., height)))
 	}
-	cards.Draw(canvas, pixel.IM.Scaled(cards.Orig, 2.))
+	height -= text2.BasicAtlas.LineHeight() + 20.
+	hand.Draw(canvas, pixel.IM.Scaled(hand.Orig, 2.).Moved(pixel.V(20., height)))
+	height -= text2.BasicAtlas.LineHeight() * float64(handL * 2) + 20.
+	playing.Draw(canvas, pixel.IM.Scaled(playing.Orig, 2.).Moved(pixel.V(20., height)))
+	height -= text2.BasicAtlas.LineHeight() + 20.
+	discard.Draw(canvas, pixel.IM.Scaled(hand.Orig, 2.).Moved(pixel.V(20., height)))
 
 	canvas.Draw(win, pixel.IM.Scaled(pixel.ZV, 1/camera.Cam.Zoom).Moved(pixel.V(camera.Cam.Pos.X, camera.Cam.Pos.Y)))
 }

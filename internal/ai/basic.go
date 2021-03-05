@@ -58,7 +58,7 @@ func RandomWalkerDecision(character *characters.Character, previous []int) ([]*A
 			PathCheck:   movCheck,
 			TargetArea:  nil,
 			TargetCheck: floor.PathChecks{},
-			Values:      actions.ActionValues{
+			Values:      selectors.ActionValues{
 				Move: 1,
 			},
 		},
@@ -67,7 +67,7 @@ func RandomWalkerDecision(character *characters.Character, previous []int) ([]*A
 			PathCheck:   floor.PathChecks{},
 			TargetArea:  &selectors.TargetArea{SetArea: selectors.SingleTile},
 			TargetCheck: atkCheck,
-			Values:      actions.ActionValues{
+			Values:      selectors.ActionValues{
 				Damage: 1,
 			},
 		},
@@ -115,7 +115,7 @@ func FlyChaserDecision(character *characters.Character, previous []int) ([]*AIAc
 								 PathCheck:   movCheck,
 								 TargetArea:  nil,
 								 TargetCheck: floor.PathChecks{},
-								 Values: actions.ActionValues{
+								 Values: selectors.ActionValues{
 									 Move: len(tPath),
 								 },
 							 },
@@ -128,7 +128,7 @@ func FlyChaserDecision(character *characters.Character, previous []int) ([]*AIAc
 							PathCheck:   movCheck,
 							TargetArea:  nil,
 							TargetCheck: floor.PathChecks{},
-							Values: actions.ActionValues{
+							Values: selectors.ActionValues{
 								Move: d,
 							},
 						},
@@ -137,7 +137,7 @@ func FlyChaserDecision(character *characters.Character, previous []int) ([]*AIAc
 							PathCheck:   floor.NoCheck,
 							TargetArea:  &selectors.TargetArea{SetArea: selectors.SingleTile},
 							TargetCheck: atkCheck,
-							Values:      actions.ActionValues{
+							Values:      selectors.ActionValues{
 								Damage: 1,
 							},
 						},
@@ -159,7 +159,7 @@ func FlyChaserDecision(character *characters.Character, previous []int) ([]*AIAc
 							PathCheck:   movCheck,
 							TargetArea:  nil,
 							TargetCheck: floor.PathChecks{},
-							Values: actions.ActionValues{
+							Values: selectors.ActionValues{
 								Move: d,
 							},
 						},

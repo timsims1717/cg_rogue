@@ -1,7 +1,6 @@
 package player
 
 import (
-	"github.com/timsims1717/cg_rogue_go/internal/actions"
 	"github.com/timsims1717/cg_rogue_go/internal/selectors"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"reflect"
@@ -9,13 +8,13 @@ import (
 
 type PlayerAction struct {
 	Selector selectors.Selector
-	Action   func([]world.Coords, actions.ActionValues)
-	Values   actions.ActionValues
+	Action   func([]world.Coords, selectors.ActionValues)
+	Values   selectors.ActionValues
 	Complete bool
 	Cancel   bool
 }
 
-func NewPlayerAction(sel selectors.Selector, values actions.ActionValues, act func([]world.Coords, actions.ActionValues)) *PlayerAction {
+func NewPlayerAction(sel selectors.Selector, values selectors.ActionValues, act func([]world.Coords, selectors.ActionValues)) *PlayerAction {
 	if sel == nil {
 		return nil
 	}

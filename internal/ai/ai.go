@@ -1,7 +1,6 @@
 package ai
 
 import (
-	"github.com/timsims1717/cg_rogue_go/internal/actions"
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/selectors"
@@ -24,12 +23,12 @@ type AIAction struct {
 	PathCheck   floor.PathChecks
 	TargetArea  *selectors.TargetArea
 	TargetCheck floor.PathChecks
-	Values      actions.ActionValues
+	Values      selectors.ActionValues
 }
 
 type TempAIAction struct {
 	Area   []world.Coords
-	Values actions.ActionValues
+	Values selectors.ActionValues
 }
 
 func NewAI(makeDecision func(*characters.Character, []int) ([]*AIAction, int), act func([]*TempAIAction), character *characters.Character) *AI {

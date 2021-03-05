@@ -100,8 +100,8 @@ func HandLocation(i, hovered int) pixel.Vec {
 	} else {
 		offset = 20.0
 	}
-	x := offset + CardStart + (float64(i) * BaseCardWidth * HandCardScale * 0.85)
-	y := BaseCardHeight * 0.25 * HandCardScale
+	x := offset + HandLeftPad + (float64(i) * BaseCardWidth * HandCardScale * 0.85)
+	y := HandBottomPad
 	if hovered == i {
 		y *= 2.0
 	}

@@ -2,7 +2,6 @@ package actions
 
 import (
 	"github.com/phf/go-queue/queue"
-	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"reflect"
 )
 
@@ -13,14 +12,6 @@ var ActionManager *actionManager
 type actionManager struct {
 	qu     queue.Queue
 	act    Action
-}
-
-type ActionValues struct {
-	Source  *characters.Character
-	Damage  int
-	Move    int
-	Range   int
-	Targets int
 }
 
 // An Action can be updated and checked for completion.

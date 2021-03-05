@@ -19,6 +19,7 @@ type Player struct {
 	Input       *input.Input
 	Hand        *Hand
 	PlayCard    *PlayCard
+	Discard     *Discard
 	CardsPlayed int
 	IsTurn      bool
 }
@@ -43,9 +44,10 @@ func (p *Player) EndTurn() {
 func (p *Player) Update(win *pixelgl.Window) {
 	p.Hand.Update(p.IsTurn)
 	p.PlayCard.Update(p.IsTurn)
+	p.Discard.Update(p.IsTurn)
 	if p.IsTurn {
 		if win.JustPressed(pixelgl.KeyA) {
-			values := actions.ActionValues{
+			values := selectors.ActionValues{
 				Source:  p.Character,
 				Damage:  5,
 				Move:    0,
@@ -56,7 +58,7 @@ func (p *Player) Update(win *pixelgl.Window) {
 			p.SetPlayerAction(NewPlayerAction(sel, values, BasicAttack))
 		}
 		if win.JustPressed(pixelgl.KeyM) {
-			values := actions.ActionValues{
+			values := selectors.ActionValues{
 				Source:  p.Character,
 				Damage:  0,
 				Move:    5,
@@ -67,6 +69,11 @@ func (p *Player) Update(win *pixelgl.Window) {
 			sel.Unoccupied = true
 			sel.Nonempty = true
 			p.SetPlayerAction(NewPlayerAction(sel, values, BasicMove))
+		}
+		if win.JustPressed(pixelgl.KeyR) {
+			values := selectors.ActionValues{}
+			sel := selectors.NewNullSelect()
+			p.SetPlayerAction(NewPlayerAction(sel, values, p.Rest))
 		}
 		if p.CurrAction != nil {
 			p.CurrAction.Update()
@@ -88,11 +95,11 @@ func (p *Player) CardPlayed() {
 	p.CardsPlayed += 1
 }
 
-func BasicMove(path []world.Coords, values actions.ActionValues) {
+func BasicMove(path []world.Coords, values selectors.ActionValues) {
 	actions.AddToBot(actions.NewMoveSeriesAction(values.Source, values.Source, path))
 }
 
-func BasicAttack(targets []world.Coords, values actions.ActionValues) {
+func BasicAttack(targets []world.Coords, values selectors.ActionValues) {
 	if len(targets) > 0 {
 		occ := floor.CurrentFloor.GetOccupant(targets[0])
 		if occ != nil {
@@ -101,4 +108,8 @@ func BasicAttack(targets []world.Coords, values actions.ActionValues) {
 			}
 		}
 	}
+}
+
+func (p *Player) Rest(_ []world.Coords, _ selectors.ActionValues) {
+	actions.AddToBot(NewRestAction(p))
 }

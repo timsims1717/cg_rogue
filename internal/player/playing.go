@@ -33,7 +33,12 @@ func (p *PlayCard) Update(turn bool) {
 			}
 		}
 		if !turn || !p.Card.isPlay {
-			CardManager.Move(p, p.player.Hand, 0)
+			if p.Card.played {
+				p.Card.played = false
+				CardManager.Move(p, p.player.Discard, 0)
+			} else {
+				CardManager.Move(p, p.player.Hand, 0)
+			}
 		}
 	}
 }

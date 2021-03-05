@@ -1,7 +1,7 @@
 package selectors
 
 import (
-	"github.com/timsims1717/cg_rogue_go/internal/actions"
+	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/input"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
@@ -10,11 +10,19 @@ import (
 // A Selector can be updated, checked for completion, cancelled, and finished.
 type Selector interface {
 	Init(*input.Input)
-	SetValues(actions.ActionValues)
+	SetValues(ActionValues)
 	Update()
 	IsCancelled() bool
 	IsDone() bool
 	Finish() []world.Coords
+}
+
+type ActionValues struct {
+	Source  *characters.Character
+	Damage  int
+	Move    int
+	Range   int
+	Targets int
 }
 
 type TargetArea struct {

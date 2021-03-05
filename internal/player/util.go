@@ -8,15 +8,21 @@ const (
 	BaseCardHeight = 350
 
 	// Hand constants
-	HandWidth        = 0.7
 	HandCardScale    = 0.65
 	HandHovCardScale = 0.8
-	CardStart        = BaseCardWidth *0.5
+	HandLeftPad      = BaseCardWidth *0.5
+	HandBottomPad    = BaseCardHeight * 0.25 * HandCardScale
 
 	// PlayCard constants
 	PlayRightPad  = BaseCardWidth * 0.65
 	PlayCardScale = 1.0
 	PlayBottomPad = BaseCardHeight * 1.45
+
+	// Discard constants
+	DiscardRightPad  = BaseCardWidth * 0.4
+	DiscardBottomPad = BaseCardHeight * 0.25 * DiscardScale
+	DiscardScale     = 0.5
+	DiscardHovScale  = 0.7
 )
 
 func MakeKey(args... string) string {
