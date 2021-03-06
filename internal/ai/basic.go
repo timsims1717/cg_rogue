@@ -65,7 +65,7 @@ func RandomWalkerDecision(character *characters.Character, previous []int) ([]*A
 		{
 			Path:        atk,
 			PathCheck:   floor.PathChecks{},
-			TargetArea:  &selectors.TargetArea{SetArea: selectors.SingleTile},
+			TargetArea:  []world.Coords{world.Origin},
 			TargetCheck: atkCheck,
 			Values:      selectors.ActionValues{
 				Damage: 1,
@@ -85,7 +85,19 @@ func RandomWalkerAct(acts []*TempAIAction) {
 	}
 }
 
+// If the player is further than 6 tiles, 50% chance to move 1-2 tiles
+// Otherwise, chases the player:
+//   If w/in 3, move 2 and attack
+//   Otherwise move 2
+// After 3 attacks, must rest
 func FlyChaserDecision(character *characters.Character, previous []int) ([]*AIAction, int) {
+	prev := 0
+	if len(previous) > 0 {
+		prev = previous[len(previous)-1]
+	}
+	if prev == 3 {
+		return []*AIAction{}, 0
+	}
 	orig := character.Coords
 	movCheck := floor.PathChecks{
 		NotFilled:     true,
@@ -119,7 +131,7 @@ func FlyChaserDecision(character *characters.Character, previous []int) ([]*AIAc
 									 Move: len(tPath),
 								 },
 							 },
-						 }, 0
+						 }, prev
 					 }
 				} else {
 					return []*AIAction{
@@ -135,13 +147,13 @@ func FlyChaserDecision(character *characters.Character, previous []int) ([]*AIAc
 						{
 							Path:        []world.Coords{path[len(path)-1], choice},
 							PathCheck:   floor.NoCheck,
-							TargetArea:  &selectors.TargetArea{SetArea: selectors.SingleTile},
+							TargetArea:  []world.Coords{world.Origin},
 							TargetCheck: atkCheck,
 							Values:      selectors.ActionValues{
 								Damage: 1,
 							},
 						},
-					}, 0
+					}, prev + 1
 				}
 			}
 		}
@@ -163,13 +175,12 @@ func FlyChaserDecision(character *characters.Character, previous []int) ([]*AIAc
 								Move: d,
 							},
 						},
-					}, 0
+					}, prev
 				}
 			}
 		}
 	}
-
-	return []*AIAction{}, 0
+	return []*AIAction{}, prev
 }
 
 func FlyChaserAct(acts []*TempAIAction) {

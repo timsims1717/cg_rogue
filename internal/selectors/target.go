@@ -37,7 +37,7 @@ func (s *TargetSelect) Update() {
 	if !s.isDone {
 		x := s.input.Coords.X
 		y := s.input.Coords.Y
-		inRange := world.DistanceHex(s.origin, s.input.Coords) <= s.MaxRange
+		inRange := world.DistanceSimpleHex(s.origin, s.input.Coords) <= s.MaxRange
 		occ := floor.CurrentFloor.GetOccupant(s.input.Coords)
 		if occ != nil {
 			if _, ok := occ.(objects.Targetable); ok {

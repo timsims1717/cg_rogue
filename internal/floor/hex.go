@@ -54,5 +54,5 @@ func (h *Hex) PathNeighborCost(to astar.Pather) float64 {
 
 func (h *Hex) PathEstimatedCost(to astar.Pather) float64 {
 	toH := to.(*Hex)
-	return world.DistanceWorldHex(h.X, h.Y, toH.X, toH.Y)
+	return world.DistanceHex(h.GetCoords(), toH.GetCoords())
 }

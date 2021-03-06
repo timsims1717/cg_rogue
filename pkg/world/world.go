@@ -1,6 +1,7 @@
 package world
 
 import (
+	"github.com/faiface/pixel"
 	"github.com/timsims1717/cg_rogue_go/pkg/util"
 	"math"
 )
@@ -207,7 +208,7 @@ func WorldToMapHex(x, y float64) (int, int) {
 	return int(mapXf), int(mapYf)
 }
 
-func DistanceHex(a, b Coords) int {
+func DistanceSimpleHex(a, b Coords) int {
 	dist := 0
 	x, y := a.X, a.Y
 	for x != b.X {
@@ -226,21 +227,63 @@ func DistanceHex(a, b Coords) int {
 	return dist + util.Abs(y - b.Y)
 }
 
-func DistanceWorldHex(ax, ay, bx, by int) float64 {
-	axf, ayf := MapToWorldHex(ax, ay)
-	bxf, byf := MapToWorldHex(bx, by)
+func DistanceHex(a, b Coords) float64 {
+	axf, ayf := MapToWorldHex(a.X, a.Y)
+	bxf, byf := MapToWorldHex(b.X, b.Y)
 	x := axf - bxf
 	y := ayf - byf
-	return x * x + y * y
+	return math.Sqrt(x * x + y * y)
 }
 
-func OrderByDist(orig Coords, ul []Coords) []Coords {
+func DistanceWorld(a, b pixel.Vec) float64 {
+	x := a.X - b.X
+	y := a.Y - b.Y
+	return math.Sqrt(x * x + y * y)
+}
+
+func OrderByDistSimple(orig Coords, ul []Coords) []Coords {
 	ol := make([]Coords, 0)
 	for len(ul) > 0 {
 		near := 10000
 		index := 0
 		for i, c := range ul {
+			dist := DistanceSimpleHex(orig, c)
+			if dist < near {
+				index = i
+				near = dist
+			}
+		}
+		ol = append(ol, ul[index])
+		ul = append(ul[:index], ul[index+1:]...)
+	}
+	return ol
+}
+
+func OrderByDist(orig Coords, ul []Coords) []Coords {
+	ol := make([]Coords, 0)
+	for len(ul) > 0 {
+		near := 10000.0
+		index := 0
+		for i, c := range ul {
 			dist := DistanceHex(orig, c)
+			if dist < near {
+				index = i
+				near = dist
+			}
+		}
+		ol = append(ol, ul[index])
+		ul = append(ul[:index], ul[index+1:]...)
+	}
+	return ol
+}
+
+func OrderByDistWorld(orig pixel.Vec, ul []Coords) []Coords {
+	ol := make([]Coords, 0)
+	for len(ul) > 0 {
+		near := 10000.0
+		index := 0
+		for i, c := range ul {
+			dist := DistanceWorld(orig, pixel.V(MapToWorldHex(c.X, c.Y)))
 			if dist < near {
 				index = i
 				near = dist

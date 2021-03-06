@@ -1,11 +1,14 @@
 package ai
 
+import "github.com/timsims1717/cg_rogue_go/internal/actions"
+
 var AIManager aiManager
 
 type aiManager struct {
-	set      []*AI
-	takeTurn bool
-	decide   bool
+	set       []*AI
+	takeTurn  bool
+	turnIndex int
+	decide    bool
 }
 
 func (m *aiManager) StartAITurn() {
@@ -21,15 +24,23 @@ func (m *aiManager) AddAI(ai *AI) {
 }
 
 func Update() {
-	for _, ai := range AIManager.set {
+	if AIManager.takeTurn && !actions.IsActing() {
+		AIManager.turnIndex += 1
+	}
+	if AIManager.takeTurn && !actions.IsActing() && AIManager.turnIndex == len(AIManager.set) {
+		AIManager.takeTurn = false
+		AIManager.turnIndex = -1
+	}
+	for i, ai := range AIManager.set {
 		if AIManager.decide {
 			ai.Decide()
 		}
 		ai.Update()
 		if AIManager.takeTurn {
-			ai.TakeTurn()
+			if AIManager.turnIndex == i && !actions.IsActing() {
+				ai.TakeTurn()
+			}
 		}
 	}
-	AIManager.takeTurn = false
 	AIManager.decide = false
 }

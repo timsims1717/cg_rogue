@@ -29,6 +29,17 @@ func (f *Floor) isLegal(a world.Coords) *Hex {
 	return nil
 }
 
+// IsSetLegal filters out the world.Coords that are not legal according to the PathChecks
+func (f *Floor) IsSetLegal(set []world.Coords, checks PathChecks) []world.Coords {
+	legal := []world.Coords{}
+	for _, c := range set {
+		if f.IsLegal(c, checks) != nil {
+			legal = append(legal, c)
+		}
+	}
+	return legal
+}
+
 func (f *Floor) Line(orig, ref world.Coords, dist int, check PathChecks) []world.Coords {
 	dist += 1
 	path := make([]world.Coords, 0)

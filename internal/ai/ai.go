@@ -21,7 +21,7 @@ type AI struct {
 type AIAction struct {
 	Path        []world.Coords
 	PathCheck   floor.PathChecks
-	TargetArea  *selectors.TargetArea
+	TargetArea  []world.Coords
 	TargetCheck floor.PathChecks
 	Values      selectors.ActionValues
 }
@@ -52,6 +52,7 @@ func (ai *AI) Decide() {
 
 func (ai *AI) TakeTurn() {
 	if ai.Character.Alive {
+		ai.Update()
 		ai.Act(ai.TempActions)
 	}
 }
@@ -75,7 +76,7 @@ func (ai *AI) Update() {
 				tCheck := act.TargetCheck
 				target := tPath[len(tPath)-1]
 				tCheck.Orig = target
-				tArea = act.TargetArea.SetArea(0, 0, target, tCheck)
+				tArea =  floor.CurrentFloor.IsSetLegal(tCheck.Orig.PathFrom(act.TargetArea), tCheck)
 			}
 			// update the temp actions with the results of the check
 			ai.TempActions[i] = &TempAIAction{
