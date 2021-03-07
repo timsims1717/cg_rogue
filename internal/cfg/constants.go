@@ -7,7 +7,7 @@ const (
 
 	// Tile Constants
 	TileSize       = 32.0
-	Scalar         = 4.0
+	Scalar         = 2.0
 	ScaledTileSize = TileSize * Scalar
 )
 

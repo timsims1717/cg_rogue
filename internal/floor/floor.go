@@ -14,10 +14,11 @@ import (
 var CurrentFloor Floor
 
 type Floor struct{
-	floor  [][]Hex
-	batch  *pixel.Batch
-	update bool
-	checks PathChecks
+	floor    [][]Hex
+	batch    *pixel.Batch
+	update   bool
+	checks   PathChecks
+	PathLine pixel.Line
 }
 
 type PathChecks struct {
@@ -68,12 +69,12 @@ func (f *Floor) Draw(win *pixelgl.Window) {
 		for y := h - 1; y >= 0; y-- {
 			for x := 1; x < w; x += 2 {
 				hex := f.Get(world.Coords{x,y})
-				mat := pixel.IM.Scaled(pixel.ZV, cfg.Scalar).Moved(pixel.V(world.MapToWorldHex(hex.X, hex.Y))).Moved(pixel.V(-4.0, 0.0))
+				mat := pixel.IM.Scaled(pixel.ZV, cfg.Scalar).Moved(pixel.V(world.MapToWorld(hex.X, hex.Y))).Moved(pixel.V(-4.0, 0.0))
 				hex.Tile.Draw(f.batch, mat)
 			}
 			for x := 0; x < w; x += 2 {
 				hex := f.Get(world.Coords{x,y})
-				mat := pixel.IM.Scaled(pixel.ZV, cfg.Scalar).Moved(pixel.V(world.MapToWorldHex(hex.X, hex.Y))).Moved(pixel.V(-4.0, 0.0))
+				mat := pixel.IM.Scaled(pixel.ZV, cfg.Scalar).Moved(pixel.V(world.MapToWorld(hex.X, hex.Y))).Moved(pixel.V(-4.0, 0.0))
 				hex.Tile.Draw(f.batch, mat)
 			}
 		}

@@ -79,6 +79,7 @@ func run() {
 	player.Player1.Hand.AddCard(cards.CreateQuickStrike())
 	player.Player1.Hand.AddCard(cards.CreateVault())
 	player.Player1.Hand.AddCard(cards.CreateSweep())
+	player.Player1.Hand.AddCard(cards.CreateDaggerThrow())
 	player.Player1.PlayCard = player.NewPlayCard(player.Player1)
 	player.Player1.Discard = player.NewDiscard(player.Player1)
 
@@ -91,7 +92,7 @@ func run() {
 	for !win.Closed() {
 		timing.Update()
 
-		debug.Update(win)
+		debug.Update()
 		game.Update()
 		player.Player1.Input.Update(win)
 		camera.Cam.Update(win)

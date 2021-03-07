@@ -2,6 +2,7 @@ package selectors
 
 import (
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
+	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/input"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
@@ -22,4 +23,5 @@ type ActionValues struct {
 	Range    int
 	Targets  int
 	Strength int
+	Checks   floor.PathChecks
 }

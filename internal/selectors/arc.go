@@ -13,6 +13,7 @@ type ArcSelect struct {
 	count      int
 	maxRange   int
 	origin     world.Coords
+	pathChecks floor.PathChecks
 	isDone     bool
 	isAtk      bool
 }
@@ -32,20 +33,13 @@ func (s *ArcSelect) SetValues(values ActionValues) {
 	s.maxRange = values.Range
 	s.count = values.Targets
 	s.isAtk = values.Damage > 0
+	s.pathChecks = values.Checks
 }
 
 func (s *ArcSelect) Update() {
 	if !s.isDone {
-		//x := s.input.Coords.X
-		//y := s.input.Coords.Y
-		checks := floor.PathChecks{
-			NotFilled:  true,
-			Unoccupied: false,
-			NonEmpty:   false,
-			Orig:       s.origin,
-		}
 		var neighbors []world.Coords
-		dist := world.DistanceSimpleHex(s.input.Coords, s.origin)
+		dist := world.DistanceSimple(s.input.Coords, s.origin)
 		if dist < 2 || dist % 2 == 0 {
 			neighbors = world.OrderByDistWorld(s.input.World, s.origin.Neighbors(floor.CurrentFloor.Dimensions()))
 		} else {
@@ -54,8 +48,8 @@ func (s *ArcSelect) Update() {
 		var closest []world.Coords
 		for i, n := range neighbors {
 			if i < s.count {
-				hex := floor.CurrentFloor.IsLegal(n, checks)
-				legal := hex != nil && world.DistanceSimpleHex(s.origin, n) <= s.maxRange
+				hex := floor.CurrentFloor.IsLegal(n, s.pathChecks)
+				legal := hex != nil && world.DistanceSimple(s.origin, n) <= s.maxRange
 				if legal {
 					closest = append(closest, n)
 				}

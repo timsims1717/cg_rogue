@@ -30,9 +30,9 @@ func (c *characters) Draw(win *pixelgl.Window) {
 
 type Character struct {
 	Coords world.Coords
-	Mat pixel.Matrix
-	Pos pixel.Vec
-	Spr *pixel.Sprite
+	Mat    pixel.Matrix
+	Pos    pixel.Vec
+	Spr    *pixel.Sprite
 
 	CurrHP  int
 	MaxHP   int
@@ -52,7 +52,7 @@ func NewCharacter(sprite *pixel.Sprite, coords world.Coords, diplomacy Diplomacy
 	c := &Character{
 		Coords:  coords,
 		Mat:     pixel.Matrix{},
-		Pos:     pixel.V(world.MapToWorldHex(coords.X,coords.Y)),
+		Pos:     pixel.V(world.MapToWorld(coords.X,coords.Y)),
 		Spr:     sprite,
 		CurrHP:  maxHP,
 		MaxHP:   maxHP,

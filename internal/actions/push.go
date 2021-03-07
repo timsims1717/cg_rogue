@@ -121,7 +121,7 @@ func (a *PushMultiAction) Update() {
 					a.interY = append(a.interY, nil)
 				} else {
 					end := nPath[len(nPath)-1]
-					bx, by := world.MapToWorldHex(end.X, end.Y)
+					bx, by := world.MapToWorld(end.X, end.Y)
 					a.ends = append(a.ends, end)
 					x, y := target.GetXY()
 					a.interX = append(a.interX, gween.New(x, bx, 0.25, ease.OutCubic))

@@ -38,7 +38,7 @@ func (m *characterManager) updateSet() {
 func (m *characterManager) GetDiplomatic(d Diplomacy, orig world.Coords, r int) []world.Coords {
 	set := []world.Coords{}
 	for _, ch := range m.set {
-		if ch.Diplomacy == d && world.DistanceSimpleHex(orig, ch.Coords) <= r {
+		if ch.Diplomacy == d && world.DistanceSimple(orig, ch.Coords) <= r {
 			set = append(set, ch.Coords)
 		}
 	}

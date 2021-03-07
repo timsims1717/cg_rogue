@@ -2,6 +2,7 @@ package floor
 
 import (
 	"github.com/beefsack/go-astar"
+	"github.com/faiface/pixel"
 	"github.com/phf/go-queue/queue"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
@@ -40,10 +41,12 @@ func (f *Floor) IsSetLegal(set []world.Coords, checks PathChecks) []world.Coords
 	return legal
 }
 
-func (f *Floor) Line(orig, ref world.Coords, dist int, check PathChecks) []world.Coords {
+// Line returns a straight path from orig through ref out to dist tiles.
+// The path returned can be reduced by using LongestLegalPath.
+func (f *Floor) Line(orig, ref world.Coords, dist int) []world.Coords {
 	dist += 1
 	path := make([]world.Coords, 0)
-	path, d, found := f.FindPathWithinOne(orig, ref, NoCheck)
+	path, d, found := f.FindPath(orig, ref, NoCheck)
 	if !found || len(path) < 2 {
 		return []world.Coords{}
 	}
@@ -52,11 +55,10 @@ func (f *Floor) Line(orig, ref world.Coords, dist int, check PathChecks) []world
 		path = append(path[:len(path)-1], nPath...)
 		d += len(nPath)
 	}
-	nPath := f.LongestLegalPath(path, check)
-	if len(nPath) > dist {
-		return nPath[:dist]
+	if len(path) > dist {
+		return path[:dist]
 	}
-	return nPath
+	return path
 }
 
 // AllWithin returns all legal coordinates within d tiles from o that can be reached
@@ -130,28 +132,31 @@ func (f *Floor) AllWithinNoPath(o world.Coords, d int, check PathChecks) []world
 // returns (0,0), (0,1)
 func (f *Floor) LongestLegalPath(path []world.Coords, check PathChecks) []world.Coords {
 	f.checks = check
+	defer f.SetDefaultChecks()
 	lastLegal := 0
 	for i, c := range path {
 		if h := f.isLegal(c); h == nil {
-			f.checks = DefaultCheck
 			return path[:lastLegal+1]
 		}
 		if !check.EndUnoccupied || !f.HasOccupant(c) {
 			lastLegal = i
 		}
 	}
-	f.checks = DefaultCheck
+	if lastLegal + 1 >= len(path) {
+		return path
+	}
 	return path[:lastLegal+1]
 }
 
-// FindPathWithinOne runs astar from a to b, returning a world.Coords array
+// FindPathWithinOne runs astar from a to one within b, returning a world.Coords array
 func (f *Floor) FindPathWithinOne(a, b world.Coords, check PathChecks) ([]world.Coords, int, bool) {
 	f.checks = check
 	defer f.SetDefaultChecks()
 	for _, n := range world.OrderByDist(a, b.Neighbors(f.Dimensions())) {
-		if check.EndUnoccupied && f.HasOccupant(n) {
-			continue
+		if  !f.Exists(a) || !f.Exists(n) || (check.EndUnoccupied && f.HasOccupant(n)) {
+			return nil, 0, false
 		}
+		f.SetLine(a, b)
 		pathA, distance, found := astar.Path(f.Get(n), f.Get(a))
 		if !found {
 			continue
@@ -172,14 +177,15 @@ func (f *Floor) FindPathWithinOne(a, b world.Coords, check PathChecks) ([]world.
 	return nil, 0, false
 }
 
-// FindPathWithinOneHex runs astar from a to b returning a Hex array
+// FindPathWithinOneHex runs astar from a to one within b returning a Hex array
 func (f *Floor) FindPathWithinOneHex(a, b world.Coords, check PathChecks) ([]*Hex, int, bool) {
 	f.checks = check
 	defer f.SetDefaultChecks()
 	for _, n := range world.OrderByDist(a, b.Neighbors(f.Dimensions())) {
-		if check.EndUnoccupied && f.HasOccupant(n) {
-			continue
+		if  !f.Exists(a) || !f.Exists(n) || (check.EndUnoccupied && f.HasOccupant(n)) {
+			return nil, 0, false
 		}
+		f.SetLine(a, b)
 		pathA, distance, found := astar.Path(f.Get(n), f.Get(a))
 		if !found {
 			continue
@@ -195,11 +201,12 @@ func (f *Floor) FindPathWithinOneHex(a, b world.Coords, check PathChecks) ([]*He
 
 // FindPath runs astar from a to b, returning a world.Coords array
 func (f *Floor) FindPath(a, b world.Coords, check PathChecks) ([]world.Coords, int, bool) {
-	if check.EndUnoccupied && f.HasOccupant(b) {
+	if  !f.Exists(a) || !f.Exists(b) || (check.EndUnoccupied && f.HasOccupant(b)) {
 		return nil, 0, false
 	}
 	f.checks = check
 	defer f.SetDefaultChecks()
+	f.SetLine(a, b)
 	pathA, distance, found := astar.Path(f.Get(b), f.Get(a))
 	var path []*Hex
 	for _, h := range pathA {
@@ -217,11 +224,12 @@ func (f *Floor) FindPath(a, b world.Coords, check PathChecks) ([]world.Coords, i
 
 // FindPathHex runs astar from a to b returning a Hex array
 func (f *Floor) FindPathHex(a, b world.Coords, check PathChecks) ([]*Hex, int, bool) {
-	if check.EndUnoccupied && f.HasOccupant(b) {
+	if  !f.Exists(a) || !f.Exists(b) || (check.EndUnoccupied && f.HasOccupant(b)) {
 		return nil, 0, false
 	}
 	f.checks = check
 	defer f.SetDefaultChecks()
+	f.SetLine(a, b)
 	pathA, distance, found := astar.Path(f.Get(b), f.Get(a))
 	var path []*Hex
 	for _, h := range pathA {
@@ -244,3 +252,8 @@ func (f *Floor) Neighbors(hex *Hex) []*Hex {
 	return neighbors
 }
 
+func (f *Floor) SetLine(a, b world.Coords) {
+	ax, ay := world.MapToWorld(a.X, a.Y)
+	bx, by := world.MapToWorld(b.X, b.Y)
+	f.PathLine = pixel.L(pixel.V(ax, ay), pixel.V(bx, by))
+}

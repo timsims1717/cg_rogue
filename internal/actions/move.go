@@ -24,7 +24,7 @@ func NewMoveAction(source *characters.Character, target objects.Moveable, end wo
 	if end.Equals(target.GetCoords()) {
 		return nil
 	}
-	bx, by := world.MapToWorldHex(end.X, end.Y)
+	bx, by := world.MapToWorld(end.X, end.Y)
 	px, py := target.GetXY()
 	return &MoveAction{
 		source: source,
@@ -68,7 +68,7 @@ func NewMoveSeriesAction(source *characters.Character, target objects.Moveable, 
 		return nil
 	} else {
 		first := series[0]
-		bx, by := world.MapToWorldHex(first.X, first.Y)
+		bx, by := world.MapToWorld(first.X, first.Y)
 		px, py := target.GetXY()
 
 		return &MoveSeriesAction{
@@ -95,7 +95,7 @@ func (m *MoveSeriesAction) Update() {
 			floor.CurrentFloor.MoveOccupant(m.target, m.start, next)
 		} else {
 			next := m.series[m.step + 1]
-			bx, by := world.MapToWorldHex(next.X, next.Y)
+			bx, by := world.MapToWorld(next.X, next.Y)
 			if m.step >= len(m.series) - 2 {
 				m.interX = gween.New(x, bx, 0.25, ease.OutQuad)
 				m.interY = gween.New(y, by, 0.25, ease.OutQuad)

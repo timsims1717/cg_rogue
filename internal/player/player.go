@@ -64,10 +64,15 @@ func (p *Player) Update(win *pixelgl.Window) {
 				Move:    5,
 				Range:   0,
 				Targets: 0,
+				Checks: floor.PathChecks{
+					NotFilled:     true,
+					Unoccupied:    true,
+					NonEmpty:      true,
+					EndUnoccupied: true,
+					Orig:          world.Coords{},
+				},
 			}
 			sel := selectors.NewPathSelect()
-			sel.Unoccupied = true
-			sel.Nonempty = true
 			p.SetPlayerAction(NewPlayerAction(sel, values, BasicMove))
 		}
 		if win.JustPressed(pixelgl.KeyR) {

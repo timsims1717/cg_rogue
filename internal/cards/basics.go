@@ -56,8 +56,6 @@ func CreateDash() *player.Card {
 		actions.AddToBot(actions.NewMoveSeriesAction(values.Source, values.Source, path))
 	}
 	sel := selectors.NewPathSelect()
-	sel.Unoccupied = true
-	sel.Nonempty = true
 	act := player.NewPlayerAction(sel, values, fn)
 	sec := player.NewCardSection("Move 4.", act)
 	return player.NewCard("Dash", []*player.CardSection{sec})
@@ -66,6 +64,13 @@ func CreateDash() *player.Card {
 func DashLevel(level int) selectors.ActionValues {
 	values := selectors.ActionValues{
 		Move: 4 + level,
+		Checks: floor.PathChecks{
+			NotFilled:     true,
+			Unoccupied:    true,
+			NonEmpty:      true,
+			EndUnoccupied: true,
+			Orig:          world.Coords{},
+		},
 	}
 	return values
 }
@@ -86,8 +91,6 @@ func CreateQuickStrike() *player.Card {
 		}
 	}
 	selMov := selectors.NewPathSelect()
-	selMov.Unoccupied = true
-	selMov.Nonempty = true
 	actMov := player.NewPlayerAction(selMov, valMov, fnMov)
 	actAtk := player.NewPlayerAction(selectors.NewTargetSelect(), valAtk, fnAtk)
 	secMov := player.NewCardSection("Move 1.", actMov)
@@ -98,6 +101,13 @@ func CreateQuickStrike() *player.Card {
 func QuickStrikeLevel(level int) (selectors.ActionValues, selectors.ActionValues) {
 	valMov := selectors.ActionValues{
 		Move:    1,
+		Checks: floor.PathChecks{
+			NotFilled:     true,
+			Unoccupied:    true,
+			NonEmpty:      true,
+			EndUnoccupied: true,
+			Orig:          world.Coords{},
+		},
 	}
 	valAtk := selectors.ActionValues{
 		Damage:  3,
@@ -140,6 +150,13 @@ func SweepLevel(level int) selectors.ActionValues {
 		Range:    1,
 		Strength: 1,
 		Targets:  3,
+		Checks: floor.PathChecks{
+			NotFilled:     true,
+			Unoccupied:    false,
+			NonEmpty:      false,
+			EndUnoccupied: false,
+			Orig:          world.Coords{},
+		},
 	}
 	return values
 }
@@ -176,4 +193,31 @@ func VaultLevel(level int) (selectors.ActionValues, selectors.ActionValues) {
 		Targets: 1 + level / 2,
 	}
 	return valMov, valAtk
+}
+
+func CreateDaggerThrow() *player.Card {
+	values := DaggerThrowLevel(0)
+	fn := func (targets []world.Coords, values selectors.ActionValues) {
+		actions.AddToBot(actions.NewDamageHexAction(values.Source, targets, values.Damage))
+	}
+	sel := selectors.NewLineSelect()
+	act := player.NewPlayerAction(sel, values, fn)
+	sec := player.NewCardSection("Deal 2 damage within 3.", act)
+	return player.NewCard("Dagger Throw", []*player.CardSection{sec})
+}
+
+func DaggerThrowLevel(level int) selectors.ActionValues {
+	values := selectors.ActionValues{
+		Damage:  2 + (level + 1) / 2,
+		Range:   3 + (level) / 2,
+		Targets: 1,
+		Checks: floor.PathChecks{
+			NotFilled:     true,
+			Unoccupied:    false,
+			NonEmpty:      false,
+			EndUnoccupied: false,
+			Orig:          world.Coords{},
+		},
+	}
+	return values
 }

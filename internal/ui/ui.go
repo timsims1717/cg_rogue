@@ -53,7 +53,7 @@ func (s *selectionSet) Draw(win *pixelgl.Window) {
 	s.batch.Clear()
 	for _, sel := range s.set {
 		if sel.t != Blank {
-			mat := pixel.IM.Scaled(pixel.ZV, cfg.Scalar).Moved(pixel.V(world.MapToWorldHex(sel.x, sel.y)))
+			mat := pixel.IM.Scaled(pixel.ZV, cfg.Scalar).Moved(pixel.V(world.MapToWorld(sel.x, sel.y)))
 			s.sprites[sel.t].Draw(s.batch, mat)
 		}
 	}

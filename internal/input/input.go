@@ -20,7 +20,7 @@ type Input struct {
 func (i *Input) Update(win *pixelgl.Window) {
 	i.Cursor = win.MousePosition()
 	i.World = camera.Cam.Mat.Unproject(win.MousePosition())
-	i.Coords.X, i.Coords.Y = world.WorldToMapHex(i.World.X, i.World.Y)
+	i.Coords.X, i.Coords.Y = world.WorldToMap(i.World.X, i.World.Y)
 	i.Select.Set(win, pixelgl.MouseButtonLeft)
 	i.Cancel.Set(win, pixelgl.MouseButtonRight)
 
