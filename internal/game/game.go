@@ -7,61 +7,66 @@ import (
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
 )
 
-type state struct {
-	Phase    Phase
-	Start    bool
-}
-
 type Phase int
 
 func (p Phase) String() string {
 	switch p {
+	case PlayerStartTurn:
+		return "Player Start Turn"
 	case PlayerTurn:
 		return "Player Turn"
-	case EnemyTurn:
-		return "Enemy Turn"
+	case EnemyStartTurn:
+		return "Enemy Start Turn"
+	case EnemyEndTurn:
+		return "Enemy End Turn"
 	}
 	return "Undefined"
 }
 
 const (
-	PlayerTurn = iota
-	EnemyTurn
+	PlayerStartTurn = iota
+	PlayerTurn
+	EnemyStartTurn
+	EnemyEndTurn
+	GameOver
 )
 
 var StateMachine stateMachine
 
 type stateMachine struct {
-	State state
+	State Phase
 }
 
 func Initialize() {
-	StateMachine.State.Start = false
-	StateMachine.State.Phase = EnemyTurn
+	StateMachine.State = EnemyStartTurn
 }
 
 func Update() {
-	switch StateMachine.State.Phase {
+	if player.Player1.Character.IsDestroyed() {
+		player.Player1.EndTurn()
+		StateMachine.State = GameOver
+	}
+	switch StateMachine.State {
+	case PlayerStartTurn:
+		// todo: effects?
+		player.Player1.StartTurn()
+		camera.Cam.MoveTo(player.Player1.Character.Pos, 0.2, true)
+		StateMachine.State = PlayerTurn
 	case PlayerTurn:
-		if StateMachine.State.Start {
-			// todo: effects?
-			player.Player1.StartTurn()
-			camera.Cam.MoveTo(player.Player1.Character.Pos, 0.2, true)
-			StateMachine.State.Start = false
-		} else if player.Player1.ActionsThisTurn > 0 && player.Player1.PlayCard.Card == nil && !actions.IsActing() {
+		if player.Player1.ActionsThisTurn > 0 && player.Player1.PlayCard.Card == nil && !actions.IsActing() {
 			player.Player1.EndTurn()
-			StateMachine.State.Phase = EnemyTurn
-			StateMachine.State.Start = true
+			StateMachine.State = EnemyStartTurn
 		}
-	case EnemyTurn:
-		if StateMachine.State.Start {
-			// todo: effects?
-			StateMachine.State.Start = false
-			ai.AIManager.StartAITurn()
-		} else if !actions.IsActing() {
+	case EnemyStartTurn:
+		// todo: effects?
+		ai.AIManager.StartAITurn()
+		StateMachine.State = EnemyEndTurn
+	case EnemyEndTurn:
+		if !actions.IsActing() {
 			ai.AIManager.EndAITurn()
-			StateMachine.State.Phase = PlayerTurn
-			StateMachine.State.Start = true
+			StateMachine.State = PlayerStartTurn
 		}
+	case GameOver:
+
 	}
 }

@@ -6,27 +6,12 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/timsims1717/cg_rogue_go/internal/cfg"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
+	"github.com/timsims1717/cg_rogue_go/pkg/animation"
 	"github.com/timsims1717/cg_rogue_go/pkg/util"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
+	"golang.org/x/image/colornames"
+	"image/color"
 )
-
-var Characters characters
-
-type characters struct{
-	Set []*Character
-}
-
-func (c *characters) Update() {
-	for _, ch := range c.Set {
-		ch.Update()
-	}
-}
-
-func (c *characters) Draw(win *pixelgl.Window) {
-	for _, ch := range c.Set {
-		ch.Draw(win)
-	}
-}
 
 type Character struct {
 	Coords world.Coords
@@ -43,6 +28,9 @@ type Character struct {
 
 	id    uuid.UUID
 	index int
+
+	mask   color.RGBA
+	effect *animation.ColorEffect
 }
 
 func NewCharacter(sprite *pixel.Sprite, coords world.Coords, diplomacy Diplomacy, maxHP int) *Character {
@@ -60,21 +48,24 @@ func NewCharacter(sprite *pixel.Sprite, coords world.Coords, diplomacy Diplomacy
 		Alive:   true,
 		Diplomacy: diplomacy,
 		id:      uuid.NewV4(),
+		mask:    colornames.White,
 	}
 	floor.CurrentFloor.PutOccupant(c, coords)
 	return c
 }
 
 func (c *Character) Update() {
-	if !c.IsDestroyed() {
-		c.Mat = pixel.IM.Scaled(pixel.ZV, cfg.Scalar).Moved(c.Pos).Moved(cfg.OffsetVector)
+	c.Mat = pixel.IM.Scaled(pixel.ZV, cfg.Scalar).Moved(c.Pos).Moved(cfg.OffsetVector)
+	if c.effect != nil {
+		c.effect.Update()
+		if c.effect.IsDone() {
+			c.effect = nil
+		}
 	}
 }
 
 func (c *Character) Draw(win *pixelgl.Window) {
-	if !c.IsDestroyed() {
-		c.Spr.Draw(win, c.Mat)
-	}
+	c.Spr.DrawColorMask(win, c.Mat, c.mask)
 }
 
 func (c *Character) Damage(dmg int) {
@@ -86,9 +77,14 @@ func (c *Character) Damage(dmg int) {
 		c.LastDmg = util.Min(thisDmg, c.CurrHP)
 		c.CurrHP -= c.LastDmg
 		if c.CurrHP < 1 {
+			col := colornames.Black
+			col.A = 0
+			c.effect = animation.FadeOut(c, 0.5)
 			c.Alive = false
 			c.CurrHP = 0
 			floor.CurrentFloor.RemoveOccupant(c.Coords)
+		} else {
+			c.effect = animation.FadeFrom(c, colornames.Red, 0.5)
 		}
 	}
 }
@@ -116,4 +112,12 @@ func (c *Character) GetCoords() world.Coords {
 
 func (c *Character) SetCoords(a world.Coords) {
 	c.Coords = a
+}
+
+func (c *Character) GetColor() color.RGBA {
+	return c.mask
+}
+
+func (c *Character) SetColor(mask color.RGBA) {
+	c.mask = mask
 }

@@ -75,7 +75,7 @@ func UpdateText() {
 	fmt.Fprintf(worlds, "World (X,Y): (%d,%d)", int(wrldPtr.X), int(wrldPtr.Y))
 	fmt.Fprintf(maps, "Map (X,Y): (%d,%d)", mapX, mapY)
 	phase.Clear()
-	fmt.Fprintf(phase, "Phase: %s", game.StateMachine.State.Phase.String())
+	fmt.Fprintf(phase, "Phase: %s", game.StateMachine.State.String())
 	dispHP = false
 	health.Clear()
 	occ := floor.CurrentFloor.GetOccupant(world.Coords{mapX, mapY})
