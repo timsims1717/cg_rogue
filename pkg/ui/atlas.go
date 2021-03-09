@@ -1,4 +1,4 @@
-package text
+package ui
 
 import (
 	"github.com/faiface/pixel/text"

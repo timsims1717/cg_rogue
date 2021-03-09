@@ -12,6 +12,7 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/game"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
+	"github.com/timsims1717/cg_rogue_go/internal/selectors"
 	"github.com/timsims1717/cg_rogue_go/internal/ui"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
@@ -25,11 +26,10 @@ import (
 func run() {
 	rand.Seed(time.Now().UnixNano())
 	world.ScaledTileSize = cfg.ScaledTileSize
-	cfg.WindowWidth = 1600
-	cfg.WindowHeight = 900
+	cfg.SetWindowSize(1600, 900)
 	config := pixelgl.WindowConfig{
 		Title:  cfg.Title,
-		Bounds: pixel.R(0, 0, float64(cfg.WindowWidth), float64(cfg.WindowHeight)),
+		Bounds: pixel.R(0, 0, cfg.WindowWidthF, cfg.WindowHeightF),
 		//VSync: true,
 	}
 	win, err := pixelgl.NewWindow(config)
@@ -39,6 +39,7 @@ func run() {
 
 	debug.Initialize()
 	game.Initialize()
+	ui.Initialize()
 
 	treesheet, err := img.LoadSpriteSheet("assets/character/trees.json")
 	if err != nil {
@@ -56,7 +57,7 @@ func run() {
 	if err != nil {
 		panic(err)
 	}
-	ui.SelectionSet.SetSpriteSheet(uisheet)
+	selectors.SelectionSet.SetSpriteSheet(uisheet)
 
 	camera.Cam = camera.New()
 
@@ -96,6 +97,7 @@ func run() {
 		game.Update()
 		player.Player1.Input.Update(win)
 		camera.Cam.Update(win)
+		ui.Update()
 
 		player.CardManager.Update()
 		actions.Update()
@@ -108,13 +110,14 @@ func run() {
 
 		floor.CurrentFloor.Draw(win)
 		characters.Draw(win)
-		ui.SelectionSet.Draw(win)
+		selectors.SelectionSet.Draw(win)
 		win.SetSmooth(true)
 		player.Player1.Hand.Draw(win)
 		player.Player1.PlayCard.Draw(win)
 		player.Player1.Discard.Draw(win)
-		debug.Draw(win)
 		win.SetSmooth(false)
+		ui.Draw(win)
+		debug.Draw(win)
 		win.Update()
 	}
 }

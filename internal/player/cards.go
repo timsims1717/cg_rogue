@@ -10,7 +10,7 @@ import (
 	gween "github.com/timsims1717/cg_rogue_go/pkg/gween64"
 	"github.com/timsims1717/cg_rogue_go/pkg/gween64/ease"
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
-	text2 "github.com/timsims1717/cg_rogue_go/pkg/text"
+	text2 "github.com/timsims1717/cg_rogue_go/pkg/ui"
 	"github.com/timsims1717/cg_rogue_go/pkg/timing"
 	"golang.org/x/image/colornames"
 )
@@ -144,11 +144,7 @@ func (c *Card) Draw(win *pixelgl.Window) {
 		cs.Draw(c.canvas, i)
 	}
 	c.title.Draw(c.canvas, pixel.IM.Scaled(c.title.Orig, 2.0).Moved(pixel.V(BaseCardWidth* 0.5, BaseCardHeight- 32.0)))
-	zoom := 1/camera.Cam.Zoom
-	c.Mat = pixel.IM.Scaled(pixel.ZV, zoom * c.Scalar)
-	c.Mat = c.Mat.Moved(pixel.V(camera.Cam.Pos.X, camera.Cam.Pos.Y))
-	c.Mat = c.Mat.Moved(pixel.V(float64(cfg.WindowWidth), float64(cfg.WindowHeight)).Scaled(-0.5 * zoom))
-	c.Mat = c.Mat.Moved(c.Pos.Scaled(zoom))
+	c.Mat = camera.UITransform(camera.Cam, c.Pos, pixel.V(c.Scalar, c.Scalar), 0., cfg.WindowWidthF, cfg.WindowHeightF)
 	c.canvas.Draw(win, c.Mat)
 }
 

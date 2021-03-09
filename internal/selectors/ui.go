@@ -1,4 +1,4 @@
-package ui
+package selectors
 
 import (
 	"github.com/faiface/pixel"

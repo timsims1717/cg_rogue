@@ -22,12 +22,14 @@ type Player struct {
 	Discard         *Discard
 	ActionsThisTurn int
 	IsTurn          bool
+	IsPlaying       bool
 }
 
 func NewPlayer(character *characters.Character) *Player {
 	return &Player{
-		Character:        character,
-		Input:            &input.Input{},
+		Character: character,
+		Input:     &input.Input{},
+		IsPlaying: true,
 	}
 }
 
@@ -42,14 +44,14 @@ func (p *Player) EndTurn() {
 }
 
 func (p *Player) Update(win *pixelgl.Window) {
-	p.Hand.Update(p.IsTurn)
-	p.PlayCard.Update(p.IsTurn)
-	p.Discard.Update(p.IsTurn)
-	if p.IsTurn {
+	p.Hand.Update(p.IsTurn && p.IsPlaying)
+	p.PlayCard.Update(p.IsTurn && p.IsPlaying)
+	p.Discard.Update(p.IsTurn && p.IsPlaying)
+	if p.IsTurn && p.IsPlaying {
 		if win.JustPressed(pixelgl.KeyA) {
 			values := selectors.ActionValues{
 				Source:  p.Character,
-				Damage:  5,
+				Damage:  1,
 				Move:    0,
 				Range:   1,
 				Targets: 1,
@@ -61,7 +63,7 @@ func (p *Player) Update(win *pixelgl.Window) {
 			values := selectors.ActionValues{
 				Source:  p.Character,
 				Damage:  0,
-				Move:    5,
+				Move:    1,
 				Range:   0,
 				Targets: 0,
 				Checks: floor.PathChecks{

@@ -4,7 +4,6 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/selectors"
-	"github.com/timsims1717/cg_rogue_go/internal/ui"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
@@ -91,9 +90,9 @@ func (ai *AI) Update() {
 			if act.Area != nil && len(act.Area) > 0 {
 				for _, c := range act.Area {
 					if act.Values.Move > 0 {
-						ui.AddSelectUI(ui.Move, c.X, c.Y)
+						selectors.AddSelectUI(selectors.Move, c.X, c.Y)
 					} else {
-						ui.AddSelectUI(ui.Attack, c.X, c.Y)
+						selectors.AddSelectUI(selectors.Attack, c.X, c.Y)
 					}
 				}
 			}

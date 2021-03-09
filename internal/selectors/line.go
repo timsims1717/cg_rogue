@@ -4,7 +4,6 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/input"
 	"github.com/timsims1717/cg_rogue_go/internal/objects"
-	"github.com/timsims1717/cg_rogue_go/internal/ui"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
@@ -71,15 +70,15 @@ func (s *LineSelect) Update() {
 					sel := targets[i]
 					if sel.Equals(p) {
 						if s.isAtk {
-							ui.AddSelectUI(ui.Attack, sel.X, sel.Y)
+							AddSelectUI(Attack, sel.X, sel.Y)
 						} else {
-							ui.AddSelectUI(ui.Move, sel.X, sel.Y)
+							AddSelectUI(Move, sel.X, sel.Y)
 						}
 						i++
 						continue
 					}
 				}
-				ui.AddSelectUI(ui.Default, p.X, p.Y)
+				AddSelectUI(Default, p.X, p.Y)
 			}
 		}
 	}

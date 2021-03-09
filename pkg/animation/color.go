@@ -26,36 +26,36 @@ func (e *ColorEffect) Update() {
 	isDone := true
 	col := e.target.GetColor()
 	if e.interR != nil {
-		r, finR := e.interR.Update(timing.DT)
+		r, fin := e.interR.Update(timing.DT)
 		col.R = uint8(r)
-		if finR {
+		if fin {
 			e.interR = nil
 		} else {
 			isDone = false
 		}
 	}
 	if e.interG != nil {
-		g, finG := e.interG.Update(timing.DT)
+		g, fin := e.interG.Update(timing.DT)
 		col.G = uint8(g)
-		if finG {
+		if fin {
 			e.interG = nil
 		} else {
 			isDone = false
 		}
 	}
 	if e.interB != nil {
-		b, finB := e.interB.Update(timing.DT)
+		b, fin := e.interB.Update(timing.DT)
 		col.B = uint8(b)
-		if finB {
+		if fin {
 			e.interB = nil
 		} else {
 			isDone = false
 		}
 	}
 	if e.interA != nil {
-		a, finA := e.interA.Update(timing.DT)
+		a, fin := e.interA.Update(timing.DT)
 		col.A = uint8(a)
-		if finA {
+		if fin {
 			e.interA = nil
 		} else {
 			isDone = false
@@ -67,6 +67,20 @@ func (e *ColorEffect) Update() {
 
 func (e *ColorEffect) IsDone() bool {
 	return e.isDone
+}
+
+func FadeIn(target Colorable, dur float64) *ColorEffect {
+	start := colornames.Black
+	start.A = 0
+	end := target.GetColor()
+	return &ColorEffect{
+		target: target,
+		interR: gween.New(float64(start.R), float64(end.R), dur, ease.Linear),
+		interG: gween.New(float64(start.G), float64(end.G), dur, ease.Linear),
+		interB: gween.New(float64(start.B), float64(end.B), dur, ease.Linear),
+		interA: gween.New(float64(start.A), float64(end.A), dur, ease.Linear),
+		isDone: false,
+	}
 }
 
 func FadeOut(target Colorable, dur float64) *ColorEffect {
@@ -111,4 +125,22 @@ func FadeTo(target Colorable, col color.RGBA, dur float64) *ColorEffect {
 
 func Reset(target Colorable, dur float64) *ColorEffect {
 	return FadeTo(target, colornames.White, dur)
+}
+
+type ColorBuilder struct {
+	Target Colorable
+	InterR *gween.Tween
+	InterG *gween.Tween
+	InterB *gween.Tween
+	InterA *gween.Tween
+}
+
+func (b *ColorBuilder) Build() *ColorEffect {
+	return &ColorEffect{
+		target: b.Target,
+		interR: b.InterR,
+		interG: b.InterG,
+		interB: b.InterB,
+		interA: b.InterA,
+	}
 }

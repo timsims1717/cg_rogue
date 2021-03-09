@@ -22,7 +22,7 @@ func (p *PlayCard) Update(turn bool) {
 	if p.Card != nil {
 		if turn {
 			if p.update {
-				p.Card.setXY(pixel.V(float64(cfg.WindowWidth)-PlayRightPad, PlayBottomPad))
+				p.Card.setXY(pixel.V(cfg.WindowWidthF - PlayRightPad, PlayBottomPad))
 				p.Card.setScalar(PlayCardScale)
 				p.update = false
 			}

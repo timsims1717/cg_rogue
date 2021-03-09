@@ -32,10 +32,10 @@ func (d *Discard) Update(turn bool) {
 		for i, card := range d.Group {
 			if d.update {
 				if i == len(d.Group) - 1 && d.Hover {
-					card.setXY(pixel.V(float64(cfg.WindowWidth)-DiscardRightPad, DiscardBottomPad * 2.0))
+					card.setXY(pixel.V(cfg.WindowWidthF - DiscardRightPad, DiscardBottomPad * 2.0))
 					card.setScalar(DiscardHovScale)
 				} else {
-					card.setXY(pixel.V(float64(cfg.WindowWidth)-DiscardRightPad, DiscardBottomPad))
+					card.setXY(pixel.V(cfg.WindowWidthF - DiscardRightPad, DiscardBottomPad))
 					card.setScalar(DiscardScale)
 				}
 			}

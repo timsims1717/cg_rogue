@@ -4,7 +4,6 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/input"
 	"github.com/timsims1717/cg_rogue_go/internal/objects"
-	"github.com/timsims1717/cg_rogue_go/internal/ui"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
@@ -48,14 +47,14 @@ func (s *TargetSelect) Update() {
 					s.clicked = append(s.clicked, s.input.Coords)
 					s.isDone = true
 				} else {
-					ui.AddSelectUI(ui.Attack, x, y)
+					AddSelectUI(Attack, x, y)
 				}
 			}
 		} else {
 			if inRange {
-				ui.AddSelectUI(ui.Default, x, y)
+				AddSelectUI(Default, x, y)
 			} else {
-				ui.AddSelectUI(ui.Blank, x, y)
+				AddSelectUI(Blank, x, y)
 			}
 		}
 	}

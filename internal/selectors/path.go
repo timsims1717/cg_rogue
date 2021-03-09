@@ -3,7 +3,6 @@ package selectors
 import (
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/input"
-	"github.com/timsims1717/cg_rogue_go/internal/ui"
 	"github.com/timsims1717/cg_rogue_go/pkg/util"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
@@ -52,9 +51,9 @@ func (s *PathSelect) Update() {
 				}
 				for _, h := range path {
 					if h.X == x && h.Y == y {
-						ui.AddSelectUI(ui.MoveSolid, h.X, h.Y)
+						AddSelectUI(MoveSolid, h.X, h.Y)
 					} else {
-						ui.AddSelectUI(ui.Move, h.X, h.Y)
+						AddSelectUI(Move, h.X, h.Y)
 					}
 				}
 			}

@@ -12,7 +12,7 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/objects"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
-	text2 "github.com/timsims1717/cg_rogue_go/pkg/text"
+	"github.com/timsims1717/cg_rogue_go/pkg/ui"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"time"
 )
@@ -36,23 +36,25 @@ var (
 	playing *text.Text
 	discard *text.Text
 	discL   int
+	misc    *text.Text
 )
 
 // InitializeText creates the debug canvasText and all the text containers.
 // This is where the location of the text containers is set.
 func InitializeText() {
-	canvasText = pixelgl.NewCanvas(pixel.R(0, 0, float64(cfg.WindowWidth), float64(cfg.WindowHeight)))
-	fps = text.New(pixel.ZV, text2.BasicAtlas)
-	mouse = text.New(pixel.ZV, text2.BasicAtlas)
-	worlds = text.New(pixel.ZV, text2.BasicAtlas)
-	maps = text.New(pixel.ZV, text2.BasicAtlas)
-	phase = text.New(pixel.ZV, text2.BasicAtlas)
-	health = text.New(pixel.ZV, text2.BasicAtlas)
-	hand = text.New(pixel.ZV, text2.BasicAtlas)
+	canvasText = pixelgl.NewCanvas(pixel.R(0, 0, cfg.WindowWidthF, cfg.WindowHeightF))
+	fps = text.New(pixel.ZV, ui.BasicAtlas)
+	mouse = text.New(pixel.ZV, ui.BasicAtlas)
+	worlds = text.New(pixel.ZV, ui.BasicAtlas)
+	maps = text.New(pixel.ZV, ui.BasicAtlas)
+	phase = text.New(pixel.ZV, ui.BasicAtlas)
+	health = text.New(pixel.ZV, ui.BasicAtlas)
+	hand = text.New(pixel.ZV, ui.BasicAtlas)
 	handL = 0
-	playing = text.New(pixel.ZV, text2.BasicAtlas)
-	discard = text.New(pixel.ZV, text2.BasicAtlas)
+	playing = text.New(pixel.ZV, ui.BasicAtlas)
+	discard = text.New(pixel.ZV, ui.BasicAtlas)
 	discL = 0
+	misc = text.New(pixel.ZV, ui.BasicAtlas)
 }
 
 // UpdateText clears the text containers and updates them with the correct information.
@@ -104,33 +106,37 @@ func UpdateText() {
 		card := player.Player1.Discard.Group[i]
 		fmt.Fprintf(discard, "   %s (%d)\n", card.RawTitle, i)
 	}
-	discL = len(player.Player1.Discard.Group)
+	discL = len(player.Player1.Discard.Group) + 1
+	//misc.Clear()
+	//fmt.Fprintf(misc, "center text: (%s, %s)", ui2.CenterText.Pos.X, ui2.CenterText.Pos.Y)
 }
 
 // DrawText draws each text container to the canvasText.
 // This is where scaling happens.
 func DrawText(win *pixelgl.Window) {
 	canvasText.Clear(pixel.RGBA{R: 0, G: 0, B: 0, A: 0})
-	height := float64(cfg.WindowHeight) - text2.BasicAtlas.LineHeight() - 20.
-	fps.Draw(canvasText, pixel.IM.Scaled(fps.Orig, 2.).Moved(pixel.V(20., height)))
-	height -= text2.BasicAtlas.LineHeight() + 20.
-	mouse.Draw(canvasText, pixel.IM.Scaled(mouse.Orig, 2.).Moved(pixel.V(20., height)))
-	height -= text2.BasicAtlas.LineHeight() + 20.
-	worlds.Draw(canvasText, pixel.IM.Scaled(worlds.Orig, 2.).Moved(pixel.V(20., height)))
-	height -= text2.BasicAtlas.LineHeight() + 20.
-	maps.Draw(canvasText, pixel.IM.Scaled(maps.Orig, 2.).Moved(pixel.V(20., height)))
-	height -= text2.BasicAtlas.LineHeight() + 20.
-	phase.Draw(canvasText, pixel.IM.Scaled(phase.Orig, 2.).Moved(pixel.V(20., height)))
-	height -= text2.BasicAtlas.LineHeight() + 20.
+	height := cfg.WindowHeightF - ui.BasicAtlas.LineHeight() - 20.
+	fps.Draw(canvasText, pixel.IM.Scaled(pixel.ZV, 2.).Moved(pixel.V(20., height)))
+	height -= ui.BasicAtlas.LineHeight() + 20.
+	mouse.Draw(canvasText, pixel.IM.Scaled(pixel.ZV, 2.).Moved(pixel.V(20., height)))
+	height -= ui.BasicAtlas.LineHeight() + 20.
+	worlds.Draw(canvasText, pixel.IM.Scaled(pixel.ZV, 2.).Moved(pixel.V(20., height)))
+	height -= ui.BasicAtlas.LineHeight() + 20.
+	maps.Draw(canvasText, pixel.IM.Scaled(pixel.ZV, 2.).Moved(pixel.V(20., height)))
+	height -= ui.BasicAtlas.LineHeight() + 20.
+	phase.Draw(canvasText, pixel.IM.Scaled(pixel.ZV, 2.).Moved(pixel.V(20., height)))
+	height -= ui.BasicAtlas.LineHeight() + 20.
 	if dispHP {
-		health.Draw(canvasText, pixel.IM.Scaled(health.Orig, 2.).Moved(pixel.V(20., height)))
+		health.Draw(canvasText, pixel.IM.Scaled(pixel.ZV, 2.).Moved(pixel.V(20., height)))
 	}
-	height -= text2.BasicAtlas.LineHeight() + 20.
-	hand.Draw(canvasText, pixel.IM.Scaled(hand.Orig, 2.).Moved(pixel.V(20., height)))
-	height -= text2.BasicAtlas.LineHeight() * float64(handL * 2) + 20.
-	playing.Draw(canvasText, pixel.IM.Scaled(playing.Orig, 2.).Moved(pixel.V(20., height)))
-	height -= text2.BasicAtlas.LineHeight() + 20.
-	discard.Draw(canvasText, pixel.IM.Scaled(hand.Orig, 2.).Moved(pixel.V(20., height)))
+	height -= ui.BasicAtlas.LineHeight() + 20.
+	hand.Draw(canvasText, pixel.IM.Scaled(pixel.ZV, 2.).Moved(pixel.V(20., height)))
+	height -= ui.BasicAtlas.LineHeight() * float64(handL * 2) + 20.
+	playing.Draw(canvasText, pixel.IM.Scaled(pixel.ZV, 2.).Moved(pixel.V(20., height)))
+	height -= ui.BasicAtlas.LineHeight() + 20.
+	discard.Draw(canvasText, pixel.IM.Scaled(pixel.ZV, 2.).Moved(pixel.V(20., height)))
+	height -= ui.BasicAtlas.LineHeight() * float64(discL * 2) + 20.
+	//misc.Draw(canvasText, pixel.IM.Scaled(pixel.ZV, 2.).Moved(pixel.V(20., height)))
 
 	canvasText.Draw(win, pixel.IM.Scaled(pixel.ZV, 1/camera.Cam.Zoom).Moved(pixel.V(camera.Cam.Pos.X, camera.Cam.Pos.Y)))
 }

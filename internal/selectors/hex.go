@@ -3,7 +3,6 @@ package selectors
 import (
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/input"
-	"github.com/timsims1717/cg_rogue_go/internal/ui"
 	"github.com/timsims1717/cg_rogue_go/pkg/util"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
@@ -70,19 +69,19 @@ func (s *HexSelect) Update() {
 		}
 		for _, sel := range s.clicked {
 			if s.isAtk {
-				ui.AddSelectUI(ui.Attack, sel.X, sel.Y)
+				AddSelectUI(Attack, sel.X, sel.Y)
 			} else {
-				ui.AddSelectUI(ui.Move, sel.X, sel.Y)
+				AddSelectUI(Move, sel.X, sel.Y)
 			}
 		}
 		if legal {
 			if s.isAtk {
-				ui.AddSelectUI(ui.Attack, x, y)
+				AddSelectUI(Attack, x, y)
 			} else {
-				ui.AddSelectUI(ui.MoveSolid, x, y)
+				AddSelectUI(MoveSolid, x, y)
 			}
 		} else {
-			ui.AddSelectUI(ui.Blank, x, y)
+			AddSelectUI(Blank, x, y)
 		}
 	}
 	if s.input.Cancel.JustPressed() {
@@ -152,12 +151,12 @@ func (s *EmptyHexSelect) Update() {
 			}
 		}
 		for _, sel := range s.clicked {
-			ui.AddSelectUI(ui.Move, sel.X, sel.Y)
+			AddSelectUI(Move, sel.X, sel.Y)
 		}
 		if legal {
-			ui.AddSelectUI(ui.MoveSolid, x, y)
+			AddSelectUI(MoveSolid, x, y)
 		} else {
-			ui.AddSelectUI(ui.Blank, x, y)
+			AddSelectUI(Blank, x, y)
 		}
 	}
 	if s.input.Cancel.JustPressed() {
