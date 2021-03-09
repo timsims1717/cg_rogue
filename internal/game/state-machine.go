@@ -3,6 +3,8 @@ package game
 import (
 	"github.com/timsims1717/cg_rogue_go/internal/actions"
 	"github.com/timsims1717/cg_rogue_go/internal/ai"
+	"github.com/timsims1717/cg_rogue_go/internal/characters"
+	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
 	"github.com/timsims1717/cg_rogue_go/internal/ui"
 	"github.com/timsims1717/cg_rogue_go/pkg/animation"
@@ -26,6 +28,8 @@ func (p Phase) String() string {
 		return "Enemy End Turn"
 	case GameOver:
 		return "Game Over"
+	case EncounterComplete:
+		return "Encounter Complete"
 	}
 	return "Undefined"
 }
@@ -36,6 +40,7 @@ const (
 	EnemyStartTurn
 	EnemyEndTurn
 	GameOver
+	EncounterComplete
 )
 
 var StateMachine stateMachine
@@ -66,6 +71,35 @@ func Update() {
 		ui.CenterText.ColorEffect = animation.FadeIn(ui.CenterText, 2.0)
 		StateMachine.State = GameOver
 	}
+	if StateMachine.State != EncounterComplete && StateMachine.State != GameOver {
+		allDead := true
+		for _, c := range characters.CharacterManager.GetDiplomatic(characters.Enemy, player.Player1.Character.GetCoords(), 50) {
+			if occ := floor.CurrentFloor.GetOccupant(c); occ != nil {
+				if cha, ok := occ.(*characters.Character); ok {
+					if !cha.IsDestroyed() {
+						allDead = false
+					}
+				}
+			}
+		}
+		if allDead {
+			player.Player1.EndTurn()
+			ui.CenterText.Raw = "Success!"
+			ui.CenterText.Show = true
+			ui.CenterText.TextColor = colornames.Black
+			transform := animation.TransformBuilder{
+				Target:  ui.CenterText,
+				InterX:  nil,
+				InterY:  nil,
+				InterR:  nil,
+				InterSX: gween.New(ui.CenterText.Scalar.X, 7.0, 2.0, ease.Linear),
+				InterSY: gween.New(ui.CenterText.Scalar.Y, 7.0, 2.0, ease.Linear),
+			}
+			ui.CenterText.TransformEffect = transform.Build()
+			ui.CenterText.ColorEffect = animation.FadeIn(ui.CenterText, 2.0)
+			StateMachine.State = EncounterComplete
+		}
+	}
 	switch StateMachine.State {
 	case PlayerStartTurn:
 		// todo: effects?
@@ -86,7 +120,5 @@ func Update() {
 			ai.AIManager.EndAITurn()
 			StateMachine.State = PlayerStartTurn
 		}
-	case GameOver:
-
 	}
 }
