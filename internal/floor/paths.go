@@ -152,9 +152,12 @@ func (f *Floor) LongestLegalPath(path []world.Coords, check PathChecks) []world.
 func (f *Floor) FindPathWithinOne(a, b world.Coords, check PathChecks) ([]world.Coords, int, bool) {
 	f.checks = check
 	defer f.SetDefaultChecks()
+	if !f.Exists(a) {
+		return nil, 0, false
+	}
 	for _, n := range world.OrderByDist(a, b.Neighbors(f.Dimensions())) {
-		if  !f.Exists(a) || !f.Exists(n) || (check.EndUnoccupied && f.HasOccupant(n)) {
-			return nil, 0, false
+		if  !f.Exists(n) || (check.EndUnoccupied && f.HasOccupant(n)) {
+			continue
 		}
 		f.SetLine(a, b)
 		pathA, distance, found := astar.Path(f.Get(n), f.Get(a))
@@ -253,7 +256,5 @@ func (f *Floor) Neighbors(hex *Hex) []*Hex {
 }
 
 func (f *Floor) SetLine(a, b world.Coords) {
-	ax, ay := world.MapToWorld(a.X, a.Y)
-	bx, by := world.MapToWorld(b.X, b.Y)
-	f.PathLine = pixel.L(pixel.V(ax, ay), pixel.V(bx, by))
+	f.PathLine = pixel.L(world.MapToWorld(a), world.MapToWorld(b))
 }

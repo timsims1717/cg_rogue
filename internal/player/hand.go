@@ -21,51 +21,48 @@ func NewHand(player *Player) *Hand {
 }
 
 func (h *Hand) Update(turn bool) {
-	if h.isHovered() {
-		if !h.Group[h.Hovered].PointInside(h.player.Input.World) {
-			h.Hovered = -1
-			h.update = true
-		}
-	}
-	if !h.isHovered() {
-		for i := len(h.Group) - 1; i >= 0; i-- {
-			card := h.Group[i]
-			if card.PointInside(h.player.Input.World) && !card.trans {
-				h.Hovered = i
+	if h.player != nil {
+		if h.isHovered() {
+			if !h.Group[h.Hovered].PointInside(h.player.Input.World) {
+				h.Hovered = -1
 				h.update = true
-				break
 			}
 		}
-	}
-	for i, card := range h.Group {
+		if !h.isHovered() {
+			for i := len(h.Group) - 1; i >= 0; i-- {
+				card := h.Group[i]
+				if card.PointInside(h.player.Input.World) && !card.trans {
+					h.Hovered = i
+					h.update = true
+					break
+				}
+			}
+		}
+		for i, card := range h.Group {
+			if h.update {
+				card.setXY(HandLocation(i, h.Hovered))
+				if h.Hovered == i {
+					card.setScalar(HandHovCardScale)
+				} else {
+					card.setScalar(HandCardScale)
+				}
+			}
+			card.Update()
+		}
+		if h.isHovered() && h.player.Input.Select.JustPressed() && turn {
+			h.player.Input.Select.Consume()
+			CardManager.Move(h.player.PlayCard, h, h.Hovered)
+			CardManager.Move(h, h.player.PlayCard, h.Hovered)
+		}
 		if h.update {
-			card.setXY(HandLocation(i, h.Hovered))
-			if h.Hovered == i {
-				card.setScalar(HandHovCardScale)
-			} else {
-				card.setScalar(HandCardScale)
-			}
+			h.update = false
 		}
-		card.Update()
-	}
-	if h.isHovered() && h.player.Input.Select.JustPressed() && turn {
-		h.player.Input.Select.Consume()
-		CardManager.Move(h.player.PlayCard, h, h.Hovered)
-		CardManager.Move(h, h.player.PlayCard, h.Hovered)
-	}
-	if h.update {
-		h.update = false
 	}
 }
 
 func (h *Hand) Draw(win *pixelgl.Window) {
-	for i, card := range h.Group {
-		if i != h.Hovered {
-			card.Draw(win)
-		}
-	}
-	if h.isHovered() {
-		h.Group[h.Hovered].Draw(win)
+	for _, card := range h.Group {
+		card.Draw(win)
 	}
 }
 
@@ -96,9 +93,9 @@ func HandLocation(i, hovered int) pixel.Vec {
 	if hovered == -1 || hovered == i {
 		offset = 0.0
 	} else if hovered > i {
-		offset = -20.0
+		offset = -40.0
 	} else {
-		offset = 20.0
+		offset = 40.0
 	}
 	x := offset + HandLeftPad + (float64(i) * BaseCardWidth * HandCardScale * 0.85)
 	y := HandBottomPad

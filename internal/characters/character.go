@@ -40,7 +40,7 @@ func NewCharacter(sprite *pixel.Sprite, coords world.Coords, diplomacy Diplomacy
 	c := &Character{
 		Coords:  coords,
 		Mat:     pixel.Matrix{},
-		Pos:     pixel.V(world.MapToWorld(coords.X,coords.Y)),
+		Pos:     world.MapToWorld(coords),
 		Spr:     sprite,
 		CurrHP:  maxHP,
 		MaxHP:   maxHP,

@@ -8,6 +8,7 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/input"
 	"github.com/timsims1717/cg_rogue_go/internal/objects"
 	"github.com/timsims1717/cg_rogue_go/internal/selectors"
+	"github.com/timsims1717/cg_rogue_go/internal/state"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
@@ -23,6 +24,10 @@ type Player struct {
 	ActionsThisTurn int
 	IsTurn          bool
 	IsPlaying       bool
+}
+
+func init() {
+	Player1 = NewPlayer(nil)
 }
 
 func NewPlayer(character *characters.Character) *Player {
@@ -44,55 +49,66 @@ func (p *Player) EndTurn() {
 }
 
 func (p *Player) Update(win *pixelgl.Window) {
-	p.Hand.Update(p.IsTurn && p.IsPlaying)
-	p.PlayCard.Update(p.IsTurn && p.IsPlaying)
-	p.Discard.Update(p.IsTurn && p.IsPlaying)
-	if p.IsTurn && p.IsPlaying {
-		if win.JustPressed(pixelgl.KeyA) {
-			values := selectors.ActionValues{
-				Source:  p.Character,
-				Damage:  1,
-				Move:    0,
-				Range:   1,
-				Targets: 1,
-			}
-			sel := selectors.NewTargetSelect()
-			p.SetPlayerAction(NewPlayerAction(sel, values, BasicAttack))
+	if state.Machine.State == state.InGame {
+		if p.Hand != nil {
+			p.Hand.Update(p.IsTurn && p.IsPlaying)
 		}
-		if win.JustPressed(pixelgl.KeyM) {
-			values := selectors.ActionValues{
-				Source:  p.Character,
-				Damage:  0,
-				Move:    1,
-				Range:   0,
-				Targets: 0,
-				Checks: floor.PathChecks{
-					NotFilled:     true,
-					Unoccupied:    true,
-					NonEmpty:      true,
-					EndUnoccupied: true,
-					Orig:          world.Coords{},
-				},
-			}
-			sel := selectors.NewPathSelect()
-			p.SetPlayerAction(NewPlayerAction(sel, values, BasicMove))
+		if p.PlayCard != nil {
+			p.PlayCard.Update(p.IsTurn && p.IsPlaying)
 		}
-		if win.JustPressed(pixelgl.KeyR) {
-			values := selectors.ActionValues{}
-			sel := selectors.NewNullSelect()
-			p.SetPlayerAction(NewPlayerAction(sel, values, p.Rest))
+		if p.Discard != nil {
+			p.Discard.Update(p.IsTurn && p.IsPlaying)
 		}
-		if p.CurrAction != nil && p.PlayCard.Card == nil && p.Input.Cancel.JustPressed() {
-			p.Input.Cancel.Consume()
-			p.CurrAction = nil
-		}
-		if p.CurrAction != nil {
-			p.CurrAction.Update()
-			if p.CurrAction.Complete {
-				if p.CurrAction.Complete {
-					p.ActionsThisTurn += 1
+		if p.IsTurn && p.IsPlaying {
+			if win.JustPressed(pixelgl.KeyA) {
+				values := selectors.ActionValues{
+					Source:  p.Character,
+					Damage:  1,
+					Move:    0,
+					Range:   1,
+					Targets: 1,
 				}
+				sel := selectors.NewTargetSelect()
+				p.PlayCard.CancelCard()
+				p.SetPlayerAction(NewPlayerAction(sel, values, BasicAttack))
+			}
+			if win.JustPressed(pixelgl.KeyM) {
+				values := selectors.ActionValues{
+					Source:  p.Character,
+					Damage:  0,
+					Move:    1,
+					Range:   0,
+					Targets: 0,
+					Checks: floor.PathChecks{
+						NotFilled:     true,
+						Unoccupied:    true,
+						NonEmpty:      true,
+						EndUnoccupied: true,
+						Orig:          world.Coords{},
+					},
+				}
+				sel := selectors.NewPathSelect()
+				p.PlayCard.CancelCard()
+				p.SetPlayerAction(NewPlayerAction(sel, values, BasicMove))
+			}
+			if win.JustPressed(pixelgl.KeyR) {
+				values := selectors.ActionValues{}
+				sel := selectors.NewNullSelect()
+				p.PlayCard.CancelCard()
+				p.SetPlayerAction(NewPlayerAction(sel, values, p.Rest))
+			}
+			if p.CurrAction != nil && p.PlayCard.Card == nil && p.Input.Cancel.JustPressed() {
+				p.Input.Cancel.Consume()
 				p.CurrAction = nil
+			}
+			if p.CurrAction != nil {
+				p.CurrAction.Update()
+				if p.CurrAction.Complete {
+					if p.CurrAction.Complete {
+						p.ActionsThisTurn += 1
+					}
+					p.CurrAction = nil
+				}
 			}
 		}
 	}

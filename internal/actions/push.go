@@ -121,11 +121,11 @@ func (a *PushMultiAction) Update() {
 					a.interY = append(a.interY, nil)
 				} else {
 					end := nPath[len(nPath)-1]
-					bx, by := world.MapToWorld(end.X, end.Y)
+					b := world.MapToWorld(end)
 					a.ends = append(a.ends, end)
 					x, y := target.GetXY()
-					a.interX = append(a.interX, gween.New(x, bx, 0.25, ease.OutCubic))
-					a.interY = append(a.interY, gween.New(y, by, 0.25, ease.OutCubic))
+					a.interX = append(a.interX, gween.New(x, b.X, 0.25, ease.OutCubic))
+					a.interY = append(a.interY, gween.New(y, b.Y, 0.25, ease.OutCubic))
 				}
 			}
 		}

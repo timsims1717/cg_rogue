@@ -10,8 +10,9 @@ import (
 	gween "github.com/timsims1717/cg_rogue_go/pkg/gween64"
 	"github.com/timsims1717/cg_rogue_go/pkg/gween64/ease"
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
-	text2 "github.com/timsims1717/cg_rogue_go/pkg/ui"
+	text2 "github.com/timsims1717/cg_rogue_go/pkg/typeface"
 	"github.com/timsims1717/cg_rogue_go/pkg/timing"
+	"github.com/timsims1717/cg_rogue_go/pkg/util"
 	"golang.org/x/image/colornames"
 )
 
@@ -68,10 +69,7 @@ func NewCard(title string, sections []*CardSection) *Card {
 }
 
 func (c *Card) PointInside(point pixel.Vec) bool {
-	if c.canvas.Bounds().Moved(pixel.V(-(BaseCardWidth / 2.0), -(BaseCardHeight / 2.0))).Contains(c.Mat.Unproject(point)) {
-		return true
-	}
-	return false
+	return util.PointInside(point, c.canvas.Bounds(), c.Mat)
 }
 
 func (c *Card) Update() {

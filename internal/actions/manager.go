@@ -10,8 +10,8 @@ var ActionManager *actionManager
 
 // actionManager stores the action queue and the current Action
 type actionManager struct {
-	qu     queue.Queue
-	act    Action
+	qu  queue.Queue
+	act Action
 }
 
 // An Action can be updated and checked for completion.

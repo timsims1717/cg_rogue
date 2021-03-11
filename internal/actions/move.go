@@ -24,7 +24,7 @@ func NewMoveAction(source *characters.Character, target objects.Moveable, end wo
 	if end.Equals(target.GetCoords()) {
 		return nil
 	}
-	bx, by := world.MapToWorld(end.X, end.Y)
+	b := world.MapToWorld(end)
 	px, py := target.GetXY()
 	return &MoveAction{
 		source: source,
@@ -32,8 +32,8 @@ func NewMoveAction(source *characters.Character, target objects.Moveable, end wo
 		end:    end,
 		start:  target.GetCoords(),
 		isDone: false,
-		interX: gween.New(px, bx, 0.25, ease.InOutQuad),
-		interY: gween.New(py, by, 0.25, ease.InOutQuad),
+		interX: gween.New(px, b.X, 0.25, ease.InOutQuad),
+		interY: gween.New(py, b.Y, 0.25, ease.InOutQuad),
 	}
 }
 
@@ -68,7 +68,7 @@ func NewMoveSeriesAction(source *characters.Character, target objects.Moveable, 
 		return nil
 	} else {
 		first := series[0]
-		bx, by := world.MapToWorld(first.X, first.Y)
+		b := world.MapToWorld(first)
 		px, py := target.GetXY()
 
 		return &MoveSeriesAction{
@@ -77,8 +77,8 @@ func NewMoveSeriesAction(source *characters.Character, target objects.Moveable, 
 			step:   0,
 			start:  target.GetCoords(),
 			isDone: false,
-			interX: gween.New(px, bx, 0.25, ease.InQuad),
-			interY: gween.New(py, by, 0.25, ease.InQuad),
+			interX: gween.New(px, b.X, 0.25, ease.InQuad),
+			interY: gween.New(py, b.Y, 0.25, ease.InQuad),
 		}
 	}
 }
@@ -95,13 +95,13 @@ func (m *MoveSeriesAction) Update() {
 			floor.CurrentFloor.MoveOccupant(m.target, m.start, next)
 		} else {
 			next := m.series[m.step + 1]
-			bx, by := world.MapToWorld(next.X, next.Y)
+			b := world.MapToWorld(next)
 			if m.step >= len(m.series) - 2 {
-				m.interX = gween.New(x, bx, 0.25, ease.OutQuad)
-				m.interY = gween.New(y, by, 0.25, ease.OutQuad)
+				m.interX = gween.New(x, b.X, 0.25, ease.OutQuad)
+				m.interY = gween.New(y, b.Y, 0.25, ease.OutQuad)
 			} else {
-				m.interX = gween.New(x, bx, 0.15, ease.Linear)
-				m.interY = gween.New(y, by, 0.15, ease.Linear)
+				m.interX = gween.New(x, b.X, 0.15, ease.Linear)
+				m.interY = gween.New(y, b.Y, 0.15, ease.Linear)
 			}
 		}
 		m.step++

@@ -32,6 +32,13 @@ type selectUI struct {
 	y int
 }
 
+func (sel *selectUI) getCoords() world.Coords {
+	return world.Coords{
+		X: sel.x,
+		Y: sel.y,
+	}
+}
+
 func AddSelectUI(t SelectionType, x, y int) {
 	SelectionSet.set = append(SelectionSet.set, selectUI{
 		t: t,
@@ -53,7 +60,7 @@ func (s *selectionSet) Draw(win *pixelgl.Window) {
 	s.batch.Clear()
 	for _, sel := range s.set {
 		if sel.t != Blank {
-			mat := pixel.IM.Scaled(pixel.ZV, cfg.Scalar).Moved(pixel.V(world.MapToWorld(sel.x, sel.y)))
+			mat := pixel.IM.Scaled(pixel.ZV, cfg.Scalar).Moved(world.MapToWorld(sel.getCoords()))
 			s.sprites[sel.t].Draw(s.batch, mat)
 		}
 	}

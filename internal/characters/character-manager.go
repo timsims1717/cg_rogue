@@ -29,6 +29,10 @@ func (m *characterManager) Remove(character *Character) {
 	m.updateSet()
 }
 
+func (m *characterManager) Clear() {
+	m.set = []*Character{}
+}
+
 func (m *characterManager) updateSet() {
 	for i, ch := range m.set {
 		ch.index = i

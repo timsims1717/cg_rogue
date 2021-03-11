@@ -20,21 +20,25 @@ func InitializeLines() {
 
 func UpdateLines() {
 	imd.Clear()
-	// pc to coords
-	imd.Color = colornames.Red
-	imd.EndShape = imdraw.NoEndShape
-	imd.Push(pixel.V(player.Player1.Character.GetXY()), pixel.V(world.MapToWorld(player.Player1.Input.Coords.X, player.Player1.Input.Coords.Y)))
-	imd.Line(2)
-	// pc to mouse
-	imd.Color = colornames.Green
-	imd.EndShape = imdraw.NoEndShape
-	imd.Push(pixel.V(player.Player1.Character.GetXY()), player.Player1.Input.World)
-	imd.Line(2)
-	// path line
-	imd.Color = colornames.Blue
-	imd.EndShape = imdraw.NoEndShape
-	imd.Push(floor.CurrentFloor.PathLine.A, floor.CurrentFloor.PathLine.B)
-	imd.Line(2)
+	if player.Player1.Character != nil {
+		// pc to coords
+		imd.Color = colornames.Red
+		imd.EndShape = imdraw.NoEndShape
+		imd.Push(pixel.V(player.Player1.Character.GetXY()), world.MapToWorld(player.Player1.Input.Coords))
+		imd.Line(2)
+		// pc to mouse
+		imd.Color = colornames.Green
+		imd.EndShape = imdraw.NoEndShape
+		imd.Push(pixel.V(player.Player1.Character.GetXY()), player.Player1.Input.World)
+		imd.Line(2)
+	}
+	if floor.CurrentFloor != nil {
+		// path line
+		imd.Color = colornames.Blue
+		imd.EndShape = imdraw.NoEndShape
+		imd.Push(floor.CurrentFloor.PathLine.A, floor.CurrentFloor.PathLine.B)
+		imd.Line(2)
+	}
 }
 
 func DrawLines(win *pixelgl.Window) {

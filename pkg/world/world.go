@@ -1,14 +1,15 @@
 package world
 
 import (
+	"github.com/faiface/pixel"
 	"math"
 )
 
-func MapToWorld(x, y int) (float64, float64) {
-	if x % 2 != 0 {
-		return (float64(x) + 0.5) * ScaledTileSize, (float64(y) + 1.0) * ScaledTileSize
+func MapToWorld(a Coords) pixel.Vec {
+	if a.X % 2 != 0 {
+		return pixel.V((float64(a.X) + 0.5) * ScaledTileSize, (float64(a.Y) + 1.0) * ScaledTileSize)
 	} else {
-		return (float64(x) + 0.5) * ScaledTileSize, (float64(y) + 0.5) * ScaledTileSize
+		return pixel.V((float64(a.X) + 0.5) * ScaledTileSize, (float64(a.Y) + 0.5) * ScaledTileSize)
 	}
 }
 

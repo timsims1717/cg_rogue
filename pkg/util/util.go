@@ -1,5 +1,7 @@
 package util
 
+import "github.com/faiface/pixel"
+
 // Abs returns the absolute value of x.
 func Abs(x int) int {
 	if x < 0 {
@@ -24,10 +26,8 @@ func Max(a, b int) int {
 	return b
 }
 
-type Trillian int
-
-const (
-	True = iota
-	Maybe
-	False
-)
+// PointInside returns true if the pixel.Vec is inside the pixel.Rect
+// when unprojected by the pixel.Matrix
+func PointInside(p pixel.Vec, r pixel.Rect, m pixel.Matrix) bool {
+	return r.Moved(pixel.V(-(r.W() / 2.0), -(r.H() / 2.0))).Contains(m.Unproject(p))
+}

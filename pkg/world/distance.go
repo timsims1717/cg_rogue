@@ -26,10 +26,10 @@ func DistanceSimple(a, b Coords) int {
 }
 
 func Distance(a, b Coords) float64 {
-	axf, ayf := MapToWorld(a.X, a.Y)
-	bxf, byf := MapToWorld(b.X, b.Y)
-	x := axf - bxf
-	y := ayf - byf
+	af := MapToWorld(a)
+	bf := MapToWorld(b)
+	x := af.X - bf.X
+	y := af.Y - bf.Y
 	return math.Sqrt(x * x + y * y)
 }
 
@@ -81,7 +81,7 @@ func OrderByDistWorld(orig pixel.Vec, ul []Coords) []Coords {
 		near := 10000.0
 		index := 0
 		for i, c := range ul {
-			dist := DistanceWorld(orig, pixel.V(MapToWorld(c.X, c.Y)))
+			dist := DistanceWorld(orig, MapToWorld(c))
 			if dist < near {
 				index = i
 				near = dist

@@ -23,6 +23,10 @@ func (m *aiManager) AddAI(ai *AI) {
 	m.set = append(m.set, ai)
 }
 
+func (m *aiManager) Clear() {
+	m.set = []*AI{}
+}
+
 func Update() {
 	if AIManager.takeTurn && !actions.IsActing() {
 		AIManager.turnIndex += 1
@@ -43,4 +47,8 @@ func Update() {
 		}
 	}
 	AIManager.decide = false
+}
+
+func (m *aiManager) AIActing() bool {
+	return m.takeTurn
 }

@@ -202,14 +202,14 @@ func CreateDaggerThrow() *player.Card {
 	}
 	sel := selectors.NewLineSelect()
 	act := player.NewPlayerAction(sel, values, fn)
-	sec := player.NewCardSection("Deal 2 damage within 3.", act)
+	sec := player.NewCardSection("Deal 2 damage within 4.", act)
 	return player.NewCard("Dagger Throw", []*player.CardSection{sec})
 }
 
 func DaggerThrowLevel(level int) selectors.ActionValues {
 	values := selectors.ActionValues{
 		Damage:  2 + (level + 1) / 2,
-		Range:   3 + (level) / 2,
+		Range:   4 + (level) / 2,
 		Targets: 1,
 		Checks: floor.PathChecks{
 			NotFilled:     true,

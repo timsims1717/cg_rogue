@@ -22,30 +22,32 @@ func NewDiscard(player *Player) *Discard {
 
 func (d *Discard) Update(turn bool) {
 	// todo: turn will allow clicking the discard to see the cards in a grid view
-	if len(d.Group) > 0 {
-		top := d.Group[len(d.Group)-1]
-		hover := top.PointInside(d.player.Input.World) && !top.trans
-		if d.Hover != hover {
-			d.Hover = hover
-			d.update = true
-		}
-		for i, card := range d.Group {
-			if d.update {
-				if i == len(d.Group) - 1 && d.Hover {
-					card.setXY(pixel.V(cfg.WindowWidthF - DiscardRightPad, DiscardBottomPad * 2.0))
-					card.setScalar(DiscardHovScale)
-				} else {
-					card.setXY(pixel.V(cfg.WindowWidthF - DiscardRightPad, DiscardBottomPad))
-					card.setScalar(DiscardScale)
-				}
+	if d.player != nil {
+		if len(d.Group) > 0 {
+			top := d.Group[len(d.Group)-1]
+			hover := top.PointInside(d.player.Input.World) && !top.trans
+			if d.Hover != hover {
+				d.Hover = hover
+				d.update = true
 			}
-			card.Update()
+			for i, card := range d.Group {
+				if d.update {
+					if i == len(d.Group)-1 && d.Hover {
+						card.setXY(pixel.V(cfg.WindowWidthF-DiscardRightPad, DiscardBottomPad*2.0))
+						card.setScalar(DiscardHovScale)
+					} else {
+						card.setXY(pixel.V(cfg.WindowWidthF-DiscardRightPad, DiscardBottomPad))
+						card.setScalar(DiscardScale)
+					}
+				}
+				card.Update()
+			}
+		} else {
+			d.Hover = false
 		}
-	} else {
-		d.Hover = false
-	}
-	if d.update {
-		d.update = false
+		if d.update {
+			d.update = false
+		}
 	}
 }
 

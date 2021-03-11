@@ -40,6 +40,10 @@ func New() *Camera {
 	}
 }
 
+func (c *Camera) Moving() bool {
+	return c.lock
+}
+
 func (c *Camera) Update(win *pixelgl.Window) {
 	fin := true
 	if c.interX != nil {
@@ -74,6 +78,12 @@ func (c *Camera) Update(win *pixelgl.Window) {
 	}
 	c.Mat = pixel.IM.Scaled(c.Pos, c.Zoom).Moved(win.Bounds().Center().Sub(c.Pos))
 	win.SetMatrix(c.Mat)
+}
+
+func (c *Camera) Stop() {
+	c.lock = false
+	c.interX = nil
+	c.interY = nil
 }
 
 func (c *Camera) MoveTo(v pixel.Vec, dur float64, lock bool) {

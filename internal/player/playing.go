@@ -19,19 +19,19 @@ func NewPlayCard(player *Player) *PlayCard {
 }
 
 func (p *PlayCard) Update(turn bool) {
-	if p.Card != nil {
+	if p.Card != nil && p.player != nil {
 		if turn {
 			if p.update {
 				p.Card.setXY(pixel.V(cfg.WindowWidthF - PlayRightPad, PlayBottomPad))
 				p.Card.setScalar(PlayCardScale)
 				p.update = false
 			}
-			p.Card.Update()
 			if p.Card.PointInside(p.player.Input.World) && p.player.Input.Cancel.JustPressed() && p.Card.canCancel {
 				p.player.Input.Cancel.Consume()
 				p.Card.stop()
 			}
 		}
+		p.Card.Update()
 		if !turn || !p.Card.isPlay {
 			if p.Card.played {
 				p.Card.played = false
@@ -49,12 +49,21 @@ func (p *PlayCard) Draw(win *pixelgl.Window) {
 	}
 }
 
+func (p *PlayCard) CancelCard() {
+	if p.Card != nil {
+		p.Card.stop()
+		//CardManager.Move(p, p.player.Hand, 0)
+	}
+}
+
 func (p *PlayCard) AddCard(card *Card) {
-	p.update = true
-	if card != nil {
-		card.trans = true
-		p.Card = card
-		p.Card.play(p.player)
+	if p.player != nil {
+		p.update = true
+		if card != nil {
+			card.trans = true
+			p.Card = card
+			p.Card.play(p.player)
+		}
 	}
 }
 
@@ -63,7 +72,7 @@ func (p *PlayCard) RemoveCard(i int) *Card {
 	if p.Card == nil {
 		return nil
 	}
-	p.Card.stop()
+	//p.Card.stop()
 	card := p.Card
 	p.Card = nil
 	return card
