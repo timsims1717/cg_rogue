@@ -141,7 +141,7 @@ func FlyChaserDecision(character *characters.Character, previous []int) ([]*AIAc
 							TargetArea:  nil,
 							TargetCheck: floor.PathChecks{},
 							Values: selectors.ActionValues{
-								Move: d,
+								Move: 1,
 							},
 						},
 						{

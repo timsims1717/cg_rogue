@@ -84,7 +84,7 @@ func UpdateText() {
 		occ := floor.CurrentFloor.GetOccupant(world.Coords{mapX, mapY})
 		if objects.NotNil(occ) {
 			if cha, ok := occ.(*characters.Character); ok {
-				fmt.Fprintf(health, "Health: %d/%d HP", cha.CurrHP, cha.MaxHP)
+				fmt.Fprintf(health, "Health: %d/%d HP", cha.Health.CurrHP, cha.Health.MaxHP)
 				dispHP = true
 			}
 		}

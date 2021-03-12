@@ -2,6 +2,7 @@ package characters
 
 import (
 	"github.com/faiface/pixel"
+	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
 	uuid "github.com/satori/go.uuid"
 	"github.com/timsims1717/cg_rogue_go/internal/cfg"
@@ -19,10 +20,7 @@ type Character struct {
 	Pos    pixel.Vec
 	Spr    *pixel.Sprite
 
-	CurrHP  int
-	MaxHP   int
-	LastDmg int
-	Alive   bool
+	Health Health
 
 	Diplomacy Diplomacy
 
@@ -38,17 +36,21 @@ func NewCharacter(sprite *pixel.Sprite, coords world.Coords, diplomacy Diplomacy
 		return nil
 	}
 	c := &Character{
-		Coords:  coords,
-		Mat:     pixel.Matrix{},
-		Pos:     world.MapToWorld(coords),
-		Spr:     sprite,
-		CurrHP:  maxHP,
-		MaxHP:   maxHP,
-		LastDmg: 0,
-		Alive:   true,
+		Coords: coords,
+		Mat:    pixel.Matrix{},
+		Pos:    world.MapToWorld(coords),
+		Spr:    sprite,
+		Health: Health{
+			CurrHP:  maxHP,
+			MaxHP:   maxHP,
+			LastDmg: 0,
+			Alive:   true,
+			imd:     imdraw.New(nil),
+			pos:     pixel.ZV,
+		},
 		Diplomacy: diplomacy,
-		id:      uuid.NewV4(),
-		mask:    colornames.White,
+		id:        uuid.NewV4(),
+		mask:      colornames.White,
 	}
 	floor.CurrentFloor.PutOccupant(c, coords)
 	return c
@@ -62,10 +64,13 @@ func (c *Character) Update() {
 			c.effect = nil
 		}
 	}
+	c.Health.pos = pixel.V(c.Pos.X, c.Pos.Y + 50.)
+	c.Health.Update()
 }
 
 func (c *Character) Draw(win *pixelgl.Window) {
 	c.Spr.DrawColorMask(win, c.Mat, c.mask)
+	c.Health.Draw(win)
 }
 
 func (c *Character) Damage(dmg int) {
@@ -74,14 +79,14 @@ func (c *Character) Damage(dmg int) {
 		thisDmg = 0
 	}
 	if thisDmg > 0 {
-		c.LastDmg = util.Min(thisDmg, c.CurrHP)
-		c.CurrHP -= c.LastDmg
-		if c.CurrHP < 1 {
+		c.Health.LastDmg = util.Min(thisDmg, c.Health.CurrHP)
+		c.Health.CurrHP -= c.Health.LastDmg
+		if c.Health.CurrHP < 1 {
 			col := colornames.Black
 			col.A = 0
 			c.effect = animation.FadeOut(c, 0.5)
-			c.Alive = false
-			c.CurrHP = 0
+			c.Health.Alive = false
+			c.Health.CurrHP = 0
 			floor.CurrentFloor.RemoveOccupant(c.Coords)
 		} else {
 			c.effect = animation.FadeFrom(c, colornames.Red, 0.5)
@@ -90,7 +95,7 @@ func (c *Character) Damage(dmg int) {
 }
 
 func (c *Character) IsDestroyed() bool {
-	return !c.Alive
+	return !c.Health.Alive
 }
 
 func (c *Character) ID() uuid.UUID {

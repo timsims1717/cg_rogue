@@ -39,7 +39,7 @@ func NewAI(makeDecision func(*characters.Character, []int) ([]*AIAction, int), a
 }
 
 func (ai *AI) Decide() {
-	if ai.Character.Alive {
+	if ai.Character.Health.Alive {
 		var next int
 		ai.Actions, next = ai.MakeDecision(ai.Character, ai.PrevDecicions)
 		ai.PrevDecicions = append(ai.PrevDecicions, next)
@@ -50,14 +50,14 @@ func (ai *AI) Decide() {
 }
 
 func (ai *AI) TakeTurn() {
-	if ai.Character.Alive {
+	if ai.Character.Health.Alive {
 		ai.Update()
 		ai.Act(ai.TempActions)
 	}
 }
 
 func (ai *AI) Update() {
-	if ai.Character.Alive {
+	if ai.Character.Health.Alive {
 		ai.TempActions = make([]*TempAIAction, len(ai.Actions))
 		ai.TempCoords = ai.Character.GetCoords()
 		for i, act := range ai.Actions {
@@ -90,7 +90,9 @@ func (ai *AI) Update() {
 			if act.Area != nil && len(act.Area) > 0 {
 				for _, c := range act.Area {
 					if act.Values.Move > 0 {
-						selectors.AddSelectUI(selectors.Move, c.X, c.Y)
+						if len(act.Area) > 1 {
+							selectors.AddSelectUI(selectors.Move, c.X, c.Y)
+						}
 					} else {
 						selectors.AddSelectUI(selectors.Attack, c.X, c.Y)
 					}
