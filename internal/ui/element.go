@@ -14,13 +14,17 @@ import (
 
 //var DebugDraw = imdraw.New(nil)
 
+// todo: add alignment and vertical alignment
 type ActionEl struct {
-	T    *ActionText
-	Show bool
-	UI   bool
+	T      *ActionText
+	Show   bool
+	UI     bool
+	Align  TextAlign
+	VAlign TextAlign
 
 	Mat             pixel.Matrix
 	Pos             pixel.Vec
+	pos             pixel.Vec
 	Rot             float64
 	Scalar          pixel.Vec
 	Spr             *pixel.Sprite
@@ -30,13 +34,18 @@ type ActionEl struct {
 	Mask        color.RGBA
 	ColorEffect *animation.ColorEffect
 
-	hovered   bool
-	clicked   bool
-	hoverFn   func()
-	onHoverFn func()
-	unHoverFn func()
-	clickFn   func()
-	unClickFn func()
+	hovered      bool
+	clicked      bool
+	Disabled     bool
+	disabled     bool
+	hoverFn      func()
+	onHoverFn    func()
+	unHoverFn    func()
+	clickFn      func()
+	unClickFn    func()
+	onDisabledFn func()
+	disabledFn   func()
+	onEnabledFn  func()
 }
 
 func NewActionEl(t *ActionText, rect pixel.Rect) *ActionEl {
@@ -45,12 +54,29 @@ func NewActionEl(t *ActionText, rect pixel.Rect) *ActionEl {
 		canvas: pixelgl.NewCanvas(rect),
 		Scalar: pixel.V(1., 1.),
 		Mask:   colornames.White,
+		Align:  Left,
+		VAlign: Center,
 	}
 }
 
 func (e *ActionEl) Update(input *input.Input) {
 	//DebugDraw.Clear()
-	if e.Show {
+	if e.Disabled {
+		if e.disabled && e.disabledFn != nil {
+			e.disabledFn()
+		} else if !e.disabled && e.onDisabledFn != nil {
+			e.onDisabledFn()
+		}
+		e.disabled = true
+		if e.hovered {
+			e.unHoverFn()
+		}
+		e.hovered = false
+	} else {
+		if e.disabled && e.onEnabledFn != nil {
+			e.onEnabledFn()
+		}
+		e.disabled = false
 		mouseOver := e.PointInside(input.World)
 		if mouseOver && !e.hovered && e.onHoverFn != nil {
 			e.onHoverFn()
@@ -65,44 +91,55 @@ func (e *ActionEl) Update(input *input.Input) {
 		} else if e.hovered && input.Select.JustReleased() && e.unClickFn != nil {
 			e.unClickFn()
 		}
-		if e.T != nil {
-			e.T.pos = e.T.Pos
-			if e.T.Align == Center {
-				e.T.pos.X += e.canvas.Bounds().W() / 2.
-			} else if e.T.Align == Right {
-				e.T.pos.X += e.canvas.Bounds().W()
-			}
-			if e.T.VAlign == Center {
-				e.T.pos.Y += e.canvas.Bounds().H() / 2.
-			} else if e.T.VAlign == Left {
-				e.T.pos.Y += e.canvas.Bounds().H()
-			}
-			e.T.Update()
-		}
-		if e.UI {
-			e.Mat = camera.UITransform(camera.Cam, e.Pos, e.Scalar, e.Rot, cfg.WindowWidthF, cfg.WindowHeightF)
-		} else {
-			e.Mat = pixel.IM.ScaledXY(pixel.ZV, e.Scalar).Rotated(pixel.ZV, e.Rot).Moved(e.Pos)
-		}
-		if e.TransformEffect != nil {
-			e.TransformEffect.Update()
-			if e.TransformEffect.IsDone() {
-				e.TransformEffect = nil
-			}
-		}
-		if e.ColorEffect != nil {
-			e.ColorEffect.Update()
-			if e.ColorEffect.IsDone() {
-				e.ColorEffect = nil
-			}
-		}
-		//DebugDraw.Color = colornames.Red
-		//DebugDraw.EndShape = imdraw.NoEndShape
-		//for _, v := range e.canvas.Bounds().Vertices() {
-		//	DebugDraw.Push(e.Mat.Project(v))
-		//}
-		//DebugDraw.Polygon(5.0)
 	}
+	if e.T != nil {
+		e.T.pos = e.T.Pos
+		if e.T.Align == Center {
+			e.T.pos.X += e.canvas.Bounds().W() / 2.
+		} else if e.T.Align == Right {
+			e.T.pos.X += e.canvas.Bounds().W()
+		}
+		if e.T.VAlign == Center {
+			e.T.pos.Y += (e.canvas.Bounds().H() - e.T.Text.Bounds().H() * e.T.Scalar.Y) / 2.
+		} else if e.T.VAlign == Left {
+			e.T.pos.Y += e.canvas.Bounds().H() - e.T.Text.Bounds().H() * e.T.Scalar.Y
+		}
+		e.T.Update()
+	}
+	e.pos = e.Pos
+	if e.Align == Left {
+		e.pos.X += e.canvas.Bounds().W() / 2.
+	} else if e.Align == Right {
+		e.pos.X -= e.canvas.Bounds().W() / 2.
+	}
+	if e.VAlign == Left {
+		e.pos.Y -= e.canvas.Bounds().H() / 2.
+	} else if e.VAlign == Right {
+		e.pos.Y += e.canvas.Bounds().H() / 2.
+	}
+	if e.UI {
+		e.Mat = camera.UITransform(camera.Cam, e.pos, e.Scalar, e.Rot, cfg.WindowWidthF, cfg.WindowHeightF)
+	} else {
+		e.Mat = pixel.IM.ScaledXY(pixel.ZV, e.Scalar).Rotated(pixel.ZV, e.Rot).Moved(e.pos)
+	}
+	if e.TransformEffect != nil {
+		e.TransformEffect.Update()
+		if e.TransformEffect.IsDone() {
+			e.TransformEffect = nil
+		}
+	}
+	if e.ColorEffect != nil {
+		e.ColorEffect.Update()
+		if e.ColorEffect.IsDone() {
+			e.ColorEffect = nil
+		}
+	}
+	//DebugDraw.Color = colornames.Red
+	//DebugDraw.EndShape = imdraw.NoEndShape
+	//for _, v := range e.canvas.Bounds().Vertices() {
+	//	DebugDraw.Push(e.Mat.Project(v))
+	//}
+	//DebugDraw.Polygon(5.0)
 }
 
 func (e *ActionEl) Draw(target pixel.Target) {
@@ -199,6 +236,18 @@ func (e *ActionEl) SetClickFn(fn func()) {
 
 func (e *ActionEl) SetUnClickFn(fn func()) {
 	e.unClickFn = fn
+}
+
+func (e *ActionEl) SetOnDisabledFn(fn func()) {
+	e.onDisabledFn = fn
+}
+
+func (e *ActionEl) SetDisabledFn(fn func()) {
+	e.disabledFn = fn
+}
+
+func (e *ActionEl) SetEnabledFn(fn func()) {
+	e.onEnabledFn = fn
 }
 
 func (e *ActionEl) PointInside(point pixel.Vec) bool {

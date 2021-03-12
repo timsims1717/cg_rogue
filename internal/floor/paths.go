@@ -156,7 +156,10 @@ func (f *Floor) FindPathWithinOne(a, b world.Coords, check PathChecks) ([]world.
 		return nil, 0, false
 	}
 	for _, n := range world.OrderByDist(a, b.Neighbors(f.Dimensions())) {
-		if  !f.Exists(n) || (check.EndUnoccupied && f.HasOccupant(n)) {
+		if a.Equals(n) {
+			return []world.Coords{a}, 0, true
+		}
+		if !f.Exists(n) || (check.EndUnoccupied && f.HasOccupant(n)) {
 			continue
 		}
 		f.SetLine(a, b)

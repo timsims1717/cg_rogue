@@ -75,7 +75,7 @@ func (ai *AI) Update() {
 				tCheck := act.TargetCheck
 				target := tPath[len(tPath)-1]
 				tCheck.Orig = target
-				tArea =  floor.CurrentFloor.IsSetLegal(tCheck.Orig.PathFrom(act.TargetArea), tCheck)
+				tArea = floor.CurrentFloor.IsSetLegal(tCheck.Orig.PathFrom(act.TargetArea), tCheck)
 			}
 			// update the temp actions with the results of the check
 			ai.TempActions[i] = &TempAIAction{

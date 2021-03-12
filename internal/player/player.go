@@ -9,6 +9,7 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/objects"
 	"github.com/timsims1717/cg_rogue_go/internal/selectors"
 	"github.com/timsims1717/cg_rogue_go/internal/state"
+	"github.com/timsims1717/cg_rogue_go/internal/ui"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
@@ -23,7 +24,8 @@ type Player struct {
 	Discard         *Discard
 	ActionsThisTurn int
 	IsTurn          bool
-	IsPlaying       bool
+	RestButton      *ui.ActionEl
+	MoveButton      *ui.ActionEl
 }
 
 func init() {
@@ -34,7 +36,6 @@ func NewPlayer(character *characters.Character) *Player {
 	return &Player{
 		Character: character,
 		Input:     &input.Input{},
-		IsPlaying: true,
 	}
 }
 
@@ -51,15 +52,23 @@ func (p *Player) EndTurn() {
 func (p *Player) Update(win *pixelgl.Window) {
 	if state.Machine.State == state.InGame {
 		if p.Hand != nil {
-			p.Hand.Update(p.IsTurn && p.IsPlaying)
+			p.Hand.Update(p.IsTurn)
 		}
 		if p.PlayCard != nil {
-			p.PlayCard.Update(p.IsTurn && p.IsPlaying)
+			p.PlayCard.Update(p.IsTurn)
 		}
 		if p.Discard != nil {
-			p.Discard.Update(p.IsTurn && p.IsPlaying)
+			p.Discard.Update(p.IsTurn)
 		}
-		if p.IsTurn && p.IsPlaying {
+		if p.RestButton != nil {
+			p.RestButton.Disabled = !p.IsTurn
+			p.RestButton.Update(p.Input)
+		}
+		if p.MoveButton != nil {
+			p.MoveButton.Disabled = !p.IsTurn
+			p.MoveButton.Update(p.Input)
+		}
+		if p.IsTurn {
 			if win.JustPressed(pixelgl.KeyA) {
 				values := selectors.ActionValues{
 					Source:  p.Character,
@@ -111,6 +120,15 @@ func (p *Player) Update(win *pixelgl.Window) {
 				}
 			}
 		}
+	}
+}
+
+func (p *Player) Draw(win *pixelgl.Window) {
+	if p.RestButton != nil {
+		p.RestButton.Draw(win)
+	}
+	if p.MoveButton != nil {
+		p.MoveButton.Draw(win)
 	}
 }
 

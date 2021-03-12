@@ -19,5 +19,5 @@ func Initialize() {
 	text.TextColor = colornames.Black
 	CenterText = ui2.NewActionEl(text, pixel.R(0, 0, cfg.WindowWidthF, cfg.WindowHeightF))
 	CenterText.UI = true
-	CenterText.Pos = pixel.V(cfg.WindowWidthF * 0.5, cfg.WindowHeightF * 0.5)
+	CenterText.Pos = pixel.V(0., cfg.WindowHeightF * 0.5)
 }

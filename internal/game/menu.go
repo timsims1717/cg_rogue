@@ -68,7 +68,7 @@ func InitializeMenu(win *pixelgl.Window) {
 	startMenuItem = ui2.NewActionEl(text, r)
 	startMenuItem.Show = true
 	startMenuItem.UI = true
-	startMenuItem.Pos = pixel.V(150., 280.)
+	startMenuItem.Pos = pixel.V(20., 280.)
 	startMenuItem.SetOnHoverFn(func() {
 		startMenuItem.T.TextColor = colornames.Forestgreen
 		startMenuItem.Scalar = pixel.V(1.05, 1.05)
@@ -87,11 +87,11 @@ func InitializeMenu(win *pixelgl.Window) {
 	exitText.VAlign = ui2.Right
 	exitText.Scalar = pixel.V(4., 4.)
 	exitText.TextColor = colornames.Purple
-	exitR := pixel.R(0., 0., exitText.Text.BoundsOf(s).W() * 4., exitText.Text.BoundsOf(s).H() * 3.75)
+	exitR := pixel.R(0., 0., exitText.Text.BoundsOf(exitS).W() * 4., exitText.Text.BoundsOf(exitS).H() * 3.75)
 	exitMenuItem = ui2.NewActionEl(exitText, exitR)
 	exitMenuItem.Show = true
 	exitMenuItem.UI = true
-	exitMenuItem.Pos = pixel.V(150., 220.)
+	exitMenuItem.Pos = pixel.V(20., 220.)
 	exitMenuItem.SetOnHoverFn(func() {
 		exitMenuItem.T.TextColor = colornames.Forestgreen
 		exitMenuItem.Scalar = pixel.V(1.05, 1.05)

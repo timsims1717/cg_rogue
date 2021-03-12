@@ -19,10 +19,15 @@ const (
 	PlayBottomPad = BaseCardHeight * 1.45
 
 	// Discard constants
-	DiscardRightPad  = BaseCardWidth * 0.4
+	DiscardRightPad  = BaseCardWidth * 1.4
 	DiscardBottomPad = BaseCardHeight * 0.25 * DiscardScale
 	DiscardScale     = 0.5
 	DiscardHovScale  = 0.7
+
+	// Action Button constants
+	ButtonRightPad = 220.
+	RestBottomPad = 60.
+	MoveBottomPad = 100.
 )
 
 func MakeKey(args... string) string {
