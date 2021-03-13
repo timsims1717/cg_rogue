@@ -3,7 +3,7 @@ package player
 import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
-	"github.com/timsims1717/cg_rogue_go/internal/cfg"
+	"github.com/timsims1717/cg_rogue_go/pkg/camera"
 )
 
 type Discard struct {
@@ -33,10 +33,10 @@ func (d *Discard) Update(turn bool) {
 			for i, card := range d.Group {
 				if d.update {
 					if i == len(d.Group)-1 && d.Hover {
-						card.setXY(pixel.V(cfg.WindowWidthF-DiscardRightPad, DiscardBottomPad*2.0))
+						card.setXY(pixel.V(camera.WindowWidthF-DiscardRightPad, DiscardBottomPad*2.0))
 						card.setScalar(DiscardHovScale)
 					} else {
-						card.setXY(pixel.V(cfg.WindowWidthF-DiscardRightPad, DiscardBottomPad))
+						card.setXY(pixel.V(camera.WindowWidthF-DiscardRightPad, DiscardBottomPad))
 						card.setScalar(DiscardScale)
 					}
 				}

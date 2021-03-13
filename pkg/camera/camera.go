@@ -135,3 +135,15 @@ func (c *Camera) ZoomIn(zoom float64) {
 		c.Zoom *= math.Pow(c.Opt.ZoomSpeed, zoom)
 	}
 }
+
+// UITransform returns a pixel.Matrix that can move the center of a pixel.Rect
+// to the bottom left of the screen.
+func (c *Camera) UITransform(pos, scalar pixel.Vec, rot float64) pixel.Matrix {
+	zoom := 1/c.Zoom
+	mat := pixel.IM.ScaledXY(pixel.ZV, scalar.Scaled(zoom))
+	mat = mat.Rotated(pixel.ZV, rot)
+	mat = mat.Moved(pixel.V(c.Pos.X, c.Pos.Y))
+	mat = mat.Moved(pixel.V(WindowWidthF, WindowHeightF).Scaled(-0.5 * zoom))
+	mat = mat.Moved(pos.Scaled(zoom))
+	return mat
+}

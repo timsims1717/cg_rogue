@@ -3,7 +3,6 @@ package ui
 import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
-	"github.com/timsims1717/cg_rogue_go/internal/cfg"
 	"github.com/timsims1717/cg_rogue_go/internal/input"
 	"github.com/timsims1717/cg_rogue_go/pkg/animation"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
@@ -16,17 +15,10 @@ import (
 
 // todo: add alignment and vertical alignment
 type ActionEl struct {
-	T      *ActionText
-	Show   bool
-	UI     bool
-	Align  TextAlign
-	VAlign TextAlign
+	Text *ActionText
+	Show bool
 
-	Mat             pixel.Matrix
-	Pos             pixel.Vec
-	pos             pixel.Vec
-	Rot             float64
-	Scalar          pixel.Vec
+	Transform       *animation.Transform
 	Spr             *pixel.Sprite
 	canvas          *pixelgl.Canvas
 	TransformEffect *animation.TransformEffect
@@ -48,14 +40,19 @@ type ActionEl struct {
 	onEnabledFn  func()
 }
 
-func NewActionEl(t *ActionText, rect pixel.Rect) *ActionEl {
+func NewActionEl(t *ActionText, rect pixel.Rect, cam *camera.Camera) *ActionEl {
+	transform := animation.NewTransform(true)
+	transform.Anchor = animation.Anchor{
+		H: animation.Left,
+		V: animation.Bottom,
+	}
+	transform.Rect = rect
+	transform.Cam = cam
 	return &ActionEl{
-		T: t,
-		canvas: pixelgl.NewCanvas(rect),
-		Scalar: pixel.V(1., 1.),
-		Mask:   colornames.White,
-		Align:  Left,
-		VAlign: Center,
+		Text:      t,
+		Transform: transform,
+		canvas:    pixelgl.NewCanvas(rect),
+		Mask:      colornames.White,
 	}
 }
 
@@ -92,35 +89,8 @@ func (e *ActionEl) Update(input *input.Input) {
 			e.unClickFn()
 		}
 	}
-	if e.T != nil {
-		e.T.pos = e.T.Pos
-		if e.T.Align == Center {
-			e.T.pos.X += e.canvas.Bounds().W() / 2.
-		} else if e.T.Align == Right {
-			e.T.pos.X += e.canvas.Bounds().W()
-		}
-		if e.T.VAlign == Center {
-			e.T.pos.Y += (e.canvas.Bounds().H() - e.T.Text.Bounds().H() * e.T.Scalar.Y) / 2.
-		} else if e.T.VAlign == Left {
-			e.T.pos.Y += e.canvas.Bounds().H() - e.T.Text.Bounds().H() * e.T.Scalar.Y
-		}
-		e.T.Update()
-	}
-	e.pos = e.Pos
-	if e.Align == Left {
-		e.pos.X += e.canvas.Bounds().W() / 2.
-	} else if e.Align == Right {
-		e.pos.X -= e.canvas.Bounds().W() / 2.
-	}
-	if e.VAlign == Left {
-		e.pos.Y -= e.canvas.Bounds().H() / 2.
-	} else if e.VAlign == Right {
-		e.pos.Y += e.canvas.Bounds().H() / 2.
-	}
-	if e.UI {
-		e.Mat = camera.UITransform(camera.Cam, e.pos, e.Scalar, e.Rot, cfg.WindowWidthF, cfg.WindowHeightF)
-	} else {
-		e.Mat = pixel.IM.ScaledXY(pixel.ZV, e.Scalar).Rotated(pixel.ZV, e.Rot).Moved(e.pos)
+	if e.Text != nil {
+		e.Text.Update(e.canvas.Bounds())
 	}
 	if e.TransformEffect != nil {
 		e.TransformEffect.Update()
@@ -134,6 +104,8 @@ func (e *ActionEl) Update(input *input.Input) {
 			e.ColorEffect = nil
 		}
 	}
+	e.Transform.Rect = e.canvas.Bounds()
+	e.Transform.Update(pixel.Rect{})
 	//DebugDraw.Color = colornames.Red
 	//DebugDraw.EndShape = imdraw.NoEndShape
 	//for _, v := range e.canvas.Bounds().Vertices() {
@@ -149,37 +121,13 @@ func (e *ActionEl) Draw(target pixel.Target) {
 			r := e.Spr.Frame()
 			e.Spr.Draw(e.canvas, pixel.IM.Moved(pixel.V(r.W()*0.5, r.H()*0.5)))
 		}
-		if e.T != nil {
-			e.T.Draw(e.canvas)
+		if e.Text != nil {
+			e.Text.Draw(e.canvas)
 		}
 		//e.canvas.DrawColorMask(target, e.Mat, e.Mask)
-		e.canvas.Draw(target, e.Mat)
+		e.canvas.Draw(target, e.Transform.Mat)
 		//DebugDraw.Draw(target)
 	}
-}
-
-func (e *ActionEl) GetPos() pixel.Vec {
-	return e.Pos
-}
-
-func (e *ActionEl) SetPos(v pixel.Vec) {
-	e.Pos = v
-}
-
-func (e *ActionEl) GetRot() float64 {
-	return e.Rot
-}
-
-func (e *ActionEl) SetRot(r float64) {
-	e.Rot = r
-}
-
-func (e *ActionEl) GetScaled() pixel.Vec {
-	return e.Scalar
-}
-
-func (e *ActionEl) SetScaled(v pixel.Vec) {
-	e.Scalar = v
 }
 
 func (e *ActionEl) GetColor() color.RGBA {
@@ -251,5 +199,5 @@ func (e *ActionEl) SetEnabledFn(fn func()) {
 }
 
 func (e *ActionEl) PointInside(point pixel.Vec) bool {
-	return util.PointInside(point, e.canvas.Bounds(), e.Mat)
+	return util.PointInside(point, e.canvas.Bounds(), e.Transform.Mat)
 }

@@ -5,13 +5,12 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"
-	"github.com/timsims1717/cg_rogue_go/internal/cfg"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
 	gween "github.com/timsims1717/cg_rogue_go/pkg/gween64"
 	"github.com/timsims1717/cg_rogue_go/pkg/gween64/ease"
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
-	text2 "github.com/timsims1717/cg_rogue_go/pkg/typeface"
 	"github.com/timsims1717/cg_rogue_go/pkg/timing"
+	text2 "github.com/timsims1717/cg_rogue_go/pkg/typeface"
 	"github.com/timsims1717/cg_rogue_go/pkg/util"
 	"golang.org/x/image/colornames"
 )
@@ -142,7 +141,7 @@ func (c *Card) Draw(win *pixelgl.Window) {
 		cs.Draw(c.canvas, i)
 	}
 	c.title.Draw(c.canvas, pixel.IM.Scaled(c.title.Orig, 2.0).Moved(pixel.V(BaseCardWidth* 0.5, BaseCardHeight- 32.0)))
-	c.Mat = camera.UITransform(camera.Cam, c.Pos, pixel.V(c.Scalar, c.Scalar), 0., cfg.WindowWidthF, cfg.WindowHeightF)
+	c.Mat = camera.Cam.UITransform(c.Pos, pixel.V(c.Scalar, c.Scalar), 0.)
 	c.canvas.Draw(win, c.Mat)
 }
 

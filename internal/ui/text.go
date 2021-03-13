@@ -13,13 +13,9 @@ type ActionText struct {
 	Text   *text.Text
 	Raw    string
 	Align  TextAlign
-	VAlign TextAlign
+	// todo: add VAlign
 
-	Mat             pixel.Matrix
-	Pos             pixel.Vec
-	pos             pixel.Vec
-	Rot             float64
-	Scalar          pixel.Vec
+	Transform       *animation.Transform
 	TransformEffect *animation.TransformEffect
 
 	TextColor   color.RGBA
@@ -35,31 +31,31 @@ const (
 )
 
 func NewActionText(raw string) *ActionText {
+	transform := animation.NewTransform(false)
+	transform.Anchor = animation.Anchor{
+		H: animation.Left,
+		V: animation.Bottom,
+	}
 	return &ActionText{
 		Text:      text.New(pixel.ZV, typeface.BasicAtlas),
 		Raw:       raw,
 		TextColor: color.RGBA{},
-		Scalar:    pixel.V(1., 1.),
+		Transform: transform,
 		Align:     Left,
-		VAlign:    Left,
 	}
 }
 
-func (t *ActionText) Update() {
+func (t *ActionText) Update(r pixel.Rect) {
 	t.Text.Clear()
 	if t.Align == Center {
-		t.Text.Dot.X -= t.Text.BoundsOf(t.Raw).W() / 2
+		t.Text.Dot.X -= t.Text.BoundsOf(t.Raw).W() / 2.
 	} else if t.Align == Right {
 		t.Text.Dot.X -= t.Text.BoundsOf(t.Raw).W()
 	}
 	t.Text.Color = t.TextColor
 	fmt.Fprintf(t.Text, t.Raw)
-	t.Mat = pixel.IM.ScaledXY(pixel.ZV, t.Scalar).Rotated(pixel.ZV, t.Rot).Moved(t.pos)
-	if t.VAlign == Center {
-		t.Mat = t.Mat.Moved(pixel.V(0., (t.Text.Orig.Y - t.Text.Dot.Y) / 2.))
-	} else if t.VAlign == Left {
-		t.Mat = t.Mat.Moved(pixel.V(0., t.Text.Orig.Y - t.Text.Dot.Y))
-	}
+	t.Transform.Rect = t.Text.Bounds()
+	t.Transform.Update(r)
 	if t.TransformEffect != nil {
 		t.TransformEffect.Update()
 		if t.TransformEffect.IsDone() {
@@ -75,31 +71,7 @@ func (t *ActionText) Update() {
 }
 
 func (t *ActionText) Draw(target pixel.Target) {
-	t.Text.DrawColorMask(target, t.Mat, t.TextColor)
-}
-
-func (t *ActionText) GetPos() pixel.Vec {
-	return t.Pos
-}
-
-func (t *ActionText) SetPos(v pixel.Vec) {
-	t.Pos = v
-}
-
-func (t *ActionText) GetRot() float64 {
-	return t.Rot
-}
-
-func (t *ActionText) SetRot(r float64) {
-	t.Rot = r
-}
-
-func (t *ActionText) GetScaled() pixel.Vec {
-	return t.Scalar
-}
-
-func (t *ActionText) SetScaled(v pixel.Vec) {
-	t.Scalar = v
+	t.Text.DrawColorMask(target, t.Transform.Mat, t.TextColor)
 }
 
 func (t *ActionText) GetColor() color.RGBA {

@@ -17,10 +17,10 @@ import (
 func run() {
 	rand.Seed(time.Now().UnixNano())
 	world.ScaledTileSize = cfg.ScaledTileSize
-	cfg.SetWindowSize(1600, 900)
+	camera.SetWindowSize(1600, 900)
 	config := pixelgl.WindowConfig{
 		Title:  cfg.Title,
-		Bounds: pixel.R(0, 0, cfg.WindowWidthF, cfg.WindowHeightF),
+		Bounds: pixel.R(0, 0, camera.WindowWidthF, camera.WindowHeightF),
 		//VSync: true,
 	}
 	win, err := pixelgl.NewWindow(config)

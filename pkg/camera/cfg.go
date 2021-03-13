@@ -1,4 +1,4 @@
-package cfg
+package camera
 
 var (
 	WindowWidth   int
@@ -13,3 +13,4 @@ func SetWindowSize(width, height int) {
 	WindowWidthF = float64(width)
 	WindowHeightF = float64(height)
 }
+

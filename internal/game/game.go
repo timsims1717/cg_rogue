@@ -6,7 +6,6 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/actions"
 	"github.com/timsims1717/cg_rogue_go/internal/ai"
 	"github.com/timsims1717/cg_rogue_go/internal/cards"
-	"github.com/timsims1717/cg_rogue_go/internal/cfg"
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
@@ -68,18 +67,16 @@ func InitializeGame() {
 
 	restS := "Rest (R)"
 	rest := ui.NewActionText(restS)
-	rest.VAlign = ui.Center
-	rest.Scalar = pixel.V(2.5, 2.5)
+	rest.Transform.Scalar = pixel.V(2.5, 2.5)
 	rest.TextColor = colornames.Purple
-	restButton := ui.NewActionEl(rest, pixel.R(0., 0., rest.Text.BoundsOf(restS).W() * 2.5, rest.Text.BoundsOf(restS).H() * 2.5))
+	restButton := ui.NewActionEl(rest, pixel.R(0., 0., rest.Text.BoundsOf(restS).W() * 2.5, rest.Text.BoundsOf(restS).H() * 2.5), camera.Cam)
 	restButton.Show = true
-	restButton.UI = true
-	restButton.Pos = pixel.V(cfg.WindowWidthF - player.ButtonRightPad, player.RestBottomPad)
+	restButton.Transform.Pos = pixel.V(camera.WindowWidthF - player.ButtonRightPad, player.RestBottomPad)
 	restButton.SetOnHoverFn(func() {
-		restButton.T.TextColor = colornames.Forestgreen
+		restButton.Text.TextColor = colornames.Forestgreen
 	})
 	restButton.SetUnHoverFn(func() {
-		restButton.T.TextColor = colornames.Purple
+		restButton.Text.TextColor = colornames.Purple
 	})
 	restButton.SetClickFn(func() {
 		values := selectors.ActionValues{}
@@ -97,18 +94,16 @@ func InitializeGame() {
 
 	moveS := "Move 1 (M)"
 	move := ui.NewActionText(moveS)
-	move.VAlign = ui.Center
-	move.Scalar = pixel.V(2.5, 2.5)
+	move.Transform.Scalar = pixel.V(2.5, 2.5)
 	move.TextColor = colornames.Purple
-	moveButton := ui.NewActionEl(move, pixel.R(0., 0., move.Text.BoundsOf(moveS).W() * 2.5, move.Text.BoundsOf(moveS).H() * 2.5))
+	moveButton := ui.NewActionEl(move, pixel.R(0., 0., move.Text.BoundsOf(moveS).W() * 2.5, move.Text.BoundsOf(moveS).H() * 2.5), camera.Cam)
 	moveButton.Show = true
-	moveButton.UI = true
-	moveButton.Pos = pixel.V(cfg.WindowWidthF - player.ButtonRightPad, player.MoveBottomPad)
+	moveButton.Transform.Pos = pixel.V(camera.WindowWidthF - player.ButtonRightPad, player.MoveBottomPad)
 	moveButton.SetOnHoverFn(func() {
-		moveButton.T.TextColor = colornames.Forestgreen
+		moveButton.Text.TextColor = colornames.Forestgreen
 	})
 	moveButton.SetUnHoverFn(func() {
-		moveButton.T.TextColor = colornames.Purple
+		moveButton.Text.TextColor = colornames.Purple
 	})
 	moveButton.SetClickFn(func() {
 		values := selectors.ActionValues{
@@ -193,19 +188,19 @@ func DrawGame(win *pixelgl.Window) {
 func UpdateGamePhase() {
 	if state.Machine.Phase != state.EncounterComplete && state.Machine.Phase != state.GameOver && player.Player1.Character.IsDestroyed() {
 		player.Player1.EndTurn()
-		CenterText.T.Raw = "Game Over"
+		CenterText.Text.Raw = "Game Over"
 		CenterText.Show = true
-		CenterText.T.TextColor = colornames.Black
+		CenterText.Text.TextColor = colornames.Black
 		transform := animation.TransformBuilder{
-			Target:  CenterText.T,
+			Target:  CenterText.Text.Transform,
 			InterX:  nil,
 			InterY:  nil,
 			InterR:  nil,
-			InterSX: gween.New(CenterText.T.Scalar.X, 7.0, 2.0, ease.Linear),
-			InterSY: gween.New(CenterText.T.Scalar.Y, 7.0, 2.0, ease.Linear),
+			InterSX: gween.New(CenterText.Text.Transform.Scalar.X, 7.0, 2.0, ease.Linear),
+			InterSY: gween.New(CenterText.Text.Transform.Scalar.Y, 7.0, 2.0, ease.Linear),
 		}
-		CenterText.T.TransformEffect = transform.Build()
-		CenterText.T.ColorEffect = animation.FadeIn(CenterText.T, 2.0)
+		CenterText.Text.TransformEffect = transform.Build()
+		CenterText.Text.ColorEffect = animation.FadeIn(CenterText.Text, 2.0)
 		state.Machine.Phase = state.GameOver
 	}
 	if state.Machine.Phase != state.EncounterComplete && state.Machine.Phase != state.GameOver {
@@ -221,19 +216,19 @@ func UpdateGamePhase() {
 		}
 		if allDead {
 			player.Player1.EndTurn()
-			CenterText.T.Raw = "Success!"
+			CenterText.Text.Raw = "Success!"
 			CenterText.Show = true
-			CenterText.T.TextColor = colornames.Black
+			CenterText.Text.TextColor = colornames.Black
 			transform := animation.TransformBuilder{
-				Target:  CenterText.T,
+				Target:  CenterText.Text.Transform,
 				InterX:  nil,
 				InterY:  nil,
 				InterR:  nil,
-				InterSX: gween.New(CenterText.T.Scalar.X, 7.0, 2.0, ease.Linear),
-				InterSY: gween.New(CenterText.T.Scalar.Y, 7.0, 2.0, ease.Linear),
+				InterSX: gween.New(CenterText.Text.Transform.Scalar.X, 7.0, 2.0, ease.Linear),
+				InterSY: gween.New(CenterText.Text.Transform.Scalar.Y, 7.0, 2.0, ease.Linear),
 			}
-			CenterText.T.TransformEffect = transform.Build()
-			CenterText.T.ColorEffect = animation.FadeIn(CenterText, 2.0)
+			CenterText.Text.TransformEffect = transform.Build()
+			CenterText.Text.ColorEffect = animation.FadeIn(CenterText, 2.0)
 			state.Machine.Phase = state.EncounterComplete
 		}
 	}

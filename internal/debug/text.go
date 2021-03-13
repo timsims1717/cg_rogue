@@ -5,7 +5,6 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"
-	"github.com/timsims1717/cg_rogue_go/internal/cfg"
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/objects"
@@ -42,7 +41,7 @@ var (
 // InitializeText creates the debug canvasText and all the text containers.
 // This is where the location of the text containers is set.
 func InitializeText() {
-	canvasText = pixelgl.NewCanvas(pixel.R(0, 0, cfg.WindowWidthF, cfg.WindowHeightF))
+	canvasText = pixelgl.NewCanvas(pixel.R(0, 0, camera.WindowWidthF, camera.WindowHeightF))
 	fps = text.New(pixel.ZV, typeface.BasicAtlas)
 	mouse = text.New(pixel.ZV, typeface.BasicAtlas)
 	worlds = text.New(pixel.ZV, typeface.BasicAtlas)
@@ -117,7 +116,7 @@ func UpdateText() {
 // This is where scaling happens.
 func DrawText(win *pixelgl.Window) {
 	canvasText.Clear(pixel.RGBA{R: 0, G: 0, B: 0, A: 0})
-	height := cfg.WindowHeightF - typeface.BasicAtlas.LineHeight() - 20.
+	height := camera.WindowHeightF - typeface.BasicAtlas.LineHeight() - 20.
 	fps.Draw(canvasText, pixel.IM.Scaled(pixel.ZV, 2.).Moved(pixel.V(20., height)))
 	height -= typeface.BasicAtlas.LineHeight() + 20.
 	mouse.Draw(canvasText, pixel.IM.Scaled(pixel.ZV, 2.).Moved(pixel.V(20., height)))

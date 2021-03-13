@@ -3,7 +3,7 @@ package player
 import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
-	"github.com/timsims1717/cg_rogue_go/internal/cfg"
+	"github.com/timsims1717/cg_rogue_go/pkg/camera"
 )
 
 type PlayCard struct {
@@ -22,7 +22,7 @@ func (p *PlayCard) Update(turn bool) {
 	if p.Card != nil && p.player != nil {
 		if turn {
 			if p.update {
-				p.Card.setXY(pixel.V(cfg.WindowWidthF - PlayRightPad, PlayBottomPad))
+				p.Card.setXY(pixel.V(camera.WindowWidthF - PlayRightPad, PlayBottomPad))
 				p.Card.setScalar(PlayCardScale)
 				p.update = false
 			}

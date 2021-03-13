@@ -59,48 +59,44 @@ func InitializeMenu(win *pixelgl.Window) {
 	player.Player1.PlayCard = nil
 	player.Player1.Discard = nil
 	camera.Cam.CenterOn([]pixel.Vec{world.MapToWorld(cameraPan[0])})
-	s := "Start Game"
-	text := ui2.NewActionText(s)
-	text.VAlign = ui2.Right
-	text.Scalar = pixel.V(4., 4.)
-	text.TextColor = colornames.Purple
-	r := pixel.R(0., 0., text.Text.BoundsOf(s).W() * 4., text.Text.BoundsOf(s).H() * 3.75)
-	startMenuItem = ui2.NewActionEl(text, r)
+	start := "Start Game"
+	startText := ui2.NewActionText(start)
+	startText.Transform.Scalar = pixel.V(4., 4.)
+	startText.TextColor = colornames.Purple
+	startR := pixel.R(0., 0., startText.Text.BoundsOf(start).W() * 4., startText.Text.BoundsOf(start).H() * 3.75)
+	startMenuItem = ui2.NewActionEl(startText, startR, camera.Cam)
 	startMenuItem.Show = true
-	startMenuItem.UI = true
-	startMenuItem.Pos = pixel.V(20., 280.)
+	startMenuItem.Transform.Pos = pixel.V(20., 280.)
 	startMenuItem.SetOnHoverFn(func() {
-		startMenuItem.T.TextColor = colornames.Forestgreen
-		startMenuItem.Scalar = pixel.V(1.05, 1.05)
-		startMenuItem.Pos.X += 5.
+		startMenuItem.Text.TextColor = colornames.Forestgreen
+		startMenuItem.Transform.Scalar = pixel.V(1.05, 1.05)
+		startMenuItem.Transform.Pos.X -= 5.
 	})
 	startMenuItem.SetUnHoverFn(func() {
-		startMenuItem.T.TextColor = colornames.Purple
-		startMenuItem.Scalar = pixel.V(1., 1.)
-		startMenuItem.Pos.X -= 5.
+		startMenuItem.Text.TextColor = colornames.Purple
+		startMenuItem.Transform.Scalar = pixel.V(1., 1.)
+		startMenuItem.Transform.Pos.X += 5.
 	})
 	startMenuItem.SetClickFn(func() {
 		SwitchState(state.InGame)
 	})
 	exitS := "Exit"
 	exitText := ui2.NewActionText(exitS)
-	exitText.VAlign = ui2.Right
-	exitText.Scalar = pixel.V(4., 4.)
+	exitText.Transform.Scalar = pixel.V(4., 4.)
 	exitText.TextColor = colornames.Purple
 	exitR := pixel.R(0., 0., exitText.Text.BoundsOf(exitS).W() * 4., exitText.Text.BoundsOf(exitS).H() * 3.75)
-	exitMenuItem = ui2.NewActionEl(exitText, exitR)
+	exitMenuItem = ui2.NewActionEl(exitText, exitR, camera.Cam)
 	exitMenuItem.Show = true
-	exitMenuItem.UI = true
-	exitMenuItem.Pos = pixel.V(20., 220.)
+	exitMenuItem.Transform.Pos = pixel.V(20., 220.)
 	exitMenuItem.SetOnHoverFn(func() {
-		exitMenuItem.T.TextColor = colornames.Forestgreen
-		exitMenuItem.Scalar = pixel.V(1.05, 1.05)
-		exitMenuItem.Pos.X += 5.
+		exitMenuItem.Text.TextColor = colornames.Forestgreen
+		exitMenuItem.Transform.Scalar = pixel.V(1.05, 1.05)
+		exitMenuItem.Transform.Pos.X -= 2.
 	})
 	exitMenuItem.SetUnHoverFn(func() {
-		exitMenuItem.T.TextColor = colornames.Purple
-		exitMenuItem.Scalar = pixel.V(1., 1.)
-		exitMenuItem.Pos.X -= 5.
+		exitMenuItem.Text.TextColor = colornames.Purple
+		exitMenuItem.Transform.Scalar = pixel.V(1., 1.)
+		exitMenuItem.Transform.Pos.X += 2.
 	})
 	exitMenuItem.SetClickFn(func() {
 		win.SetClosed(true)
