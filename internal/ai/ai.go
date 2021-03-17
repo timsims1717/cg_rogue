@@ -7,9 +7,13 @@ import (
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
-type AI struct {
-	MakeDecision  func(*characters.Character, []int) ([]*AIAction, int)
-	Act           func([]*TempAIAction)
+type AI interface {
+	Decide()
+	TakeTurn()
+}
+
+type AbstractAI struct {
+	AI            AI
 	Actions       []*AIAction
 	TempActions   []*TempAIAction
 	Character     *characters.Character
@@ -30,34 +34,15 @@ type TempAIAction struct {
 	Values selectors.ActionValues
 }
 
-func NewAI(makeDecision func(*characters.Character, []int) ([]*AIAction, int), act func([]*TempAIAction), character *characters.Character) *AI {
-	return &AI{
-		MakeDecision: makeDecision,
-		Act:          act,
-		Character:    character,
-	}
+func (ai *AbstractAI) IsAlive() bool {
+	return ai.Character.Health.Alive
 }
 
-func (ai *AI) Decide() {
+func (ai *AbstractAI) Update() {
 	if ai.Character.Health.Alive {
-		var next int
-		ai.Actions, next = ai.MakeDecision(ai.Character, ai.PrevDecicions)
-		ai.PrevDecicions = append(ai.PrevDecicions, next)
 		for _, act := range ai.Actions {
 			act.Values.Source = ai.Character
 		}
-	}
-}
-
-func (ai *AI) TakeTurn() {
-	if ai.Character.Health.Alive {
-		ai.Update()
-		ai.Act(ai.TempActions)
-	}
-}
-
-func (ai *AI) Update() {
-	if ai.Character.Health.Alive {
 		ai.TempActions = make([]*TempAIAction, len(ai.Actions))
 		ai.TempCoords = ai.Character.GetCoords()
 		for i, act := range ai.Actions {

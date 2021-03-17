@@ -8,6 +8,7 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/cards"
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
+	"github.com/timsims1717/cg_rogue_go/internal/generate"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
 	"github.com/timsims1717/cg_rogue_go/internal/selectors"
 	"github.com/timsims1717/cg_rogue_go/internal/state"
@@ -19,42 +20,30 @@ import (
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"golang.org/x/image/colornames"
-	"math/rand"
 	"time"
 )
 
 func InitializeGame() {
-	treesheet, err := img.LoadSpriteSheet("assets/character/trees.json")
-	if err != nil {
-		panic(err)
-	}
-	spritesheet, err := img.LoadSpriteSheet("assets/img/testfloor.json")
-	if err != nil {
-		panic(err)
-	}
-	charsheet, err := img.LoadSpriteSheet("assets/character/testmananim.json")
-	if err != nil {
-		panic(err)
-	}
 	uisheet, err := img.LoadSpriteSheet("assets/img/ui/selectors.json")
 	if err != nil {
 		panic(err)
 	}
 	selectors.SelectionSet.SetSpriteSheet(uisheet)
 
-	floor.DefaultFloor(10, 10, spritesheet)
-	Initialize()
-
-	tree := characters.NewCharacter(pixel.NewSprite(treesheet.Img, treesheet.Sprites[rand.Intn(len(treesheet.Sprites))]), world.Coords{8,4}, characters.Enemy, 10)
-	treeAI := ai.NewAI(ai.RandomWalkerDecision, ai.RandomWalkerAct, tree)
-	flyer := characters.NewCharacter(pixel.NewSprite(treesheet.Img, treesheet.Sprites[rand.Intn(len(treesheet.Sprites))]), world.Coords{2,9}, characters.Enemy, 10)
-	flyerAI := ai.NewAI(ai.FlyChaserDecision, ai.FlyChaserAct, flyer)
-	ai.AIManager.AddAI(treeAI)
-	ai.AIManager.AddAI(flyerAI)
-
-	character := characters.NewCharacter(pixel.NewSprite(charsheet.Img, charsheet.Sprites[rand.Intn(len(charsheet.Sprites))]), world.Coords{0,0}, characters.Ally, 10)
-	player.Player1 = player.NewPlayer(character)
+	InitializeCenterText()
 	player.Initialize()
+
+	generate.LoadTestFloor(1)
+
+	//floor.DefaultFloor(10, 10, spritesheet)
+
+	//tree := characters.NewCharacter(pixel.NewSprite(treesheet.Img, treesheet.Sprites[rand.Intn(len(treesheet.Sprites))]), world.Coords{8,4}, characters.Enemy, 10)
+	//treeAI := ai.NewRandomWalker(tree)
+	//flyer := characters.NewCharacter(pixel.NewSprite(treesheet.Img, treesheet.Sprites[rand.Intn(len(treesheet.Sprites))]), world.Coords{2,9}, characters.Enemy, 10)
+	//flyerAI := ai.NewFlyChaser(flyer)
+	//ai.AIManager.AddAI(treeAI)
+	//ai.AIManager.AddAI(flyerAI)
+
 	player.Player1.Hand = player.NewHand(player.Player1)
 	player.Player1.Hand.AddCard(cards.CreateThrust())
 	player.Player1.Hand.AddCard(cards.CreateDash())
@@ -107,19 +96,19 @@ func InitializeGame() {
 	})
 	moveButton.SetClickFn(func() {
 		values := selectors.ActionValues{
-		Source:  player.Player1.Character,
-		Damage:  0,
-		Move:    1,
-		Range:   0,
-		Targets: 0,
-		Checks: floor.PathChecks{
-			NotFilled:     true,
-			Unoccupied:    true,
-			NonEmpty:      true,
-			EndUnoccupied: true,
-			Orig:          world.Coords{},
-		},
-	}
+			Source:  player.Player1.Character,
+			Damage:  0,
+			Move:    1,
+			Range:   0,
+			Targets: 0,
+			Checks: floor.PathChecks{
+				NotFilled:     true,
+				Unoccupied:    true,
+				NonEmpty:      true,
+				EndUnoccupied: true,
+				Orig:          world.Coords{},
+			},
+		}
 		sel := selectors.NewPathSelect()
 		player.Player1.PlayCard.CancelCard()
 		player.Player1.SetPlayerAction(player.NewPlayerAction(sel, values, player.BasicMove))
@@ -131,12 +120,6 @@ func InitializeGame() {
 		moveButton.Show = true
 	})
 	player.Player1.MoveButton = moveButton
-
-	characters.CharacterManager.Add(tree)
-	characters.CharacterManager.Add(flyer)
-	characters.CharacterManager.Add(character)
-
-	camera.Cam.CenterOn([]pixel.Vec{character.Transform.Pos})
 	state.Machine.Phase = state.EnemyStartTurn
 }
 
@@ -150,7 +133,7 @@ func TransitionOutGame() bool {
 
 func UninitializeGame() {
 	floor.CurrentFloor = nil
-	Initialize()
+	InitializeCenterText()
 	ai.AIManager.Clear()
 	characters.CharacterManager.Clear()
 	player.Player1.Hand = nil
@@ -167,7 +150,7 @@ func UpdateGame(win *pixelgl.Window) {
 	player.CardManager.Update()
 	actions.Update()
 
-	ai.Update()
+	ai.AIManager.Update()
 	characters.Update()
 	player.Player1.Update(win)
 }

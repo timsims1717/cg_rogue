@@ -12,7 +12,7 @@ var (
 	CenterText *ui2.ActionEl
 )
 
-func Initialize() {
+func InitializeCenterText() {
 	text := ui2.NewActionText("")
 	text.Align = ui2.Center
 	text.Transform.Anchor.H = animation.Center

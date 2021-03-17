@@ -45,6 +45,24 @@ var NoCheck = PathChecks{
 	Orig:          world.Coords{},
 }
 
+func NewFloor(w, h int, spriteSheet *img.SpriteSheet) *Floor {
+	if w <= 0 || h <= 0 {
+		panic(fmt.Errorf("could not create floor with width of %d and height of %d", w, h))
+	}
+	floor := &Floor{
+		batch: pixel.NewBatch(&pixel.TrianglesData{}, spriteSheet.Img),
+		update: true,
+	}
+	floor.floor = make([][]Hex, 0)
+	for x := 0; x < w; x++ {
+		floor.floor = append(floor.floor, make([]Hex, 0))
+		for y := 0; y < h; y++ {
+			floor.floor[x] = append(floor.floor[x], NewHex(floor, x, y, pixel.NewSprite(spriteSheet.Img, spriteSheet.Sprites[rand.Intn(len(spriteSheet.Sprites))])))
+		}
+	}
+	return floor
+}
+
 func DefaultFloor(w, h int, spriteSheet *img.SpriteSheet) {
 	if w <= 0 || h <= 0 {
 		panic(fmt.Errorf("could not create floor with width of %d and height of %d", w, h))

@@ -15,8 +15,8 @@ func SetAttackTransform(source objects.Moveable, target world.Coords) {
 	e := p.Add(t)
 	transform := animation.TransformBuilder{
 		Transform: source.GetTransform(),
-		InterX:    gween.New(p.X, e.X, 0.12, ease.InQuint),
-		InterY:    gween.New(p.Y, e.Y, 0.12, ease.InQuint),
+		InterX:    gween.New(p.X, e.X, 0.12, ease.InBack),
+		InterY:    gween.New(p.Y, e.Y, 0.12, ease.InBack),
 	}
 	source.SetTransformEffect(transform.Build())
 }

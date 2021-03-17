@@ -1,11 +1,13 @@
 package ai
 
-import "github.com/timsims1717/cg_rogue_go/internal/actions"
+import (
+	"github.com/timsims1717/cg_rogue_go/internal/actions"
+)
 
 var AIManager aiManager
 
 type aiManager struct {
-	set       []*AI
+	set       []*AbstractAI
 	takeTurn  bool
 	turnIndex int
 	decide    bool
@@ -19,36 +21,41 @@ func (m *aiManager) EndAITurn() {
 	m.decide = true
 }
 
-func (m *aiManager) AddAI(ai *AI) {
+func (m *aiManager) AddAI(ai *AbstractAI) {
 	m.set = append(m.set, ai)
 }
 
 func (m *aiManager) Clear() {
-	m.set = []*AI{}
-}
-
-func Update() {
-	if AIManager.takeTurn && !actions.IsActing() {
-		AIManager.turnIndex += 1
-	}
-	if AIManager.takeTurn && !actions.IsActing() && AIManager.turnIndex == len(AIManager.set) {
-		AIManager.takeTurn = false
-		AIManager.turnIndex = -1
-	}
-	for i, ai := range AIManager.set {
-		if AIManager.decide {
-			ai.Decide()
-		}
-		ai.Update()
-		if AIManager.takeTurn {
-			if AIManager.turnIndex == i && !actions.IsActing() {
-				ai.TakeTurn()
-			}
-		}
-	}
-	AIManager.decide = false
+	m.set = []*AbstractAI{}
 }
 
 func (m *aiManager) AIActing() bool {
 	return m.takeTurn
+}
+
+func (m *aiManager) Update() {
+	if m.takeTurn && !actions.IsActing() {
+		if m.turnIndex > -1 && m.turnIndex < len(m.set) {
+			m.set[m.turnIndex].Actions = []*AIAction{}
+		}
+		m.turnIndex += 1
+	}
+	if m.takeTurn && !actions.IsActing() && m.turnIndex == len(m.set) {
+		m.takeTurn = false
+		m.turnIndex = -1
+	}
+	for i, ai := range m.set {
+		if ai.IsAlive() {
+			if m.decide {
+				ai.AI.Decide()
+			}
+			ai.Update()
+			if m.takeTurn {
+				if m.turnIndex == i && !actions.IsActing() {
+					ai.AI.TakeTurn()
+				}
+			}
+		}
+	}
+	m.decide = false
 }
