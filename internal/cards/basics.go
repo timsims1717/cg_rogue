@@ -3,7 +3,6 @@ package cards
 import (
 	"github.com/timsims1717/cg_rogue_go/internal/actions"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
-	"github.com/timsims1717/cg_rogue_go/internal/objects"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
 	"github.com/timsims1717/cg_rogue_go/internal/selectors"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
@@ -12,14 +11,7 @@ import (
 func CreateThrust() *player.Card {
 	values := ThrustLevel(0)
 	fn := func (targets []world.Coords, values selectors.ActionValues) {
-		if len(targets) > 0 {
-			occ := floor.CurrentFloor.GetOccupant(targets[0])
-			if occ != nil {
-				if target, ok := occ.(objects.Targetable); ok {
-					actions.AddToBot(actions.NewDamageAction(values.Source, target, values.Damage))
-				}
-			}
-		}
+		actions.AddToBot(actions.NewDamageAction(targets, values))
 	}
 	act := player.NewPlayerAction(selectors.NewTargetSelect(), values, fn)
 	sec := player.NewCardSection("Deal 4 damage.", act)
@@ -81,14 +73,7 @@ func CreateQuickStrike() *player.Card {
 		actions.AddToBot(actions.NewMoveSeriesAction(values.Source, values.Source, path))
 	}
 	fnAtk := func (targets []world.Coords, values selectors.ActionValues) {
-		if len(targets) > 0 {
-			occ := floor.CurrentFloor.GetOccupant(targets[0])
-			if occ != nil {
-				if target, ok := occ.(objects.Targetable); ok {
-					actions.AddToBot(actions.NewDamageAction(values.Source, target, values.Damage))
-				}
-			}
-		}
+		actions.AddToBot(actions.NewDamageAction(targets, values))
 	}
 	selMov := selectors.NewPathSelect()
 	actMov := player.NewPlayerAction(selMov, valMov, fnMov)
@@ -171,7 +156,7 @@ func CreateVault() *player.Card {
 		actions.AddToBot(actions.NewMoveAction(values.Source, values.Source, h))
 	}
 	fnAtk := func (targets []world.Coords, values selectors.ActionValues) {
-		actions.AddToBot(actions.NewDamageHexAction(values.Source, targets, values.Damage))
+		actions.AddToBot(actions.NewDamageHexAction(targets, values))
 	}
 	selMov := selectors.NewEmptyHexSelect()
 	selAtk := selectors.NewHexSelect()
@@ -198,7 +183,7 @@ func VaultLevel(level int) (selectors.ActionValues, selectors.ActionValues) {
 func CreateDaggerThrow() *player.Card {
 	values := DaggerThrowLevel(0)
 	fn := func (targets []world.Coords, values selectors.ActionValues) {
-		actions.AddToBot(actions.NewDamageHexAction(values.Source, targets, values.Damage))
+		actions.AddToBot(actions.NewDamageHexAction(targets, values))
 	}
 	sel := selectors.NewLineSelect()
 	act := player.NewPlayerAction(sel, values, fn)

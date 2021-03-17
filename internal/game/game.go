@@ -136,7 +136,7 @@ func InitializeGame() {
 	characters.CharacterManager.Add(flyer)
 	characters.CharacterManager.Add(character)
 
-	camera.Cam.CenterOn([]pixel.Vec{character.Pos})
+	camera.Cam.CenterOn([]pixel.Vec{character.Transform.Pos})
 	state.Machine.Phase = state.EnemyStartTurn
 }
 
@@ -192,12 +192,12 @@ func UpdateGamePhase() {
 		CenterText.Show = true
 		CenterText.Text.TextColor = colornames.Black
 		transform := animation.TransformBuilder{
-			Target:  CenterText.Text.Transform,
-			InterX:  nil,
-			InterY:  nil,
-			InterR:  nil,
-			InterSX: gween.New(CenterText.Text.Transform.Scalar.X, 7.0, 2.0, ease.Linear),
-			InterSY: gween.New(CenterText.Text.Transform.Scalar.Y, 7.0, 2.0, ease.Linear),
+			Transform: CenterText.Text.Transform,
+			InterX:    nil,
+			InterY:    nil,
+			InterR:    nil,
+			InterSX:   gween.New(CenterText.Text.Transform.Scalar.X, 7.0, 2.0, ease.Linear),
+			InterSY:   gween.New(CenterText.Text.Transform.Scalar.Y, 7.0, 2.0, ease.Linear),
 		}
 		CenterText.Text.TransformEffect = transform.Build()
 		CenterText.Text.ColorEffect = animation.FadeIn(CenterText.Text, 2.0)
@@ -220,12 +220,12 @@ func UpdateGamePhase() {
 			CenterText.Show = true
 			CenterText.Text.TextColor = colornames.Black
 			transform := animation.TransformBuilder{
-				Target:  CenterText.Text.Transform,
-				InterX:  nil,
-				InterY:  nil,
-				InterR:  nil,
-				InterSX: gween.New(CenterText.Text.Transform.Scalar.X, 7.0, 2.0, ease.Linear),
-				InterSY: gween.New(CenterText.Text.Transform.Scalar.Y, 7.0, 2.0, ease.Linear),
+				Transform: CenterText.Text.Transform,
+				InterX:    nil,
+				InterY:    nil,
+				InterR:    nil,
+				InterSX:   gween.New(CenterText.Text.Transform.Scalar.X, 7.0, 2.0, ease.Linear),
+				InterSY:   gween.New(CenterText.Text.Transform.Scalar.Y, 7.0, 2.0, ease.Linear),
 			}
 			CenterText.Text.TransformEffect = transform.Build()
 			CenterText.Text.ColorEffect = animation.FadeIn(CenterText, 2.0)
@@ -236,7 +236,7 @@ func UpdateGamePhase() {
 	case state.PlayerStartTurn:
 		// todo: effects?
 		player.Player1.StartTurn()
-		camera.Cam.MoveTo(player.Player1.Character.Pos, 0.2, true)
+		camera.Cam.MoveTo(player.Player1.Character.Transform.Pos, 0.2, true)
 		state.Machine.Phase = state.PlayerTurn
 	case state.PlayerTurn:
 		if player.Player1.ActionsThisTurn > 0 && player.Player1.PlayCard.Card == nil && !actions.IsActing() {

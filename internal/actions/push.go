@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"github.com/faiface/pixel"
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/objects"
@@ -72,11 +73,15 @@ type PushMultiAction struct{
 	area    []world.Coords
 	values  selectors.ActionValues
 	start   bool
+	preDam  bool
+	postDam bool
 	isDone  bool
+	interX  *gween.Tween
+	interY  *gween.Tween
 	targets []objects.Moveable
 	ends    []world.Coords
-	interX  []*gween.Tween
-	interY  []*gween.Tween
+	interXP []*gween.Tween
+	interYP []*gween.Tween
 }
 
 func NewPushMultiAction(area []world.Coords, values selectors.ActionValues) *PushMultiAction {
@@ -87,12 +92,22 @@ func NewPushMultiAction(area []world.Coords, values selectors.ActionValues) *Pus
 		area:   area,
 		values: values,
 		start:  true,
-		isDone: false,
+		preDam: true,
 	}
 }
 
 func (a *PushMultiAction) Update() {
 	if a.start {
+		SetAttackTransform(a.values.Source, a.area[0])
+		a.start = false
+	}
+	if !a.values.Source.IsMoving() {
+		a.preDam = false
+	}
+	if !a.preDam {
+		if !a.postDam {
+			SetResetTransform(a.values.Source)
+		}
 		o := a.values.Source.GetCoords()
 		for _, n := range a.area {
 			if target := floor.CurrentFloor.GetOccupant(n); target != nil {
@@ -117,45 +132,46 @@ func (a *PushMultiAction) Update() {
 				a.targets = append(a.targets, target)
 				if len(nPath) < 2 {
 					a.ends = append(a.ends, target.GetCoords())
-					a.interX = append(a.interX, nil)
-					a.interY = append(a.interY, nil)
+					a.interXP = append(a.interXP, nil)
+					a.interYP = append(a.interYP, nil)
 				} else {
 					end := nPath[len(nPath)-1]
 					b := world.MapToWorld(end)
 					a.ends = append(a.ends, end)
-					x, y := target.GetXY()
-					a.interX = append(a.interX, gween.New(x, b.X, 0.25, ease.OutCubic))
-					a.interY = append(a.interY, gween.New(y, b.Y, 0.25, ease.OutCubic))
+					p := target.GetPos()
+					a.interXP = append(a.interXP, gween.New(p.X, b.X, 0.25, ease.OutCubic))
+					a.interYP = append(a.interYP, gween.New(p.Y, b.Y, 0.25, ease.OutCubic))
 				}
 			}
 		}
-	}
-	done := true
-	for i, target := range a.targets {
-		if a.start {
-			if t, ok := target.(objects.Targetable); ok {
-				t.Damage(a.values.Damage)
+
+		done := !a.values.Source.IsMoving() && a.postDam
+		for i, target := range a.targets {
+			if !a.postDam {
+				if t, ok := target.(objects.Targetable); ok {
+					t.Damage(a.values.Damage)
+				}
+			}
+			if a.interXP[i] != nil && a.interYP[i] != nil {
+				x, finX := a.interXP[i].Update(timing.DT)
+				y, finY := a.interYP[i].Update(timing.DT)
+				target.SetPos(pixel.V(x, y))
+				if finX && finY {
+					floor.CurrentFloor.MoveOccupant(target, target.GetCoords(), a.ends[i])
+					target.SetCoords(a.ends[i])
+					a.interXP[i] = nil
+					a.interYP[i] = nil
+				} else {
+					done = false
+				}
 			}
 		}
-		if a.interX[i] != nil && a.interY[i] != nil {
-			x, finX := a.interX[i].Update(timing.DT)
-			y, finY := a.interY[i].Update(timing.DT)
-			target.SetXY(x, y)
-			if finX && finY {
-				floor.CurrentFloor.MoveOccupant(target, target.GetCoords(), a.ends[i])
-				target.SetCoords(a.ends[i])
-				a.interX[i] = nil
-				a.interY[i] = nil
-			} else {
-				done = false
-			}
+		if !a.postDam {
+			a.postDam = true
 		}
-	}
-	if a.start {
-		a.start = false
-	}
-	if done {
-		a.isDone = true
+		if done {
+			a.isDone = true
+		}
 	}
 }
 

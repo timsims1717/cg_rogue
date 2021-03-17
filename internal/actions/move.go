@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"github.com/faiface/pixel"
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/objects"
@@ -25,22 +26,22 @@ func NewMoveAction(source *characters.Character, target objects.Moveable, end wo
 		return nil
 	}
 	b := world.MapToWorld(end)
-	px, py := target.GetXY()
+	p := target.GetPos()
 	return &MoveAction{
 		source: source,
 		target: target,
 		end:    end,
 		start:  target.GetCoords(),
 		isDone: false,
-		interX: gween.New(px, b.X, 0.25, ease.InOutQuad),
-		interY: gween.New(py, b.Y, 0.25, ease.InOutQuad),
+		interX: gween.New(p.X, b.X, 0.25, ease.InOutQuad),
+		interY: gween.New(p.Y, b.Y, 0.25, ease.InOutQuad),
 	}
 }
 
 func (a *MoveAction) Update() {
 	x, finX := a.interX.Update(timing.DT)
 	y, finY := a.interY.Update(timing.DT)
-	a.target.SetXY(x, y)
+	a.target.SetPos(pixel.V(x, y))
 	if finX && finY {
 		a.target.SetCoords(a.end)
 		a.isDone = true
@@ -69,7 +70,7 @@ func NewMoveSeriesAction(source *characters.Character, target objects.Moveable, 
 	} else {
 		first := series[0]
 		b := world.MapToWorld(first)
-		px, py := target.GetXY()
+		p := target.GetPos()
 
 		return &MoveSeriesAction{
 			target: target,
@@ -77,8 +78,8 @@ func NewMoveSeriesAction(source *characters.Character, target objects.Moveable, 
 			step:   0,
 			start:  target.GetCoords(),
 			isDone: false,
-			interX: gween.New(px, b.X, 0.25, ease.InQuad),
-			interY: gween.New(py, b.Y, 0.25, ease.InQuad),
+			interX: gween.New(p.X, b.X, 0.25, ease.InQuad),
+			interY: gween.New(p.Y, b.Y, 0.25, ease.InQuad),
 		}
 	}
 }
@@ -86,7 +87,7 @@ func NewMoveSeriesAction(source *characters.Character, target objects.Moveable, 
 func (m *MoveSeriesAction) Update() {
 	x, finX := m.interX.Update(timing.DT)
 	y, finY := m.interY.Update(timing.DT)
-	m.target.SetXY(x, y)
+	m.target.SetPos(pixel.V(x, y))
 	if finX && finY {
 		if m.step >= len(m.series) - 1 {
 			next := m.series[m.step]

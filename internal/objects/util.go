@@ -1,6 +1,8 @@
 package objects
 
 import (
+	"github.com/faiface/pixel"
+	"github.com/timsims1717/cg_rogue_go/pkg/animation"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"reflect"
 )
@@ -27,8 +29,11 @@ func NotNil(i interface{}) bool {
 type Moveable interface {
 	GetCoords() world.Coords
 	SetCoords(world.Coords)
-	GetXY() (float64, float64)
-	SetXY(float64, float64)
+	GetTransform() *animation.Transform
+	SetTransformEffect(*animation.TransformEffect)
+	GetPos() pixel.Vec
+	SetPos(pixel.Vec)
+	IsMoving() bool
 }
 
 // notNil checks both if o is nil, and if the underlying

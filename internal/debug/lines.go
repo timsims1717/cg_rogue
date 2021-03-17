@@ -1,7 +1,6 @@
 package debug
 
 import (
-	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
@@ -24,12 +23,12 @@ func UpdateLines() {
 		// pc to coords
 		imd.Color = colornames.Red
 		imd.EndShape = imdraw.NoEndShape
-		imd.Push(pixel.V(player.Player1.Character.GetXY()), world.MapToWorld(player.Player1.Input.Coords))
+		imd.Push(player.Player1.Character.GetPos(), world.MapToWorld(player.Player1.Input.Coords))
 		imd.Line(2)
 		// pc to mouse
 		imd.Color = colornames.Green
 		imd.EndShape = imdraw.NoEndShape
-		imd.Push(pixel.V(player.Player1.Character.GetXY()), player.Player1.Input.World)
+		imd.Push(player.Player1.Character.GetPos(), player.Player1.Input.World)
 		imd.Line(2)
 	}
 	if floor.CurrentFloor != nil {

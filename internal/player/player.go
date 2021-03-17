@@ -6,7 +6,6 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/input"
-	"github.com/timsims1717/cg_rogue_go/internal/objects"
 	"github.com/timsims1717/cg_rogue_go/internal/selectors"
 	"github.com/timsims1717/cg_rogue_go/internal/state"
 	"github.com/timsims1717/cg_rogue_go/internal/ui"
@@ -145,12 +144,7 @@ func BasicMove(path []world.Coords, values selectors.ActionValues) {
 
 func BasicAttack(targets []world.Coords, values selectors.ActionValues) {
 	if len(targets) > 0 {
-		occ := floor.CurrentFloor.GetOccupant(targets[0])
-		if occ != nil {
-			if target, ok := occ.(objects.Targetable); ok {
-				actions.AddToBot(actions.NewDamageAction(values.Source, target, values.Damage))
-			}
-		}
+		actions.AddToBot(actions.NewDamageAction(targets, values))
 	}
 }
 

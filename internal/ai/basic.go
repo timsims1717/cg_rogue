@@ -80,7 +80,7 @@ func RandomWalkerAct(acts []*TempAIAction) {
 		case 0:
 			actions.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
 		case 1:
-			actions.AddToBot(actions.NewDamageHexAction(act.Values.Source, act.Area, act.Values.Damage))
+			actions.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
 		}
 	}
 }
@@ -189,7 +189,116 @@ func FlyChaserAct(acts []*TempAIAction) {
 		case 0:
 			actions.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
 		case 1:
-			actions.AddToBot(actions.NewDamageHexAction(act.Values.Source, act.Area, act.Values.Damage))
+			actions.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+		}
+	}
+}
+
+// If the player is further than 10 tiles, patrols between two points
+// If the player is between 8-10 tiles, gets w/in 8
+// If the player is between 4-7 tiles, strafe and attack from range
+// If the player is between 2-3 tiles, retreat
+// Otherwise, plink the player
+func SkirmisherDecision(character *characters.Character, previous []int) ([]*AIAction, int) {
+	prev := 0
+	if len(previous) > 0 {
+		prev = previous[len(previous)-1]
+	}
+	if prev == 3 {
+		return []*AIAction{}, 0
+	}
+	orig := character.Coords
+	movCheck := floor.PathChecks{
+		NotFilled:     true,
+		Unoccupied:    false,
+		NonEmpty:      false,
+		EndUnoccupied: true,
+		Orig:          orig,
+	}
+	atkCheck := floor.PathChecks{
+		NotFilled:     true,
+		Unoccupied:    false,
+		NonEmpty:      false,
+		EndUnoccupied: false,
+		Orig:          orig,
+	}
+	targets := characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 6)
+	if len(targets) > 0 {
+		for i := 0; i < 3; i++ {
+			choice := targets[rand.Intn(len(targets))]
+			if path, d, legal := floor.CurrentFloor.FindPathWithinOne(orig, choice, movCheck); legal {
+				if d > 2 {
+					tPath := floor.CurrentFloor.LongestLegalPath(path[:3], movCheck)
+					if len(tPath) > 0 {
+						return []*AIAction{
+							{
+								Path:        tPath,
+								PathCheck:   movCheck,
+								TargetArea:  nil,
+								TargetCheck: floor.PathChecks{},
+								Values: selectors.ActionValues{
+									Move: len(tPath),
+								},
+							},
+						}, prev
+					}
+				} else {
+					return []*AIAction{
+						{
+							Path:        path,
+							PathCheck:   movCheck,
+							TargetArea:  nil,
+							TargetCheck: floor.PathChecks{},
+							Values: selectors.ActionValues{
+								Move: 1,
+							},
+						},
+						{
+							Path:        []world.Coords{path[len(path)-1], choice},
+							PathCheck:   floor.NoCheck,
+							TargetArea:  []world.Coords{world.Origin},
+							TargetCheck: atkCheck,
+							Values:      selectors.ActionValues{
+								Damage: 1,
+							},
+						},
+					}, prev + 1
+				}
+			}
+		}
+	}
+	if rand.Intn(2) > 0 {
+		// 50% chance random walk
+		within := floor.CurrentFloor.AllWithinNoPath(orig, 2, movCheck)
+		if len(within) > 0 {
+			for i := 0; i < 3; i++ {
+				choice := within[rand.Intn(len(within))]
+				if path, d, legal := floor.CurrentFloor.FindPath(orig, choice, movCheck); legal && d <= 2 {
+					return []*AIAction{
+						{
+							Path:        path,
+							PathCheck:   movCheck,
+							TargetArea:  nil,
+							TargetCheck: floor.PathChecks{},
+							Values: selectors.ActionValues{
+								Move: d,
+							},
+						},
+					}, prev
+				}
+			}
+		}
+	}
+	return []*AIAction{}, prev
+}
+
+func SkirmisherAct(acts []*TempAIAction) {
+	for i, act := range acts {
+		switch i % 2 {
+		case 0:
+			actions.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
+		case 1:
+			actions.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
 		}
 	}
 }

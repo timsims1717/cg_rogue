@@ -173,17 +173,17 @@ func (e *TransformEffect) IsDone() bool {
 }
 
 type TransformBuilder struct {
-	Target  *Transform
-	InterX  *gween.Tween
-	InterY  *gween.Tween
-	InterR  *gween.Tween
-	InterSX *gween.Tween
-	InterSY *gween.Tween
+	Transform *Transform
+	InterX    *gween.Tween
+	InterY    *gween.Tween
+	InterR    *gween.Tween
+	InterSX   *gween.Tween
+	InterSY   *gween.Tween
 }
 
 func (b *TransformBuilder) Build() *TransformEffect {
 	return &TransformEffect{
-		target:  b.Target,
+		target:  b.Transform,
 		interX:  b.InterX,
 		interY:  b.InterY,
 		interR:  b.InterR,
