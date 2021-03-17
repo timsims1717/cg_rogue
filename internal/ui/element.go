@@ -17,6 +17,7 @@ import (
 type ActionEl struct {
 	Text *ActionText
 	Show bool
+	IsUI bool
 
 	Transform       *animation.Transform
 	Spr             *pixel.Sprite
@@ -40,19 +41,19 @@ type ActionEl struct {
 	onEnabledFn  func()
 }
 
-func NewActionEl(t *ActionText, rect pixel.Rect, cam *camera.Camera) *ActionEl {
+func NewActionEl(t *ActionText, rect pixel.Rect, isUI bool) *ActionEl {
 	transform := animation.NewTransform(true)
 	transform.Anchor = animation.Anchor{
 		H: animation.Left,
 		V: animation.Bottom,
 	}
 	transform.Rect = rect
-	transform.Cam = cam
 	return &ActionEl{
 		Text:      t,
 		Transform: transform,
 		canvas:    pixelgl.NewCanvas(rect),
 		Mask:      colornames.White,
+		IsUI:      isUI,
 	}
 }
 
@@ -106,6 +107,9 @@ func (e *ActionEl) Update(input *input.Input) {
 	}
 	e.Transform.Rect = e.canvas.Bounds()
 	e.Transform.Update(pixel.Rect{})
+	if e.IsUI {
+		e.Transform.Mat = camera.Cam.UITransform(e.Transform.RPos, e.Transform.Scalar, e.Transform.Rot)
+	}
 	//DebugDraw.Color = colornames.Red
 	//DebugDraw.EndShape = imdraw.NoEndShape
 	//for _, v := range e.canvas.Bounds().Vertices() {

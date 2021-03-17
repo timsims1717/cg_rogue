@@ -7,6 +7,7 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/player"
 	"github.com/timsims1717/cg_rogue_go/internal/state"
 	ui2 "github.com/timsims1717/cg_rogue_go/internal/ui"
+	"github.com/timsims1717/cg_rogue_go/pkg/animation"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
@@ -64,7 +65,7 @@ func InitializeMenu(win *pixelgl.Window) {
 	startText.Transform.Scalar = pixel.V(4., 4.)
 	startText.TextColor = colornames.Purple
 	startR := pixel.R(0., 0., startText.Text.BoundsOf(start).W() * 4., startText.Text.BoundsOf(start).H() * 3.75)
-	startMenuItem = ui2.NewActionEl(startText, startR, camera.Cam)
+	startMenuItem = ui2.NewActionEl(startText, startR, true)
 	startMenuItem.Show = true
 	startMenuItem.Transform.Pos = pixel.V(20., 280.)
 	startMenuItem.SetOnHoverFn(func() {
@@ -78,6 +79,7 @@ func InitializeMenu(win *pixelgl.Window) {
 		startMenuItem.Transform.Pos.X += 5.
 	})
 	startMenuItem.SetClickFn(func() {
+		camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.Black, 1.0)
 		SwitchState(state.InGame)
 	})
 	exitS := "Exit"
@@ -85,7 +87,7 @@ func InitializeMenu(win *pixelgl.Window) {
 	exitText.Transform.Scalar = pixel.V(4., 4.)
 	exitText.TextColor = colornames.Purple
 	exitR := pixel.R(0., 0., exitText.Text.BoundsOf(exitS).W() * 4., exitText.Text.BoundsOf(exitS).H() * 3.75)
-	exitMenuItem = ui2.NewActionEl(exitText, exitR, camera.Cam)
+	exitMenuItem = ui2.NewActionEl(exitText, exitR, true)
 	exitMenuItem.Show = true
 	exitMenuItem.Transform.Pos = pixel.V(20., 220.)
 	exitMenuItem.SetOnHoverFn(func() {
@@ -99,16 +101,18 @@ func InitializeMenu(win *pixelgl.Window) {
 		exitMenuItem.Transform.Pos.X += 2.
 	})
 	exitMenuItem.SetClickFn(func() {
-		win.SetClosed(true)
+		camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.Black, 1.0)
+		SwitchState(state.Exiting)
 	})
+	camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.White, 1.0)
 }
 
 func TransitionInMenu() bool {
-	return false
+	return camera.Cam.Effect != nil
 }
 
 func TransitionOutMenu() bool {
-	return false
+	return camera.Cam.Effect != nil
 }
 
 func UninitializeMenu() {

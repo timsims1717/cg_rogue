@@ -20,7 +20,6 @@ import (
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"golang.org/x/image/colornames"
-	"time"
 )
 
 func InitializeGame() {
@@ -58,7 +57,7 @@ func InitializeGame() {
 	rest := ui.NewActionText(restS)
 	rest.Transform.Scalar = pixel.V(2.5, 2.5)
 	rest.TextColor = colornames.Purple
-	restButton := ui.NewActionEl(rest, pixel.R(0., 0., rest.Text.BoundsOf(restS).W() * 2.5, rest.Text.BoundsOf(restS).H() * 2.5), camera.Cam)
+	restButton := ui.NewActionEl(rest, pixel.R(0., 0., rest.Text.BoundsOf(restS).W() * 2.5, rest.Text.BoundsOf(restS).H() * 2.5), true)
 	restButton.Show = true
 	restButton.Transform.Pos = pixel.V(camera.WindowWidthF - player.ButtonRightPad, player.RestBottomPad)
 	restButton.SetOnHoverFn(func() {
@@ -85,7 +84,7 @@ func InitializeGame() {
 	move := ui.NewActionText(moveS)
 	move.Transform.Scalar = pixel.V(2.5, 2.5)
 	move.TextColor = colornames.Purple
-	moveButton := ui.NewActionEl(move, pixel.R(0., 0., move.Text.BoundsOf(moveS).W() * 2.5, move.Text.BoundsOf(moveS).H() * 2.5), camera.Cam)
+	moveButton := ui.NewActionEl(move, pixel.R(0., 0., move.Text.BoundsOf(moveS).W() * 2.5, move.Text.BoundsOf(moveS).H() * 2.5), true)
 	moveButton.Show = true
 	moveButton.Transform.Pos = pixel.V(camera.WindowWidthF - player.ButtonRightPad, player.MoveBottomPad)
 	moveButton.SetOnHoverFn(func() {
@@ -121,14 +120,15 @@ func InitializeGame() {
 	})
 	player.Player1.MoveButton = moveButton
 	state.Machine.Phase = state.EnemyStartTurn
+	camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.White, 1.0)
 }
 
 func TransitionInGame() bool {
-	return false
+	return camera.Cam.Effect != nil
 }
 
 func TransitionOutGame() bool {
-	return false
+	return camera.Cam.Effect != nil
 }
 
 func UninitializeGame() {
@@ -169,6 +169,9 @@ func DrawGame(win *pixelgl.Window) {
 }
 
 func UpdateGamePhase() {
+	if state.Machine.Phase == state.Undefined {
+		return
+	}
 	if state.Machine.Phase != state.EncounterComplete && state.Machine.Phase != state.GameOver && player.Player1.Character.IsDestroyed() {
 		player.Player1.EndTurn()
 		CenterText.Text.Raw = "Game Over"
@@ -238,9 +241,8 @@ func UpdateGamePhase() {
 	case state.EncounterComplete:
 		fallthrough
 	case state.GameOver:
-		go func() {
-			time.Sleep(3 * time.Second)
-			SwitchState(state.MainMenu)
-		}()
+		camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.Black,4.)
+		SwitchState(state.MainMenu)
+		state.Machine.Phase = state.Undefined
 	}
 }

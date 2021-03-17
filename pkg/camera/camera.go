@@ -3,19 +3,24 @@ package camera
 import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
+	"github.com/timsims1717/cg_rogue_go/pkg/animation"
 	gween "github.com/timsims1717/cg_rogue_go/pkg/gween64"
 	"github.com/timsims1717/cg_rogue_go/pkg/gween64/ease"
 	"github.com/timsims1717/cg_rogue_go/pkg/timing"
+	"golang.org/x/image/colornames"
+	"image/color"
 	"math"
 )
 
 var Cam *Camera
 
 type Camera struct {
-	Mat  pixel.Matrix
-	Pos  pixel.Vec
-	Zoom float64
-	Opt  CameraOptions
+	Mat    pixel.Matrix
+	Pos    pixel.Vec
+	Zoom   float64
+	Opt    CameraOptions
+	Color  color.RGBA
+	Effect *animation.ColorEffect
 
 	interX *gween.Tween
 	interY *gween.Tween
@@ -37,6 +42,7 @@ func New() *Camera {
 			ScrollSpeed: 500.0,
 			ZoomSpeed:   1.2,
 		},
+		Color: colornames.Black,
 	}
 }
 
@@ -76,8 +82,15 @@ func (c *Camera) Update(win *pixelgl.Window) {
 	if fin && c.lock {
 		c.lock = false
 	}
+	if c.Effect != nil {
+		c.Effect.Update()
+		if c.Effect.IsDone() {
+			c.Effect = nil
+		}
+	}
 	c.Mat = pixel.IM.Scaled(c.Pos, c.Zoom).Moved(win.Bounds().Center().Sub(c.Pos))
 	win.SetMatrix(c.Mat)
+	win.SetColorMask(c.Color)
 }
 
 func (c *Camera) Stop() {
@@ -146,4 +159,12 @@ func (c *Camera) UITransform(pos, scalar pixel.Vec, rot float64) pixel.Matrix {
 	mat = mat.Moved(pixel.V(WindowWidthF, WindowHeightF).Scaled(-0.5 * zoom))
 	mat = mat.Moved(pos.Scaled(zoom))
 	return mat
+}
+
+func (c *Camera) GetColor() color.RGBA {
+	return c.Color
+}
+
+func (c *Camera) SetColor(col color.RGBA) {
+	c.Color = col
 }

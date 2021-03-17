@@ -90,9 +90,9 @@ func FadeOut(target Colorable, dur float64) *ColorEffect {
 	return &ColorEffect{
 		target: target,
 		interR: gween.New(float64(start.R), float64(end.R), dur, ease.Linear),
-		interG: gween.New(float64(start.G), float64(end.R), dur, ease.Linear),
-		interB: gween.New(float64(start.B), float64(end.R), dur, ease.Linear),
-		interA: gween.New(float64(start.A), float64(end.R), dur, ease.Linear),
+		interG: gween.New(float64(start.G), float64(end.G), dur, ease.Linear),
+		interB: gween.New(float64(start.B), float64(end.B), dur, ease.Linear),
+		interA: gween.New(float64(start.A), float64(end.A), dur, ease.Linear),
 		isDone: false,
 	}
 }
@@ -103,9 +103,9 @@ func FadeFrom(target Colorable, col color.RGBA, dur float64) *ColorEffect {
 	return &ColorEffect{
 		target: target,
 		interR: gween.New(float64(start.R), float64(end.R), dur, ease.Linear),
-		interG: gween.New(float64(start.G), float64(end.R), dur, ease.Linear),
-		interB: gween.New(float64(start.B), float64(end.R), dur, ease.Linear),
-		interA: gween.New(float64(start.A), float64(end.R), dur, ease.Linear),
+		interG: gween.New(float64(start.G), float64(end.G), dur, ease.Linear),
+		interB: gween.New(float64(start.B), float64(end.B), dur, ease.Linear),
+		interA: gween.New(float64(start.A), float64(end.A), dur, ease.Linear),
 		isDone: false,
 	}
 }
@@ -116,9 +116,9 @@ func FadeTo(target Colorable, col color.RGBA, dur float64) *ColorEffect {
 	return &ColorEffect{
 		target: target,
 		interR: gween.New(float64(start.R), float64(end.R), dur, ease.Linear),
-		interG: gween.New(float64(start.G), float64(end.R), dur, ease.Linear),
-		interB: gween.New(float64(start.B), float64(end.R), dur, ease.Linear),
-		interA: gween.New(float64(start.A), float64(end.R), dur, ease.Linear),
+		interG: gween.New(float64(start.G), float64(end.G), dur, ease.Linear),
+		interB: gween.New(float64(start.B), float64(end.B), dur, ease.Linear),
+		interA: gween.New(float64(start.A), float64(end.A), dur, ease.Linear),
 		isDone: false,
 	}
 }

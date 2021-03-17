@@ -38,7 +38,7 @@ func run() {
 		debug.Update()
 		game.Update(win)
 
-		win.Clear(colornames.Forestgreen)
+		win.Clear(colornames.Black)
 
 		game.Draw(win)
 		debug.Draw(win)

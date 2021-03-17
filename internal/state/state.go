@@ -7,6 +7,7 @@ const (
 	MainMenu
 	InGame
 	Pause
+	Exiting
 )
 
 type phase int

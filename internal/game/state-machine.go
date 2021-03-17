@@ -19,6 +19,8 @@ func Update(win *pixelgl.Window) {
 		UpdateMenu(win)
 	case state.InGame:
 		UpdateGame(win)
+	case state.Exiting:
+		win.SetClosed(true)
 	}
 }
 

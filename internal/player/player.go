@@ -71,12 +71,12 @@ func (p *Player) Update(win *pixelgl.Window) {
 			if win.JustPressed(pixelgl.KeyA) {
 				values := selectors.ActionValues{
 					Source:  p.Character,
-					Damage:  1,
+					Damage:  10,
 					Move:    0,
-					Range:   1,
-					Targets: 1,
+					Range:   10,
+					Targets: 5,
 				}
-				sel := selectors.NewTargetSelect()
+				sel := selectors.NewHexSelect()
 				p.PlayCard.CancelCard()
 				p.SetPlayerAction(NewPlayerAction(sel, values, BasicAttack))
 			}
@@ -143,9 +143,7 @@ func BasicMove(path []world.Coords, values selectors.ActionValues) {
 }
 
 func BasicAttack(targets []world.Coords, values selectors.ActionValues) {
-	if len(targets) > 0 {
-		actions.AddToBot(actions.NewDamageAction(targets, values))
-	}
+	actions.AddToBot(actions.NewDamageHexAction(targets, values))
 }
 
 func (p *Player) Rest(_ []world.Coords, _ selectors.ActionValues) {

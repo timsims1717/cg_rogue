@@ -19,5 +19,5 @@ func InitializeCenterText() {
 	text.Transform.Anchor.V = animation.Center
 	text.Transform.Scalar = pixel.V(6., 6.)
 	text.TextColor = colornames.Black
-	CenterText = ui2.NewActionEl(text, pixel.R(0, 0, camera.WindowWidthF, camera.WindowHeightF), camera.Cam)
+	CenterText = ui2.NewActionEl(text, pixel.R(0, 0, camera.WindowWidthF, camera.WindowHeightF), true)
 }
