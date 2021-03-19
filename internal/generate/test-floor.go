@@ -41,7 +41,7 @@ func LoadTestFloor(level int) {
 		for j := -2; j < 3; j++ {
 			occCoords = append(occCoords, world.Coords{
 				X: pX + i,
-				Y: pX + j,
+				Y: pY + j,
 			})
 		}
 	}

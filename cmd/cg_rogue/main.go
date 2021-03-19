@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/timsims1717/cg_rogue_go/internal/cfg"
@@ -15,7 +16,10 @@ import (
 )
 
 func run() {
-	rand.Seed(time.Now().UnixNano())
+	//seed := int64(1616173430654809847)
+	seed := time.Now().UnixNano()
+	rand.Seed(seed)
+	fmt.Println("Seed:", seed)
 	world.ScaledTileSize = cfg.ScaledTileSize
 	camera.SetWindowSize(1600, 900)
 	config := pixelgl.WindowConfig{

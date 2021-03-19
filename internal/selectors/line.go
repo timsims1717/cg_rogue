@@ -39,7 +39,7 @@ func (s *LineSelect) SetValues(values ActionValues) {
 func (s *LineSelect) Update() {
 	if !s.isDone {
 		s.pathChecks.Orig = s.origin
-		path := floor.CurrentFloor.LongestLegalPath(floor.CurrentFloor.Line(s.origin, s.input.Coords, s.maxRange), s.pathChecks)
+		path := floor.CurrentFloor.LongestLegalPath(floor.CurrentFloor.Line(s.origin, s.input.Coords, s.maxRange), 0, s.pathChecks)
 		targets := make([]world.Coords, 0)
 		if s.count == 0 {
 			targets = path

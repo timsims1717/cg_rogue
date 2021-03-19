@@ -52,7 +52,7 @@ func (ai *AbstractAI) Update() {
 			if act.Path != nil {
 				tCheck := act.PathCheck
 				tCheck.Orig = ai.TempCoords
-				tPath = floor.CurrentFloor.LongestLegalPath(tCheck.Orig.PathFrom(act.Path), tCheck)
+				tPath = floor.CurrentFloor.LongestLegalPath(tCheck.Orig.PathFrom(act.Path), 0, tCheck)
 				tArea = tPath
 			}
 			// check the target area
@@ -60,7 +60,7 @@ func (ai *AbstractAI) Update() {
 				tCheck := act.TargetCheck
 				target := tPath[len(tPath)-1]
 				tCheck.Orig = target
-				tArea = floor.CurrentFloor.IsSetLegal(tCheck.Orig.PathFrom(act.TargetArea), tCheck)
+				tArea = world.Remove(ai.TempCoords, floor.CurrentFloor.IsSetLegal(tCheck.Orig.PathFrom(act.TargetArea), tCheck))
 			}
 			// update the temp actions with the results of the check
 			ai.TempActions[i] = &TempAIAction{

@@ -46,7 +46,7 @@ func (a *PushAction) Update() {
 		}
 		nPath := []world.Coords{n}
 		for i := 0; i < a.push; i++ {
-			next := world.NextHex(o, n)
+			next := world.NextHexLine(o, n)
 			if floor.CurrentFloor.IsLegal(next, checks) != nil {
 				nPath = append(nPath, next)
 				o = n
@@ -120,7 +120,7 @@ func (a *PushMultiAction) Update() {
 				}
 				nPath := []world.Coords{n}
 				for i := 0; i < a.values.Strength; i++ {
-					next := world.NextHex(o, n)
+					next := world.NextHexLine(o, n)
 					if floor.CurrentFloor.IsLegal(next, checks) != nil {
 						nPath = append(nPath, next)
 						o = n

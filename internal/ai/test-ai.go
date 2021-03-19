@@ -44,7 +44,7 @@ func (r *RandomWalker) Decide() {
 	indexList := make([]int, 0)
 	for i, n := range neighbors {
 		if m := floor.CurrentFloor.IsLegal(n, movCheck); m != nil {
-			a := world.NextHex(orig, n)
+			a := world.NextHexLine(orig, n)
 			atkCheck.Orig = a
 			if h := floor.CurrentFloor.IsLegal(a, atkCheck); h != nil {
 				indexList = append(indexList, i)
@@ -63,7 +63,7 @@ func (r *RandomWalker) Decide() {
 	}
 	atk := []world.Coords{
 		mov,
-		world.NextHex(orig, mov),
+		world.NextHexLine(orig, mov),
 	}
 	atkCheck.Orig = mov
 
@@ -149,7 +149,7 @@ func (ai *FlyChaser) Decide() {
 			choice := targets[rand.Intn(len(targets))]
 			if path, d, legal := floor.CurrentFloor.FindPathWithinOne(orig, choice, movCheck); legal {
 				if d > 2 {
-					tPath := floor.CurrentFloor.LongestLegalPath(path[:3], movCheck)
+					tPath := floor.CurrentFloor.LongestLegalPath(path, 3, movCheck)
 					if len(tPath) > 0 {
 						ai.Actions = []*AIAction{
 							{
@@ -193,7 +193,7 @@ func (ai *FlyChaser) Decide() {
 	}
 	if rand.Intn(2) > 0 {
 		// 50% chance random walk
-		within := floor.CurrentFloor.AllWithinNoPath(orig, 2, movCheck)
+		within := world.Remove(orig, floor.CurrentFloor.AllWithin(orig, 2, movCheck))
 		if len(within) > 0 {
 			for i := 0; i < 3; i++ {
 				choice := within[rand.Intn(len(within))]
@@ -231,3 +231,371 @@ func (ai *FlyChaser) TakeTurn() {
 // If the player is between 4-7 tiles, strafe and attack from range
 // If the player is between 2-3 tiles, retreat
 // Otherwise, plink the player
+type Skirmisher struct {
+	*AbstractAI
+	patrol []world.Coords
+	patrolling int
+	decision int
+}
+
+func NewSkirmisher(character *characters.Character) *AbstractAI {
+	newAI := &AbstractAI{
+		Character: character,
+	}
+	skirm := &Skirmisher{
+		newAI,
+		[]world.Coords{},
+		0,
+		0,
+	}
+	newAI.AI = skirm
+	return newAI
+}
+
+func (ai *Skirmisher) Decide() {
+	orig := ai.Character.Coords
+	movCheck := floor.PathChecks{
+		NotFilled:     true,
+		Unoccupied:    true,
+		NonEmpty:      true,
+		EndUnoccupied: true,
+		Orig:          orig,
+	}
+	atkCheck := floor.PathChecks{
+		NotFilled:     true,
+		Unoccupied:    false,
+		NonEmpty:      false,
+		EndUnoccupied: false,
+		Orig:          orig,
+	}
+	if len(ai.patrol) == 0 {
+		patrolCand := world.Remove(orig, floor.CurrentFloor.AllWithin(orig, 6, movCheck))
+		ordered := world.ReverseList(world.OrderByDistSimple(orig, patrolCand))
+		choice := 0
+		if len(ordered) > 8 {
+			choice = rand.Intn(len(ordered) / 8)
+		}
+		chosen := ordered[choice]
+		ai.patrol = []world.Coords{
+			orig,
+			chosen,
+		}
+		ai.patrolling = 1
+	}
+	targets := characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 1)
+	if len(targets) > 0 {
+		choice := 0
+		if len(targets) > 1 {
+			choice = rand.Intn(len(targets)-1)
+		}
+		ai.Actions = []*AIAction{
+			{
+				Path:        []world.Coords{orig, targets[choice]},
+				PathCheck:   floor.NoCheck,
+				TargetArea:  []world.Coords{world.Origin},
+				TargetCheck: atkCheck,
+				Values:      selectors.ActionValues{
+					Damage: 1,
+				},
+			},
+		}
+		ai.decision = 1
+		return
+	}
+	targets = characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 3)
+	if len(targets) > 0 {
+		dist := world.OrderByDistSimple(orig, targets)
+		path, d, legal := floor.CurrentFloor.FindPathAwayFrom(orig, dist[0], 3, movCheck)
+		if legal {
+			ai.Actions = []*AIAction{
+				{
+					Path:        path,
+					PathCheck:   movCheck,
+					TargetArea:  nil,
+					TargetCheck: floor.PathChecks{},
+					Values: selectors.ActionValues{
+						Move: d,
+					},
+				},
+			}
+			ai.decision = 0
+			return
+		}
+	}
+	targets = characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 7)
+	if len(targets) > 0 {
+		choice := 0
+		if len(targets) > 1 {
+			choice = rand.Intn(len(targets)-1)
+		}
+		path, d, legal := floor.CurrentFloor.FindPathPerpendicularTo(orig, targets[choice], 3, 7, movCheck, atkCheck)
+		if legal {
+			ai.Actions = []*AIAction{
+				{
+					Path:        path,
+					PathCheck:   movCheck,
+					TargetArea:  nil,
+					TargetCheck: floor.PathChecks{},
+					Values: selectors.ActionValues{
+						Move: d,
+					},
+				},
+			}
+			end := path[len(path)-1]
+			atkPath := floor.CurrentFloor.LongestLegalPath(floor.CurrentFloor.Line(end, targets[choice], 7), 7, atkCheck)
+			if len(atkPath) == world.DistanceSimple(end, targets[choice]) + 1 {
+				ai.Actions = append(ai.Actions, &AIAction{
+					Path:        atkPath,
+					PathCheck:   atkCheck,
+					TargetArea:  []world.Coords{world.Origin},
+					TargetCheck: atkCheck,
+					Values: selectors.ActionValues{
+						Damage: 1,
+					},
+				})
+			}
+		}
+		ai.decision = 2
+		return
+	}
+	targets = characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 10)
+	if len(targets) > 0 {
+		choice := targets[rand.Intn(len(targets))]
+		if path, _, legal := floor.CurrentFloor.FindPathWithinOne(orig, choice, movCheck); legal {
+			tPath := floor.CurrentFloor.LongestLegalPath(path, 3, movCheck)
+			if len(tPath) > 0 {
+				ai.Actions = []*AIAction{
+					{
+						Path:        tPath,
+						PathCheck:   movCheck,
+						TargetArea:  nil,
+						TargetCheck: floor.PathChecks{},
+						Values: selectors.ActionValues{
+							Move: len(tPath),
+						},
+					},
+				}
+				ai.decision = 0
+				return
+			}
+		}
+	}
+	if len(ai.patrol) > 1 {
+		if path, _, legal := floor.CurrentFloor.FindPath(orig, ai.patrol[ai.patrolling], movCheck); legal {
+			tPath := floor.CurrentFloor.LongestLegalPath(path, 3, movCheck)
+			if len(tPath) > 0 {
+				ai.Actions = []*AIAction{
+					{
+						Path:        tPath,
+						PathCheck:   movCheck,
+						TargetArea:  nil,
+						TargetCheck: floor.PathChecks{},
+						Values: selectors.ActionValues{
+							Move: len(tPath),
+						},
+					},
+				}
+				ai.decision = 0
+				if tPath[len(tPath)-1].Equals(ai.patrol[ai.patrolling]) {
+					ai.patrolling = (ai.patrolling + 1) % 2
+				}
+			}
+		} else {
+			ai.patrol = []world.Coords{}
+		}
+	}
+}
+
+func (ai *Skirmisher) TakeTurn() {
+	if len(ai.TempActions) > 0 {
+		switch ai.decision {
+		case 0:
+			act := ai.TempActions[0]
+			actions.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
+		case 1:
+			act := ai.TempActions[0]
+			actions.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+		case 2:
+			for i, act := range ai.TempActions {
+				if i == 0 {
+					actions.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
+				} else {
+					actions.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+				}
+			}
+		}
+	}
+}
+
+// If the player is further than 10 tiles, do nothing, maybe random walk?
+// If the player is between 4-10 tiles, do bombard strike or scatter bomb
+// If the player is between 1-3 tiles, blast in a cone
+// bombard strike and scatter bomb can be done twice, then rest
+// always rest after blast in a cone
+type Grenadier struct {
+	*AbstractAI
+	atkCnt   int
+	decision int
+}
+
+func NewGrenadier(character *characters.Character) *AbstractAI {
+	newAI := &AbstractAI{
+		Character: character,
+	}
+	gren := &Grenadier{
+		newAI,
+		0,
+		-1,
+	}
+	newAI.AI = gren
+	return newAI
+}
+
+func (ai *Grenadier) Decide() {
+	if ai.atkCnt > 1 {
+		ai.atkCnt = 0
+		return
+	}
+	orig := ai.Character.Coords
+	movCheck := floor.PathChecks{
+		NotFilled:     true,
+		Unoccupied:    true,
+		NonEmpty:      true,
+		EndUnoccupied: true,
+		Orig:          orig,
+	}
+	atkCheck := floor.PathChecks{
+		NotFilled:     true,
+		Unoccupied:    false,
+		NonEmpty:      false,
+		EndUnoccupied: false,
+		Orig:          orig,
+	}
+	targets := characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 3)
+	if len(targets) > 0 {
+		ai.decision = 2
+		choice := 0
+		if len(targets) > 1 {
+			choice = rand.Intn(len(targets)-1)
+		}
+		ai.Actions = []*AIAction{}
+		area := floor.CurrentFloor.AllInSextant(orig, targets[choice], 3, atkCheck)
+		if world.CoordsIn(targets[choice], area) {
+			ai.Actions = append(ai.Actions, &AIAction{
+				Path:        []world.Coords{orig},
+				PathCheck:   atkCheck,
+				TargetArea:  area,
+				TargetCheck: atkCheck,
+				Values: selectors.ActionValues{
+					Damage: 3,
+				},
+			})
+			ai.atkCnt += 2
+		}
+		return
+	}
+	targets = characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 10)
+	if len(targets) > 0 {
+		dec := 0
+		if ai.decision == 0 {
+			dec = 1
+		} else if ai.decision != 1 {
+			dec = rand.Intn(2)
+		}
+		ai.decision = dec
+		choice := 0
+		if len(targets) > 1 {
+			choice = rand.Intn(len(targets)-1)
+		}
+		ai.Actions = []*AIAction{}
+		atkPath := floor.CurrentFloor.LongestLegalPath(floor.CurrentFloor.Line(orig, targets[choice], 10), 10, atkCheck)
+		if world.CoordsIn(targets[choice], atkPath) {
+			// todo: add three attacks
+			switch ai.decision {
+			case 0:
+				// bombard
+				var best []world.Coords
+				pts := -3
+				n := world.RandomizeList(targets[choice].Neighbors(floor.CurrentFloor.Dimensions()))
+				if len(n) > 1 {
+					for _, c := range n {
+						tpts := 0
+						if cha, ok := floor.CurrentFloor.GetOccupant(c).(*characters.Character); ok {
+							if cha.Diplomacy == characters.Ally {
+								tpts += 1
+							} else {
+								tpts -= 1
+							}
+						}
+						next := world.NextHexRot(c, targets[choice], true)
+						if cha, ok := floor.CurrentFloor.GetOccupant(next).(*characters.Character); ok {
+							if cha.Diplomacy == characters.Ally {
+								tpts += 1
+							} else {
+								tpts -= 1
+							}
+						}
+						if tpts > pts || len(best) == 0 {
+							best = []world.Coords{c, next}
+							pts = tpts
+						}
+					}
+					ai.Actions = append(ai.Actions, &AIAction{
+						Path:        []world.Coords{orig, targets[choice]},
+						PathCheck:   atkCheck,
+						TargetArea:  append([]world.Coords{targets[choice]}, best...),
+						TargetCheck: atkCheck,
+						Values: selectors.ActionValues{
+							Damage: 2,
+						},
+					})
+					ai.atkCnt += 1
+				}
+			case 1:
+				// scatter shot
+				atkCheck.Orig = targets[choice]
+				n := world.RandomizeList(world.Remove(targets[choice], floor.CurrentFloor.AllWithin(targets[choice], 2, atkCheck)))
+				count := len(n) / 3
+				if count > 3 {
+					count = 3
+				}
+				var hits []world.Coords
+				for i := 0; i < count; i++ {
+					hits = append(hits, n[rand.Intn(len(n)-1)])
+				}
+				ai.Actions = append(ai.Actions, &AIAction{
+					Path:        []world.Coords{orig, targets[choice]},
+					PathCheck:   atkCheck,
+					TargetArea:  append([]world.Coords{targets[choice]}, hits...),
+					TargetCheck: atkCheck,
+					Values: selectors.ActionValues{
+						Damage: 2,
+					},
+				})
+				ai.atkCnt += 1
+			}
+		}
+		path, d, legal := floor.CurrentFloor.FindPathPerpendicularTo(orig, targets[choice], 3, 10, movCheck, atkCheck)
+		if legal {
+			ai.Actions = append(ai.Actions, &AIAction{
+				Path:        path,
+				PathCheck:   movCheck,
+				TargetArea:  nil,
+				TargetCheck: floor.PathChecks{},
+				Values: selectors.ActionValues{
+					Move: d,
+				},
+			})
+		}
+	}
+}
+
+func (ai *Grenadier) TakeTurn() {
+	for i, act := range ai.TempActions {
+		if i == 0 {
+			actions.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+		} else {
+			actions.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
+		}
+	}
+}

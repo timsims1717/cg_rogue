@@ -92,3 +92,32 @@ func OrderByDistWorld(orig pixel.Vec, ul []Coords) []Coords {
 	}
 	return ol
 }
+
+func OrderByDistDiff(orig Coords, ul []Coords, dist int) []Coords {
+	ol := make([]Coords, 0)
+	for len(ul) > 0 {
+		near := 10000
+		index := 0
+		for i, c := range ul {
+			d1 := DistanceSimple(orig, c)
+			d2 := util.Abs(dist - d1)
+			if d2 < near {
+				index = i
+				near = d2
+			}
+		}
+		ol = append(ol, ul[index])
+		ul = append(ul[:index], ul[index+1:]...)
+	}
+	return ol
+}
+
+func RemoveFarCoords(orig Coords, l []Coords, d int) []Coords {
+	var n []Coords
+	for _, c := range l {
+		if DistanceSimple(orig, c) <= d {
+			n = append(n, c)
+		}
+	}
+	return n
+}

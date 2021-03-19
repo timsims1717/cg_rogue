@@ -5,6 +5,7 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/phf/go-queue/queue"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
+	"math/rand"
 )
 
 
@@ -61,8 +62,43 @@ func (f *Floor) Line(orig, ref world.Coords, dist int) []world.Coords {
 	return path
 }
 
+// AllInSextant
+func (f *Floor) AllInSextant(orig, ref world.Coords, d int, check PathChecks) []world.Coords {
+	f.checks = check
+	sextant := world.GetSextantBias(ref, orig, rand.Intn(2) % 2 == 0)
+	width, height := f.Dimensions()
+	type cont struct{
+		c world.Coords
+		w int
+	}
+	all := make([]world.Coords, 0)
+	qu := queue.New()
+	marked := make(map[world.Coords]bool)
+	marked[orig] = true
+	qu.PushFront(cont{ c: orig, w: 0 })
+	for qu.Front() != nil {
+		n := qu.PopFront()
+		if c, ok := n.(cont); ok {
+			all = append(all, c.c)
+			if c.w < d {
+				neighbors := c.c.Neighbors(width, height)
+				for _, nb := range neighbors {
+					if !marked[nb] {
+						marked[nb] = true
+						if f.isLegal(nb) != nil && orig.InSextant(nb, sextant) {
+							qu.PushBack(cont{ c: nb, w: c.w+1 })
+						}
+					}
+				}
+			}
+		}
+	}
+	f.checks = DefaultCheck
+	return all
+}
+
 // AllWithin returns all legal coordinates within d tiles from o that can be reached
-func (f *Floor) AllWithin(o world.Coords, d int, check PathChecks) []world.Coords {
+func (f *Floor) AllWithin(orig world.Coords, d int, check PathChecks) []world.Coords {
 	f.checks = check
 	width, height := f.Dimensions()
 	type cont struct{
@@ -72,12 +108,13 @@ func (f *Floor) AllWithin(o world.Coords, d int, check PathChecks) []world.Coord
 	all := make([]world.Coords, 0)
 	qu := queue.New()
 	marked := make(map[world.Coords]bool)
-	qu.PushFront(cont{ c: o, w: 0 })
+	marked[orig] = true
+	qu.PushFront(cont{ c: orig, w: 0 })
 	for qu.Front() != nil {
 		n := qu.PopFront()
 		if c, ok := n.(cont); ok {
-			if c.w+1 <= d {
-				all = append(all, c.c)
+			all = append(all, c.c)
+			if c.w < d {
 				neighbors := c.c.Neighbors(width, height)
 				for _, nb := range neighbors {
 					if !marked[nb] {
@@ -95,7 +132,7 @@ func (f *Floor) AllWithin(o world.Coords, d int, check PathChecks) []world.Coord
 }
 
 // AllWithinNoPath returns all legal coordinates within d tiles from o
-func (f *Floor) AllWithinNoPath(o world.Coords, d int, check PathChecks) []world.Coords {
+func (f *Floor) AllWithinNoPath(orig world.Coords, d int, check PathChecks) []world.Coords {
 	f.checks = check
 	defer f.SetDefaultChecks()
 	width, height := f.Dimensions()
@@ -106,14 +143,15 @@ func (f *Floor) AllWithinNoPath(o world.Coords, d int, check PathChecks) []world
 	all := make([]world.Coords, 0)
 	qu := queue.New()
 	marked := make(map[world.Coords]bool)
-	qu.PushFront(cont{ c: o, w: 0 })
+	marked[orig] = true
+	qu.PushFront(cont{ c: orig, w: 0 })
 	for qu.Front() != nil {
 		n := qu.PopFront()
 		if c, ok := n.(cont); ok {
-			if c.w+1 <= d {
-				if f.isLegal(c.c) != nil {
-					all = append(all, c.c)
-				}
+			if f.isLegal(c.c) != nil {
+				all = append(all, c.c)
+			}
+			if c.w < d {
 				neighbors := c.c.Neighbors(width, height)
 				for _, nb := range neighbors {
 					if !marked[nb] {
@@ -130,22 +168,63 @@ func (f *Floor) AllWithinNoPath(o world.Coords, d int, check PathChecks) []world
 // LongestLegalPath returns the longest section of the given path that is legal
 // If the path is (0,0), (0,1), (0,2), (0,3), but (0,2) is not legal, it
 // returns (0,0), (0,1)
-func (f *Floor) LongestLegalPath(path []world.Coords, check PathChecks) []world.Coords {
+func (f *Floor) LongestLegalPath(path []world.Coords, max int, check PathChecks) []world.Coords {
 	f.checks = check
 	defer f.SetDefaultChecks()
 	lastLegal := 0
 	for i, c := range path {
-		if h := f.isLegal(c); h == nil {
-			return path[:lastLegal+1]
-		}
 		if !check.EndUnoccupied || !f.HasOccupant(c) {
 			lastLegal = i
+		}
+		if h := f.isLegal(c); h == nil {
+			break
+		}
+		if max > 0 && i >= max {
+			break
 		}
 	}
 	if lastLegal + 1 >= len(path) {
 		return path
 	}
 	return path[:lastLegal+1]
+}
+
+// FindPathPerpendicularTo finds a semi-random path perpendicular to the specified world.Coords.
+func (f *Floor) FindPathPerpendicularTo(orig, to world.Coords, within, dist int, check, endCheck PathChecks) ([]world.Coords, int, bool) {
+	distTo := world.DistanceSimple(orig, to)
+	allPossible := world.Remove(orig, f.AllWithin(orig, within, check))
+	var possible []world.Coords
+	for _, c := range allPossible {
+		if world.DistanceSimple(to, c) <= dist {
+			possible = append(possible, c)
+		}
+	}
+	if len(possible) > 0 {
+		ordered := world.OrderByDistDiff(to, possible, distTo)
+		if len(ordered) > 4 {
+			l := len(ordered) / 4
+			choice := rand.Intn(l)
+			return f.FindPath(orig, ordered[choice], check)
+		} else {
+			return f.FindPath(orig, ordered[0], check)
+		}
+	}
+	return []world.Coords{}, 0, false
+}
+
+// FindPathAwayFrom finds a semi-random path away from the specified world.Coords.
+func (f *Floor) FindPathAwayFrom(orig, from world.Coords, dist int, check PathChecks) ([]world.Coords, int, bool) {
+	possible := world.Remove(orig, f.AllWithin(orig, dist, check))
+	if len(possible) > 0 {
+		ordered := world.ReverseList(world.OrderByDistSimple(from, possible))
+		if len(ordered) > 6 {
+			choice := rand.Intn(len(ordered) / 6)
+			return f.FindPath(orig, ordered[choice], check)
+		} else {
+			return f.FindPath(orig, ordered[0], check)
+		}
+	}
+	return []world.Coords{}, 0, false
 }
 
 // FindPathWithinOne runs astar from a to one within b, returning a world.Coords array
@@ -187,8 +266,14 @@ func (f *Floor) FindPathWithinOne(a, b world.Coords, check PathChecks) ([]world.
 func (f *Floor) FindPathWithinOneHex(a, b world.Coords, check PathChecks) ([]*Hex, int, bool) {
 	f.checks = check
 	defer f.SetDefaultChecks()
+	if !f.Exists(a) {
+		return nil, 0, false
+	}
 	for _, n := range world.OrderByDist(a, b.Neighbors(f.Dimensions())) {
-		if  !f.Exists(a) || !f.Exists(n) || (check.EndUnoccupied && f.HasOccupant(n)) {
+		if a.Equals(n) {
+			return []*Hex{f.Get(a)}, 0, true
+		}
+		if  !f.Exists(n) || (check.EndUnoccupied && f.HasOccupant(n)) {
 			return nil, 0, false
 		}
 		f.SetLine(a, b)
@@ -207,7 +292,13 @@ func (f *Floor) FindPathWithinOneHex(a, b world.Coords, check PathChecks) ([]*He
 
 // FindPath runs astar from a to b, returning a world.Coords array
 func (f *Floor) FindPath(a, b world.Coords, check PathChecks) ([]world.Coords, int, bool) {
-	if  !f.Exists(a) || !f.Exists(b) || (check.EndUnoccupied && f.HasOccupant(b)) {
+	if  !f.Exists(a) || !f.Exists(b) {
+		return nil, 0, false
+	}
+	if a.Equals(b) {
+		return []world.Coords{a}, 0, true
+	}
+	if check.EndUnoccupied && f.HasOccupant(b) {
 		return nil, 0, false
 	}
 	f.checks = check
@@ -230,7 +321,13 @@ func (f *Floor) FindPath(a, b world.Coords, check PathChecks) ([]world.Coords, i
 
 // FindPathHex runs astar from a to b returning a Hex array
 func (f *Floor) FindPathHex(a, b world.Coords, check PathChecks) ([]*Hex, int, bool) {
-	if  !f.Exists(a) || !f.Exists(b) || (check.EndUnoccupied && f.HasOccupant(b)) {
+	if  !f.Exists(a) || !f.Exists(b) {
+		return nil, 0, false
+	}
+	if a.Equals(b) {
+		return []*Hex{f.Get(a)}, 0, true
+	}
+	if check.EndUnoccupied && f.HasOccupant(b) {
 		return nil, 0, false
 	}
 	f.checks = check
@@ -246,6 +343,9 @@ func (f *Floor) FindPathHex(a, b world.Coords, check PathChecks) ([]*Hex, int, b
 
 // Neighbors returns each legal hex adjacent to the origin
 func (f *Floor) Neighbors(hex *Hex) []*Hex {
+	if hex == nil {
+		return []*Hex{}
+	}
 	width, height := f.Dimensions()
 	co := world.Coords{X: hex.X, Y: hex.Y}
 	cNeighbors := co.Neighbors(width, height)
