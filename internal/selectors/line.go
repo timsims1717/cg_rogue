@@ -45,7 +45,7 @@ func (s *LineSelect) Update() {
 			targets = path
 		} else {
 			for _, p := range path {
-				if p.Equals(s.origin) {
+				if p.Eq(s.origin) {
 					continue
 				}
 				if len(targets) >= s.count {
@@ -68,7 +68,7 @@ func (s *LineSelect) Update() {
 			for _, p := range path {
 				if i < len(targets) {
 					sel := targets[i]
-					if sel.Equals(p) {
+					if sel.Eq(p) {
 						if s.isAtk {
 							AddSelectUI(Attack, sel.X, sel.Y)
 						} else {

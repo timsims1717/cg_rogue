@@ -108,7 +108,7 @@ func (a *PushMultiAction) Update() {
 		if !a.postDam {
 			SetResetTransform(a.values.Source)
 		}
-		o := a.values.Source.GetCoords()
+		orig := a.values.Source.GetCoords()
 		for _, n := range a.area {
 			if target := floor.CurrentFloor.GetOccupant(n); target != nil {
 				checks := floor.PathChecks{
@@ -119,6 +119,7 @@ func (a *PushMultiAction) Update() {
 					Orig:          n,
 				}
 				nPath := []world.Coords{n}
+				o := orig
 				for i := 0; i < a.values.Strength; i++ {
 					next := world.NextHexLine(o, n)
 					if floor.CurrentFloor.IsLegal(next, checks) != nil {

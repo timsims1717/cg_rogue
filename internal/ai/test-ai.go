@@ -299,7 +299,7 @@ func (ai *Skirmisher) Decide() {
 				},
 			},
 		}
-		ai.decision = 1
+		ai.decision++
 		return
 	}
 	targets = characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 3)
@@ -396,7 +396,7 @@ func (ai *Skirmisher) Decide() {
 					},
 				}
 				ai.decision = 0
-				if tPath[len(tPath)-1].Equals(ai.patrol[ai.patrolling]) {
+				if tPath[len(tPath)-1] == ai.patrol[ai.patrolling] {
 					ai.patrolling = (ai.patrolling + 1) % 2
 				}
 			}
@@ -597,5 +597,207 @@ func (ai *Grenadier) TakeTurn() {
 		} else {
 			actions.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
 		}
+	}
+}
+
+// If the player is further than 10 tiles, do nothing, maybe random walk?
+// If the player is between 4-10 tiles, chase player (slowly)
+// If the player is between 2-3 tiles, approach and whack is small area
+// If the player is 1 tile away, whack in 5 wide ring w/small range boost in front
+// Rest after 3-4 attacks
+type Bruiser struct {
+	*AbstractAI
+	atkCnt   int
+	decision int
+}
+
+func NewBruiser(character *characters.Character) *AbstractAI {
+	newAI := &AbstractAI{
+		Character: character,
+	}
+	bruiser := &Bruiser{
+		newAI,
+		0,
+		-1,
+	}
+	newAI.AI = bruiser
+	return newAI
+}
+
+func (ai *Bruiser) Decide() {
+	b := rand.Intn(2)
+	if ai.atkCnt > 3 + b {
+		ai.atkCnt = 0
+		return
+	}
+	orig := ai.Character.Coords
+	movCheck := floor.PathChecks{
+		NotFilled:     true,
+		Unoccupied:    true,
+		NonEmpty:      true,
+		EndUnoccupied: true,
+		Orig:          orig,
+	}
+	atkCheck := floor.PathChecks{
+		NotFilled:     true,
+		Unoccupied:    false,
+		NonEmpty:      false,
+		EndUnoccupied: false,
+		Orig:          orig,
+	}
+	targets := characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 1)
+	if len(targets) > 0 {
+		ai.decision = 1
+		choice := 0
+		if len(targets) > 1 {
+			choice = rand.Intn(len(targets)-1)
+		}
+		ai.Actions = []*AIAction{}
+		area := []world.Coords{orig}
+		n1 := world.Remove(world.NextHexLine(targets[choice], orig), world.OrderByDist(targets[choice], orig.Neighbors(floor.CurrentFloor.Dimensions())))
+		n2 := targets[choice].Neighbors(floor.CurrentFloor.Dimensions())
+		area = world.Combine(area, world.Combine(n1, n2))
+		if world.CoordsIn(targets[choice], area) {
+			ai.Actions = append(ai.Actions, &AIAction{
+				Path:        []world.Coords{orig},
+				PathCheck:   atkCheck,
+				TargetArea:  area,
+				TargetCheck: atkCheck,
+				Values: selectors.ActionValues{
+					Damage: 4,
+				},
+			})
+			ai.atkCnt++
+		}
+		return
+	}
+	targets = characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 3)
+	if len(targets) > 0 {
+		ai.decision = 2
+		choice := 0
+		if len(targets) > 1 {
+			choice = rand.Intn(len(targets)-1)
+		}
+		if path, d, legal := floor.CurrentFloor.FindPathWithinOne(orig, targets[choice], movCheck); legal {
+			if d <= 3 {
+				ai.Actions = []*AIAction{
+					{
+						Path:        path,
+						PathCheck:   movCheck,
+						TargetArea:  nil,
+						TargetCheck: floor.PathChecks{},
+						Values: selectors.ActionValues{
+							Move: d,
+						},
+					},
+				}
+				tOrig := path[len(path)-1]
+				next := world.NextHexLine(tOrig, targets[choice])
+				ai.Actions = append(ai.Actions, &AIAction{
+					Path:        []world.Coords{tOrig},
+					PathCheck:   floor.NoCheck,
+					TargetArea:  []world.Coords{tOrig, targets[choice], next},
+					TargetCheck: atkCheck,
+					Values: selectors.ActionValues{
+						Damage: 2,
+					},
+				})
+				ai.atkCnt++
+				return
+			}
+		}
+	}
+	targets = characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 10)
+	if len(targets) > 0 {
+		ai.decision = 0
+		choice := 0
+		if len(targets) > 1 {
+			choice = rand.Intn(len(targets)-1)
+		}
+		if path, _, legal := floor.CurrentFloor.FindPathWithinOne(orig, targets[choice], movCheck); legal {
+			tPath := floor.CurrentFloor.LongestLegalPath(path, 2, movCheck)
+			ai.Actions = append(ai.Actions, &AIAction{
+				Path:        tPath,
+				PathCheck:   movCheck,
+				TargetArea:  nil,
+				TargetCheck: floor.PathChecks{},
+				Values: selectors.ActionValues{
+					Move: 1,
+				},
+			})
+		}
+	}
+}
+
+func (ai *Bruiser) TakeTurn() {
+	if len(ai.TempActions) > 0 {
+		if ai.decision == 0 {
+			act := ai.TempActions[0]
+			actions.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
+		} else if ai.decision == 1 {
+			act := ai.TempActions[0]
+			actions.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+		} else {
+			for i, act := range ai.TempActions {
+				if i == 0 {
+					actions.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
+				} else {
+					actions.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+				}
+			}
+		}
+	}
+}
+
+// Every other turn, attack each tile around the enemy
+type Stationary struct {
+	*AbstractAI
+	decision int
+}
+
+func NewStationary(character *characters.Character) *AbstractAI {
+	newAI := &AbstractAI{
+		Character: character,
+	}
+	stat := &Stationary{
+		newAI,
+		0,
+	}
+	newAI.AI = stat
+	return newAI
+}
+
+func (ai *Stationary) Decide() {
+	if ai.decision == 0 {
+		orig := ai.Character.Coords
+		atkCheck := floor.PathChecks{
+			NotFilled:     true,
+			Unoccupied:    false,
+			NonEmpty:      false,
+			EndUnoccupied: false,
+			Orig:          orig,
+		}
+		area := append([]world.Coords{orig}, orig.Neighbors(floor.CurrentFloor.Dimensions())...)
+		ai.Actions = []*AIAction{
+			{
+				Path:        []world.Coords{orig},
+				PathCheck:   floor.NoCheck,
+				TargetArea:  area,
+				TargetCheck: atkCheck,
+				Values: selectors.ActionValues{
+					Damage: 1,
+				},
+			},
+		}
+		ai.decision = 1
+	} else {
+		ai.decision = 0
+	}
+}
+
+func (ai *Stationary) TakeTurn() {
+	if len(ai.TempActions) > 0 {
+		act := ai.TempActions[0]
+		actions.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
 	}
 }

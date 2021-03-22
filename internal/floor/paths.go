@@ -235,7 +235,7 @@ func (f *Floor) FindPathWithinOne(a, b world.Coords, check PathChecks) ([]world.
 		return nil, 0, false
 	}
 	for _, n := range world.OrderByDist(a, b.Neighbors(f.Dimensions())) {
-		if a.Equals(n) {
+		if a.Eq(n) {
 			return []world.Coords{a}, 0, true
 		}
 		if !f.Exists(n) || (check.EndUnoccupied && f.HasOccupant(n)) {
@@ -270,7 +270,7 @@ func (f *Floor) FindPathWithinOneHex(a, b world.Coords, check PathChecks) ([]*He
 		return nil, 0, false
 	}
 	for _, n := range world.OrderByDist(a, b.Neighbors(f.Dimensions())) {
-		if a.Equals(n) {
+		if a.Eq(n) {
 			return []*Hex{f.Get(a)}, 0, true
 		}
 		if  !f.Exists(n) || (check.EndUnoccupied && f.HasOccupant(n)) {
@@ -295,7 +295,7 @@ func (f *Floor) FindPath(a, b world.Coords, check PathChecks) ([]world.Coords, i
 	if  !f.Exists(a) || !f.Exists(b) {
 		return nil, 0, false
 	}
-	if a.Equals(b) {
+	if a.Eq(b) {
 		return []world.Coords{a}, 0, true
 	}
 	if check.EndUnoccupied && f.HasOccupant(b) {
@@ -324,7 +324,7 @@ func (f *Floor) FindPathHex(a, b world.Coords, check PathChecks) ([]*Hex, int, b
 	if  !f.Exists(a) || !f.Exists(b) {
 		return nil, 0, false
 	}
-	if a.Equals(b) {
+	if a.Eq(b) {
 		return []*Hex{f.Get(a)}, 0, true
 	}
 	if check.EndUnoccupied && f.HasOccupant(b) {

@@ -1,11 +1,5 @@
 package world
 
-import (
-	"github.com/faiface/pixel"
-	"math"
-	"math/rand"
-)
-
 var ScaledTileSize float64
 var Origin = Coords{
 	X: 0,
@@ -18,10 +12,13 @@ type Coords struct {
 	Y int
 }
 
-func (a Coords) Equals(b Coords) bool {
+// Eq checks if a and b are equal.
+func (a Coords) Eq(b Coords) bool {
 	return a.X == b.X && a.Y == b.Y
 }
 
+// Neighbors returns the six tiles surrounding the Coords, minus any
+// outside the width and height provided.
 func (a Coords) Neighbors(w, h int) []Coords {
 	neighbors := make([]Coords, 0)
 	if a.Y > 0 {
@@ -54,12 +51,14 @@ func (a Coords) Neighbors(w, h int) []Coords {
 	return neighbors
 }
 
+// PathFrom constructs an new path following the relative hex changes
+// of the input path, but starts at Coords a.
 func (a Coords) PathFrom(path []Coords) []Coords {
 	if len(path) < 2 {
 		return []Coords{a}
 	}
 	orig := path[0]
-	if a.Equals(orig) {
+	if a.Eq(orig) {
 		return path
 	}
 	var np []Coords
@@ -89,6 +88,10 @@ func (a Coords) PathFrom(path []Coords) []Coords {
 	return np
 }
 
+// InSextant checks to see if Coords b is in Sextant s relative to Coords
+// a. If Sextant s is a line Sextant, b must be on that line to return
+// true. If b in on a line, it will still return true as long as b is
+// still in the sextant when it is biased right or left.
 func (a Coords) InSextant(b Coords, s Sextant) bool {
 	if sextant := GetSextant(b, a); s == sextant {
 		return true
@@ -102,6 +105,9 @@ func (a Coords) InSextant(b Coords, s Sextant) bool {
 	return false
 }
 
+// NextHexLine returns the Coords directly opposite the orig Coords relative
+// to the next Coords.
+// todo: change this function to use angle/sextant
 func NextHexLine(orig, next Coords) Coords {
 	var y int
 	var x int
@@ -132,260 +138,81 @@ func NextHexLine(orig, next Coords) Coords {
 	}
 }
 
-func NextHexRot(orig, pivot Coords, right bool) Coords {
+// NextHexRot returns the Coords clockwise from the orig relative to the
+// pivot if clockwise is true, or the Coords counter-clockwise from the orig
+// relative to the pivot otherwise.
+func NextHexRot(orig, pivot Coords, clockwise bool) Coords {
 	sextant := GetSextant(orig, pivot)
-	move := 0
-	if right {
+	even := orig.X % 2 == 0
+	x := orig.X
+	y := orig.Y
+	if clockwise {
 		if sextant == LineUpLeft || sextant == TopLeft {
 			// move up right
-			move = 1
+			x++
+			if !even {
+				y++
+			}
 		} else if sextant == LineUp || sextant == TopRight {
 			// move down right
-			move = 2
+			x++
+			if even {
+				y--
+			}
 		} else if sextant == LineUpRight || sextant == Right {
 			// move down
-			move = 3
+			y--
 		} else if sextant == LineDownRight || sextant == BottomRight {
 			// move down left
-			move = 4
+			x--
+			if even {
+				y--
+			}
 		} else if sextant == LineDown || sextant == BottomLeft {
 			// move up left
-			move = 5
+			x--
+			if !even {
+				y++
+			}
 		} else {
 			// move up
-			move = 0
+			y++
 		}
 	} else {
 		if sextant == TopLeft || sextant == LineUp {
 			// move down left
-			move = 4
+			x--
+			if even {
+				y--
+			}
 		} else if sextant == TopRight || sextant == LineUpRight {
 			// move up left
-			move = 5
+			x--
+			if !even {
+				y++
+			}
 		} else if sextant == Right || sextant == LineDownRight {
 			// move up
-			move = 0
+			y++
 		} else if sextant == BottomRight || sextant == LineDown {
 			// move up right
-			move = 1
+			x++
+			if !even {
+				y++
+			}
 		} else if sextant == BottomLeft || sextant == LineDownLeft {
 			// move down right
-			move = 2
+			x++
+			if even {
+				y--
+			}
 		} else {
 			// move down
-			move = 3
-		}
-	}
-	even := orig.X % 2 == 0
-	x := orig.X
-	y := orig.Y
-	switch move {
-	case 0:
-		// move up
-		y++
-	case 1:
-		// move up right
-		x++
-		if !even {
-			y++
-		}
-	case 2:
-		// move down right
-		x++
-		if even {
 			y--
-		}
-	case 3:
-		// move down
-		y--
-	case 4:
-		// move down left
-		x--
-		if even {
-			y--
-		}
-	case 5:
-		// move up left
-		x--
-		if !even {
-			y++
 		}
 	}
 	return Coords{
 		X: x,
 		Y: y,
-	}
-}
-
-func ReverseList(s []Coords) []Coords {
-	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
-		s[i], s[j] = s[j], s[i]
-	}
-	return s
-}
-
-func RandomizeList(s []Coords) []Coords {
-	for i := len(s)-1; i > 0; i-- {
-		j := rand.Intn(i)
-		s[i], s[j] = s[j], s[i]
-	}
-	return s
-}
-
-func Remove(c Coords, list []Coords) []Coords {
-	in := -1
-	for i, l := range list {
-		if c.Equals(l) {
-			in = i
-		}
-	}
-	if in != -1 {
-		return append(list[:in], list[in+1:]...)
-	} else {
-		return list
-	}
-}
-
-func CoordsIn(c Coords, list []Coords) bool {
-	for _, l := range list {
-		if c.Equals(l) {
-			return true
-		}
-	}
-	return false
-}
-
-// AngleBetween returns the angle between the two coordinates.
-// If a is above b, the angle will be positive.
-func AngleBetween(a, b Coords) float64 {
-	mag := MapToWorld(a).Sub(MapToWorld(b))
-	return mag.Angle()
-}
-
-type Sextant int
-
-const (
-	LineUp = iota
-	TopRight
-	LineUpRight
-	Right
-	LineDownRight
-	BottomRight
-	LineDown
-	BottomLeft
-	LineDownLeft
-	Left
-	LineUpLeft
-	TopLeft
-)
-
-func GetSextantBias(subject, pivot Coords, biasRight bool) Sextant {
-	sextant := GetSextant(subject, pivot)
-	if sextant == LineUp {
-		if biasRight {
-			return TopRight
-		} else {
-			return TopLeft
-		}
-	} else if sextant == LineUpRight {
-		if biasRight {
-			return Right
-		} else {
-			return TopRight
-		}
-	} else if sextant == LineDownRight {
-		if biasRight {
-			return BottomRight
-		} else {
-			return Right
-		}
-	} else if sextant == LineDown {
-		if biasRight {
-			return BottomLeft
-		} else {
-			return BottomRight
-		}
-	} else if sextant == LineDownLeft {
-		if biasRight {
-			return Left
-		} else {
-			return BottomLeft
-		}
-	} else if sextant == LineUpLeft {
-		if biasRight {
-			return TopLeft
-		} else {
-			return Left
-		}
-	}
-	return sextant
-}
-
-func GetSextant(subject, pivot Coords) Sextant {
-	angle := AngleBetween(subject, pivot)
-	const (
-		upl = 2.67
-		upl1 = 2.68
-		top = 1.57
-		top1 = 1.58
-		upr = 0.46
-		upr1 = 0.47
-		dnr = -upr
-		dnr1 = -upr1
-		dwn = -top
-		dwn1 = -top1
-		dnl = -upl
-		dnl1 = -upl1
-	)
-	if angle <= upl1 && angle >= upl {
-		return LineUpLeft
-	} else if angle <= upl && angle >= top1 {
-		return TopLeft
-	} else if angle <= top1 && angle >= top {
-		return LineUp
-	} else if angle <= top && angle >= upr1 {
-		return TopRight
-	} else if angle <= upr1 && angle >= upr {
-		return LineUpRight
-	} else if angle <= upr && angle >= dnr {
-		return Right
-	} else if angle <= dnr && angle >= dnr1 {
-		return LineDownRight
-	} else if angle <= dnr1 && angle >= dwn {
-		return BottomRight
-	} else if angle <= dwn && angle >= dwn1 {
-		return LineDown
-	} else if angle <= dwn1 && angle >= dnl {
-		return BottomLeft
-	} else if angle <= dnl && angle >= dnl1 {
-		return LineDownLeft
-	} else {
-		return Left
-	}
-}
-
-func GetSextantWorld(subject, pivot pixel.Vec) Sextant {
-	mag := subject.Sub(pivot)
-	angle := mag.Angle()
-	const (
-		upl = (math.Pi/6.)*5.
-		top = math.Pi/2.
-		upr = math.Pi/6.
-		dnr = -upr
-		dwn = -top
-		dnl = -upl
-	)
-	if angle <= upl && angle >= top {
-		return TopLeft
-	} else if angle <= top && angle >= upr {
-		return TopRight
-	} else if angle <= upr && angle >= dnr {
-		return Right
-	} else if angle <= dnr && angle >= dwn {
-		return BottomRight
-	} else if angle <= dwn && angle >= dnl {
-		return BottomLeft
-	} else {
-		return Left
 	}
 }

@@ -22,7 +22,7 @@ type MoveAction struct{
 }
 
 func NewMoveAction(source *characters.Character, target objects.Moveable, end world.Coords) *MoveAction {
-	if end.Equals(target.GetCoords()) {
+	if end.Eq(target.GetCoords()) {
 		return nil
 	}
 	b := world.MapToWorld(end)
