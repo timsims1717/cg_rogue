@@ -1,7 +1,5 @@
 package player
 
-import "bytes"
-
 const (
 	// Card constants
 	BaseCardWidth  = 250
@@ -24,19 +22,12 @@ const (
 	DiscardScale     = 0.5
 	DiscardHovScale  = 0.7
 
+	// Grid constants
+	GridCardScale    = 0.75
+	GridHovCardScale = 0.9
+
 	// Action Button constants
 	ButtonRightPad = 220.
 	RestBottomPad = 60.
 	MoveBottomPad = 100.
 )
-
-func MakeKey(args... string) string {
-	var b bytes.Buffer
-	for i, arg := range args {
-		if i != 0 {
-			b.Write([]byte("-"))
-		}
-		b.Write([]byte(arg))
-	}
-	return b.String()
-}

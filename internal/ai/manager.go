@@ -1,7 +1,7 @@
 package ai
 
 import (
-	"github.com/timsims1717/cg_rogue_go/internal/actions"
+	"github.com/timsims1717/cg_rogue_go/internal/manager"
 )
 
 var AIManager aiManager
@@ -34,13 +34,13 @@ func (m *aiManager) AIActing() bool {
 }
 
 func (m *aiManager) Update() {
-	if m.takeTurn && !actions.IsActing() {
+	if m.takeTurn && !manager.ActionManager.IsActing() {
 		if m.turnIndex > -1 && m.turnIndex < len(m.set) {
 			m.set[m.turnIndex].Actions = []*AIAction{}
 		}
 		m.turnIndex += 1
 	}
-	if m.takeTurn && !actions.IsActing() && m.turnIndex == len(m.set) {
+	if m.takeTurn && !manager.ActionManager.IsActing() && m.turnIndex == len(m.set) {
 		m.takeTurn = false
 		m.turnIndex = -1
 	}
@@ -51,7 +51,7 @@ func (m *aiManager) Update() {
 			}
 			ai.Update()
 			if m.takeTurn {
-				if m.turnIndex == i && !actions.IsActing() {
+				if m.turnIndex == i && !manager.ActionManager.IsActing() {
 					ai.AI.TakeTurn()
 				}
 			}

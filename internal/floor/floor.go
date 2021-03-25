@@ -7,6 +7,7 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/cfg"
 	"github.com/timsims1717/cg_rogue_go/internal/objects"
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
+	"github.com/timsims1717/cg_rogue_go/pkg/util"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"math/rand"
 )
@@ -125,12 +126,12 @@ func (f *Floor) Exists(a world.Coords) bool {
 
 func (f *Floor) IsOccupied(a world.Coords) bool {
 	hex := f.Get(a)
-	return hex == nil || objects.NotNilMov(hex.Occupant)
+	return hex == nil || !util.IsNil(hex.Occupant)
 }
 
 func (f *Floor) GetOccupant(a world.Coords) objects.Moveable {
 	hex := f.Get(a)
-	if hex != nil && objects.NotNilMov(hex.Occupant) {
+	if hex != nil && !util.IsNil(hex.Occupant) {
 		return hex.Occupant
 	}
 	return nil
@@ -138,12 +139,12 @@ func (f *Floor) GetOccupant(a world.Coords) objects.Moveable {
 
 func (f *Floor) HasOccupant(a world.Coords) bool {
 	hex := f.Get(a)
-	return hex != nil && objects.NotNilMov(hex.Occupant)
+	return hex != nil && !util.IsNil(hex.Occupant)
 }
 
 func (f *Floor) PutOccupant(m objects.Moveable, a world.Coords) bool {
 	hex := f.Get(a)
-	if hex != nil && !objects.NotNilMov(hex.Occupant) {
+	if hex != nil && util.IsNil(hex.Occupant) {
 		hex.Occupant = m
 		return true
 	}
@@ -152,7 +153,7 @@ func (f *Floor) PutOccupant(m objects.Moveable, a world.Coords) bool {
 
 func (f *Floor) RemoveOccupant(a world.Coords) bool {
 	hex := f.Get(a)
-	if hex != nil && objects.NotNilMov(hex.Occupant) {
+	if hex != nil && !util.IsNil(hex.Occupant) {
 		hex.Occupant = nil
 		return true
 	}

@@ -1,6 +1,9 @@
 package util
 
-import "github.com/faiface/pixel"
+import (
+	"github.com/faiface/pixel"
+	"reflect"
+)
 
 // Abs returns the absolute value of x.
 func Abs(x int) int {
@@ -30,4 +33,15 @@ func Max(a, b int) int {
 // when unprojected by the pixel.Matrix
 func PointInside(p pixel.Vec, r pixel.Rect, m pixel.Matrix) bool {
 	return r.Moved(pixel.V(-(r.W() / 2.0), -(r.H() / 2.0))).Contains(m.Unproject(p))
+}
+
+func IsNil(i interface{}) bool {
+	if i == nil {
+		return true
+	}
+	switch reflect.TypeOf(i).Kind() {
+	case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
+		return reflect.ValueOf(i).IsNil()
+	}
+	return false
 }

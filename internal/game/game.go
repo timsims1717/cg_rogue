@@ -9,6 +9,7 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/generate"
+	"github.com/timsims1717/cg_rogue_go/internal/manager"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
 	"github.com/timsims1717/cg_rogue_go/internal/selectors"
 	"github.com/timsims1717/cg_rogue_go/internal/state"
@@ -34,15 +35,6 @@ func InitializeGame() {
 
 	generate.LoadTestFloor(1)
 
-	//floor.DefaultFloor(10, 10, spritesheet)
-
-	//tree := characters.NewCharacter(pixel.NewSprite(treesheet.Img, treesheet.Sprites[rand.Intn(len(treesheet.Sprites))]), world.Coords{8,4}, characters.Enemy, 10)
-	//treeAI := ai.NewRandomWalker(tree)
-	//flyer := characters.NewCharacter(pixel.NewSprite(treesheet.Img, treesheet.Sprites[rand.Intn(len(treesheet.Sprites))]), world.Coords{2,9}, characters.Enemy, 10)
-	//flyerAI := ai.NewFlyChaser(flyer)
-	//ai.AIManager.AddAI(treeAI)
-	//ai.AIManager.AddAI(flyerAI)
-
 	player.Player1.Hand = player.NewHand(player.Player1)
 	player.Player1.Hand.AddCard(cards.CreateThrust())
 	player.Player1.Hand.AddCard(cards.CreateDash())
@@ -52,6 +44,7 @@ func InitializeGame() {
 	player.Player1.Hand.AddCard(cards.CreateDaggerThrow())
 	player.Player1.PlayCard = player.NewPlayCard(player.Player1)
 	player.Player1.Discard = player.NewDiscard(player.Player1)
+	player.Player1.Grid = player.NewGrid(player.Player1)
 
 	restS := "Rest (R)"
 	rest := ui.NewActionText(restS)
@@ -70,7 +63,9 @@ func InitializeGame() {
 		values := selectors.ActionValues{}
 		sel := selectors.NewNullSelect()
 		player.Player1.PlayCard.CancelCard()
-		player.Player1.SetPlayerAction(player.NewPlayerAction(sel, values, player.Player1.Rest))
+		player.Player1.SetPlayerAction(player.NewPlayerAction(sel, values, func(_ []world.Coords, _ selectors.ActionValues) {
+			manager.ActionManager.AddToBot(actions.NewRestAction(player.Player1))
+		}))
 	})
 	restButton.SetOnDisabledFn(func() {
 		restButton.Show = false
@@ -79,6 +74,9 @@ func InitializeGame() {
 		restButton.Show = true
 	})
 	player.Player1.RestButton = restButton
+	player.Player1.Input.SetHotKey(pixelgl.KeyR, func() {
+		restButton.Click()
+	})
 
 	moveS := "Move 1 (M)"
 	move := ui.NewActionText(moveS)
@@ -110,7 +108,9 @@ func InitializeGame() {
 		}
 		sel := selectors.NewPathSelect()
 		player.Player1.PlayCard.CancelCard()
-		player.Player1.SetPlayerAction(player.NewPlayerAction(sel, values, player.BasicMove))
+		player.Player1.SetPlayerAction(player.NewPlayerAction(sel, values, func(path []world.Coords, values selectors.ActionValues) {
+			manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(values.Source, values.Source, path))
+		}))
 	})
 	moveButton.SetOnDisabledFn(func() {
 		moveButton.Show = false
@@ -119,6 +119,25 @@ func InitializeGame() {
 		moveButton.Show = true
 	})
 	player.Player1.MoveButton = moveButton
+	player.Player1.Input.SetHotKey(pixelgl.KeyM, func() {
+		moveButton.Click()
+	})
+
+	player.Player1.Input.SetHotKey(pixelgl.KeyA, func() {
+		values := selectors.ActionValues{
+			Source:  player.Player1.Character,
+			Damage:  10,
+			Move:    0,
+			Range:   10,
+			Targets: 5,
+		}
+		sel := selectors.NewHexSelect()
+		player.Player1.PlayCard.CancelCard()
+		player.Player1.SetPlayerAction(player.NewPlayerAction(sel, values, func(targets []world.Coords, values selectors.ActionValues) {
+			manager.ActionManager.AddToBot(actions.NewDamageHexAction(targets, values))
+		}))
+	})
+
 	state.Machine.Phase = state.EnemyStartTurn
 	camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.White, 1.0)
 }
@@ -139,6 +158,8 @@ func UninitializeGame() {
 	player.Player1.Hand = nil
 	player.Player1.PlayCard = nil
 	player.Player1.Discard = nil
+	player.Player1.Grid = nil
+	player.Player1.Input.RemoveHotKeys()
 }
 
 func UpdateGame(win *pixelgl.Window) {
@@ -148,7 +169,7 @@ func UpdateGame(win *pixelgl.Window) {
 	CenterText.Update(player.Player1.Input)
 
 	player.CardManager.Update()
-	actions.Update()
+	manager.ActionManager.Update()
 
 	ai.AIManager.Update()
 	characters.Update()
@@ -164,6 +185,9 @@ func DrawGame(win *pixelgl.Window) {
 	player.Player1.Hand.Draw(win)
 	player.Player1.PlayCard.Draw(win)
 	player.Player1.Discard.Draw(win)
+	if player.Player1.Grid != nil && player.Player1.Grid.Show {
+		player.Player1.Grid.Draw(win)
+	}
 	win.SetSmooth(false)
 	CenterText.Draw(win)
 }
@@ -179,9 +203,6 @@ func UpdateGamePhase() {
 		CenterText.Text.TextColor = colornames.Black
 		transform := animation.TransformBuilder{
 			Transform: CenterText.Text.Transform,
-			InterX:    nil,
-			InterY:    nil,
-			InterR:    nil,
 			InterSX:   gween.New(CenterText.Text.Transform.Scalar.X, 7.0, 2.0, ease.Linear),
 			InterSY:   gween.New(CenterText.Text.Transform.Scalar.Y, 7.0, 2.0, ease.Linear),
 		}
@@ -225,7 +246,7 @@ func UpdateGamePhase() {
 		camera.Cam.MoveTo(player.Player1.Character.Transform.Pos, 0.2, true)
 		state.Machine.Phase = state.PlayerTurn
 	case state.PlayerTurn:
-		if player.Player1.ActionsThisTurn > 0 && player.Player1.PlayCard.Card == nil && !actions.IsActing() {
+		if player.Player1.ActionsThisTurn > 0 && player.Player1.PlayCard.Card == nil && !manager.ActionManager.IsActing() {
 			player.Player1.EndTurn()
 			state.Machine.Phase = state.EnemyStartTurn
 		}
@@ -234,7 +255,7 @@ func UpdateGamePhase() {
 		ai.AIManager.StartAITurn()
 		state.Machine.Phase = state.EnemyEndTurn
 	case state.EnemyEndTurn:
-		if !ai.AIManager.AIActing() && !actions.IsActing() {
+		if !ai.AIManager.AIActing() && !manager.ActionManager.IsActing() {
 			ai.AIManager.EndAITurn()
 			state.Machine.Phase = state.PlayerStartTurn
 		}

@@ -5,11 +5,12 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"
+	uuid "github.com/satori/go.uuid"
+	"github.com/timsims1717/cg_rogue_go/pkg/animation"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
 	gween "github.com/timsims1717/cg_rogue_go/pkg/gween64"
 	"github.com/timsims1717/cg_rogue_go/pkg/gween64/ease"
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
-	"github.com/timsims1717/cg_rogue_go/pkg/timing"
 	text2 "github.com/timsims1717/cg_rogue_go/pkg/typeface"
 	"github.com/timsims1717/cg_rogue_go/pkg/util"
 	"golang.org/x/image/colornames"
@@ -30,16 +31,19 @@ type Card struct {
 	title    *text.Text
 	canvas   *pixelgl.Canvas
 
-	draw   bool
-	Pos    pixel.Vec
-	Scalar float64
-	Rot    float64
-	Mat    pixel.Matrix
-	interX *gween.Tween
-	interY *gween.Tween
-	interR *gween.Tween
-	interS *gween.Tween
-	trans  bool
+	draw      bool
+	//Pos    pixel.Vec
+	//Scalar float64
+	//Rot    float64
+	//Mat    pixel.Matrix
+	//interX *gween.Tween
+	//interY *gween.Tween
+	//interR *gween.Tween
+	//interS *gween.Tween
+	Transform *animation.Transform
+	PosEffect *animation.TransformEffect
+	ScaEffect *animation.TransformEffect
+	trans     bool
 
 	isPlay    bool
 	played    bool
@@ -47,31 +51,40 @@ type Card struct {
 	sections  []*CardSection
 	actPtr    int
 	player    *Player
+
+	Current  CardGroup
+	Previous CardGroup
+	ID       uuid.UUID
 }
 
 func NewCard(title string, sections []*CardSection) *Card {
+	transform := animation.NewTransform(true)
+	transform.Anchor = animation.Anchor{
+		H: animation.Center,
+		V: animation.Center,
+	}
+	transform.Rect = pixel.R(0, 0, BaseCardWidth, BaseCardHeight)
 	return &Card{
 		RawTitle: title,
-		canvas:   pixelgl.NewCanvas(pixel.R(0, 0, BaseCardWidth, BaseCardHeight)),
+		canvas:   pixelgl.NewCanvas(transform.Rect),
 		title:    text.New(pixel.ZV, text2.BasicAtlas),
 
-		draw:   true,
-		Pos:    pixel.ZV,
-		Scalar: 1.0,
-		Rot:    0.0,
-		Mat:    pixel.IM,
+		draw:      true,
+		Transform: transform,
 
 		sections:  sections,
 		actPtr:    -1,
 		canCancel: true,
+
+		ID: uuid.NewV4(),
 	}
 }
 
 func (c *Card) PointInside(point pixel.Vec) bool {
-	return util.PointInside(point, c.canvas.Bounds(), c.Mat)
+	return util.PointInside(point, c.canvas.Bounds(), c.Transform.Mat)
 }
 
-func (c *Card) Update() {
+func (c *Card) Update(r pixel.Rect) {
 	// card title
 	c.title.Clear()
 	c.title.Color = colornames.Black
@@ -84,33 +97,48 @@ func (c *Card) Update() {
 
 	moved := false
 	// card position, scaling, and rotation
-	if c.interX != nil {
-		x, finX := c.interX.Update(timing.DT)
-		c.Pos.X = x
-		if finX {
-			c.interX = nil
-		} else {
-			moved = true
+	c.Transform.Update(r)
+	if c.PosEffect != nil {
+		c.PosEffect.Update()
+		moved = true
+		if c.PosEffect.IsDone() {
+			c.PosEffect = nil
 		}
 	}
-	if c.interY != nil {
-		y, finY := c.interY.Update(timing.DT)
-		c.Pos.Y = y
-		if finY {
-			c.interY = nil
-		} else {
-			moved = true
+	if c.ScaEffect != nil {
+		c.ScaEffect.Update()
+		moved = true
+		if c.ScaEffect.IsDone() {
+			c.ScaEffect = nil
 		}
 	}
-	if c.interS != nil {
-		s, finS := c.interS.Update(timing.DT)
-		c.Scalar = s
-		if finS {
-			c.interS = nil
-		} else {
-			moved = true
-		}
-	}
+	//if c.interX != nil {
+	//	x, finX := c.interX.Update(timing.DT)
+	//	c.Pos.X = x
+	//	if finX {
+	//		c.interX = nil
+	//	} else {
+	//		moved = true
+	//	}
+	//}
+	//if c.interY != nil {
+	//	y, finY := c.interY.Update(timing.DT)
+	//	c.Pos.Y = y
+	//	if finY {
+	//		c.interY = nil
+	//	} else {
+	//		moved = true
+	//	}
+	//}
+	//if c.interS != nil {
+	//	s, finS := c.interS.Update(timing.DT)
+	//	c.Scalar = s
+	//	if finS {
+	//		c.interS = nil
+	//	} else {
+	//		moved = true
+	//	}
+	//}
 	c.trans = c.trans && moved
 
 	if c.isPlay {
@@ -134,15 +162,15 @@ func (c *Card) Update() {
 	}
 }
 
-func (c *Card) Draw(win *pixelgl.Window) {
+func (c *Card) Draw(target pixel.Target) {
 	c.canvas.Clear(pixel.RGBA{R: 0, G: 0, B: 0, A: 0})
 	CardBG.Draw(c.canvas, pixel.IM.Moved(pixel.V(BaseCardWidth* 0.5, BaseCardHeight* 0.5)))
 	for i, cs := range c.sections {
 		cs.Draw(c.canvas, i)
 	}
 	c.title.Draw(c.canvas, pixel.IM.Scaled(c.title.Orig, 2.0).Moved(pixel.V(BaseCardWidth* 0.5, BaseCardHeight- 32.0)))
-	c.Mat = camera.Cam.UITransform(c.Pos, pixel.V(c.Scalar, c.Scalar), 0.)
-	c.canvas.Draw(win, c.Mat)
+	c.Transform.Mat = camera.Cam.UITransform(c.Transform.RPos, c.Transform.Scalar, c.Transform.Rot)
+	c.canvas.Draw(target, c.Transform.Mat)
 }
 
 func (c *Card) play(player *Player) {
@@ -171,12 +199,21 @@ func (c *Card) stop() {
 }
 
 func (c *Card) setXY(v pixel.Vec) {
-	c.interX = gween.New(c.Pos.X, v.X, 0.2, ease.InOutQuad)
-	c.interY = gween.New(c.Pos.Y, v.Y, 0.2, ease.InOutQuad)
+	transform := animation.TransformBuilder{
+		Transform: c.Transform,
+		InterX:    gween.New(c.Transform.Pos.X, v.X, 0.2, ease.InOutQuad),
+		InterY:    gween.New(c.Transform.Pos.Y, v.Y, 0.2, ease.InOutQuad),
+	}
+	c.PosEffect = transform.Build()
 }
 
 func (c *Card) setScalar(s float64) {
-	c.interS = gween.New(c.Scalar, s, 0.2, ease.InOutCubic)
+	transform := animation.TransformBuilder{
+		Transform: c.Transform,
+		InterSX:   gween.New(c.Transform.Scalar.X, s, 0.2, ease.InOutCubic),
+		InterSY:   gween.New(c.Transform.Scalar.Y, s, 0.2, ease.InOutCubic),
+	}
+	c.ScaEffect = transform.Build()
 }
 
 type CardSection struct {

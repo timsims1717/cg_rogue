@@ -2,14 +2,10 @@ package player
 
 import (
 	"github.com/faiface/pixel/pixelgl"
-	"github.com/timsims1717/cg_rogue_go/internal/actions"
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
-	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/input"
-	"github.com/timsims1717/cg_rogue_go/internal/selectors"
 	"github.com/timsims1717/cg_rogue_go/internal/state"
 	"github.com/timsims1717/cg_rogue_go/internal/ui"
-	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
 var Player1 *Player
@@ -21,6 +17,7 @@ type Player struct {
 	Hand            *Hand
 	PlayCard        *PlayCard
 	Discard         *Discard
+	Grid            *Grid
 	ActionsThisTurn int
 	IsTurn          bool
 	RestButton      *ui.ActionEl
@@ -34,7 +31,7 @@ func init() {
 func NewPlayer(character *characters.Character) *Player {
 	return &Player{
 		Character: character,
-		Input:     &input.Input{},
+		Input:     input.NewInput(),
 	}
 }
 
@@ -50,6 +47,9 @@ func (p *Player) EndTurn() {
 
 func (p *Player) Update(win *pixelgl.Window) {
 	if state.Machine.State == state.InGame {
+		if p.Grid != nil {
+			p.Grid.Update()
+		}
 		if p.Hand != nil {
 			p.Hand.Update(p.IsTurn)
 		}
@@ -68,43 +68,6 @@ func (p *Player) Update(win *pixelgl.Window) {
 			p.MoveButton.Update(p.Input)
 		}
 		if p.IsTurn {
-			if win.JustPressed(pixelgl.KeyA) {
-				values := selectors.ActionValues{
-					Source:  p.Character,
-					Damage:  10,
-					Move:    0,
-					Range:   10,
-					Targets: 5,
-				}
-				sel := selectors.NewHexSelect()
-				p.PlayCard.CancelCard()
-				p.SetPlayerAction(NewPlayerAction(sel, values, BasicAttack))
-			}
-			if win.JustPressed(pixelgl.KeyM) {
-				values := selectors.ActionValues{
-					Source:  p.Character,
-					Damage:  0,
-					Move:    1,
-					Range:   0,
-					Targets: 0,
-					Checks: floor.PathChecks{
-						NotFilled:     true,
-						Unoccupied:    true,
-						NonEmpty:      true,
-						EndUnoccupied: true,
-						Orig:          world.Coords{},
-					},
-				}
-				sel := selectors.NewPathSelect()
-				p.PlayCard.CancelCard()
-				p.SetPlayerAction(NewPlayerAction(sel, values, BasicMove))
-			}
-			if win.JustPressed(pixelgl.KeyR) {
-				values := selectors.ActionValues{}
-				sel := selectors.NewNullSelect()
-				p.PlayCard.CancelCard()
-				p.SetPlayerAction(NewPlayerAction(sel, values, p.Rest))
-			}
 			if p.CurrAction != nil && p.PlayCard.Card == nil && p.Input.Cancel.JustPressed() {
 				p.Input.Cancel.Consume()
 				p.CurrAction = nil
@@ -136,16 +99,4 @@ func (p *Player) SetPlayerAction(act *PlayerAction) {
 	act.Selector.Init(p.Input)
 	act.Selector.SetValues(act.Values)
 	p.CurrAction = act
-}
-
-func BasicMove(path []world.Coords, values selectors.ActionValues) {
-	actions.AddToBot(actions.NewMoveSeriesAction(values.Source, values.Source, path))
-}
-
-func BasicAttack(targets []world.Coords, values selectors.ActionValues) {
-	actions.AddToBot(actions.NewDamageHexAction(targets, values))
-}
-
-func (p *Player) Rest(_ []world.Coords, _ selectors.ActionValues) {
-	actions.AddToBot(NewRestAction(p))
 }

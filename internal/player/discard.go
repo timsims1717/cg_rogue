@@ -3,6 +3,7 @@ package player
 import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
+	uuid "github.com/satori/go.uuid"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
 )
 
@@ -11,6 +12,7 @@ type Discard struct {
 	Group  []*Card
 	update bool
 	Hover  bool
+	InGrid bool
 }
 
 func NewDiscard(player *Player) *Discard {
@@ -25,22 +27,33 @@ func (d *Discard) Update(turn bool) {
 	if d.player != nil {
 		if len(d.Group) > 0 {
 			top := d.Group[len(d.Group)-1]
-			hover := top.PointInside(d.player.Input.World) && !top.trans
+			hover := top.PointInside(d.player.Input.World) && !top.trans && !d.InGrid
 			if d.Hover != hover {
 				d.Hover = hover
 				d.update = true
 			}
+			if turn && d.Hover && d.player.Input.Select.JustPressed() && d.player.Grid != nil {
+				d.player.Input.Select.Consume()
+				d.player.Grid.ReturnCards()
+				d.InGrid = true
+				d.player.Grid.Show = true
+				for _, card := range d.Group {
+					CardManager.Move(nil, d.player.Grid, card)
+				}
+			}
 			for i, card := range d.Group {
-				if d.update {
-					if i == len(d.Group)-1 && d.Hover {
-						card.setXY(pixel.V(camera.WindowWidthF-DiscardRightPad, DiscardBottomPad*2.0))
-						card.setScalar(DiscardHovScale)
-					} else {
-						card.setXY(pixel.V(camera.WindowWidthF-DiscardRightPad, DiscardBottomPad))
-						card.setScalar(DiscardScale)
+				if !d.InGrid {
+					if d.update {
+						if i == len(d.Group)-1 && d.Hover {
+							card.setXY(pixel.V(camera.WindowWidthF-DiscardRightPad, DiscardBottomPad*2.0))
+							card.setScalar(DiscardHovScale)
+						} else {
+							card.setXY(pixel.V(camera.WindowWidthF-DiscardRightPad, DiscardBottomPad))
+							card.setScalar(DiscardScale)
+						}
 					}
 				}
-				card.Update()
+				card.Update(pixel.Rect{})
 			}
 		} else {
 			d.Hover = false
@@ -78,6 +91,9 @@ func (d *Discard) AddCard(card *Card) {
 		card.trans = true
 		d.Group = append(d.Group, card)
 	}
+	if d.InGrid {
+		CardManager.Move(nil, d.player.Grid, card)
+	}
 }
 
 func (d *Discard) RemoveTopCard() *Card {
@@ -90,12 +106,19 @@ func (d *Discard) RemoveTopCard() *Card {
 	return nil
 }
 
-func (d *Discard) RemoveCard(i int) *Card {
+func (d *Discard) RemoveCard(id uuid.UUID) *Card {
 	d.update = true
-	if i < 0 || i >= len(d.Group) {
+	index := -1
+	for i, card := range d.Group {
+		if card.ID == id {
+			index = i
+			break
+		}
+	}
+	if index < 0 || index >= len(d.Group) {
 		return nil
 	}
-	card := d.Group[i]
-	d.Group = append(d.Group[0:i], d.Group[i+1:len(d.Group)]...)
+	card := d.Group[index]
+	d.Group = append(d.Group[0:index], d.Group[index+1:len(d.Group)]...)
 	return card
 }

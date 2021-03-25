@@ -1,5 +1,10 @@
 package player
 
+import (
+	uuid "github.com/satori/go.uuid"
+	"github.com/timsims1717/cg_rogue_go/pkg/util"
+)
+
 func init() {
 	CardManager = cardManager{
 		moves:  []cardMove{},
@@ -8,11 +13,20 @@ func init() {
 
 type CardGroup interface {
 	AddCard(*Card)
-	RemoveCard(int) *Card
+	RemoveCard(uuid.UUID) *Card
 }
 
-func moveCard(a, b CardGroup, i int) {
-	b.AddCard(a.RemoveCard(i))
+func addCard(a CardGroup, card *Card) {
+	a.AddCard(card)
+}
+
+func moveCard(a, b CardGroup, id uuid.UUID) {
+	card := a.RemoveCard(id)
+	if card != nil {
+		card.Previous = card.Current
+		card.Current = b
+		b.AddCard(card)
+	}
 }
 
 var CardManager cardManager
@@ -24,20 +38,25 @@ type cardManager struct {
 type cardMove struct {
 	from CardGroup
 	to   CardGroup
-	i    int
+	card *Card
 }
 
 func (m *cardManager) Update() {
-	for _, move := range m.moves {
-		moveCard(move.from, move.to, move.i)
-	}
+	nextMoves := m.moves
 	m.moves = []cardMove{}
+	for _, move := range nextMoves {
+		if util.IsNil(move.from) {
+			addCard(move.to, move.card)
+		} else {
+			moveCard(move.from, move.to, move.card.ID)
+		}
+	}
 }
 
-func (m *cardManager) Move(from, to CardGroup, i int) {
+func (m *cardManager) Move(from, to CardGroup, card *Card) {
 	m.moves = append(m.moves, cardMove{
 		from: from,
 		to:   to,
-		i:    i,
+		card: card,
 	})
 }

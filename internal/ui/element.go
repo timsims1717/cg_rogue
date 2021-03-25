@@ -84,10 +84,12 @@ func (e *ActionEl) Update(input *input.Input) {
 			e.hoverFn()
 		}
 		e.hovered = mouseOver
-		if e.hovered && input.Select.JustPressed() && e.clickFn != nil {
+		if e.clicked || (e.hovered && input.Select.JustPressed() && e.clickFn != nil) {
 			e.clickFn()
+			e.clicked = false
 		} else if e.hovered && input.Select.JustReleased() && e.unClickFn != nil {
 			e.unClickFn()
+			e.clicked = false
 		}
 	}
 	if e.Text != nil {
@@ -156,6 +158,10 @@ func (e *ActionEl) Hover() {
 
 func (e *ActionEl) OnUnHover() {
 	e.unHoverFn()
+}
+
+func (e *ActionEl) Click() {
+	e.clicked = true
 }
 
 func (e *ActionEl) IsClicked() bool {

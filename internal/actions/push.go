@@ -4,6 +4,7 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
+	"github.com/timsims1717/cg_rogue_go/internal/manager"
 	"github.com/timsims1717/cg_rogue_go/internal/objects"
 	"github.com/timsims1717/cg_rogue_go/internal/selectors"
 	gween "github.com/timsims1717/cg_rogue_go/pkg/gween64"
@@ -59,7 +60,7 @@ func (a *PushAction) Update() {
 			a.isDone = true
 			return
 		}
-		AddToTop(NewMoveAction(a.source, a.target, nPath[len(nPath)-1]))
+		manager.ActionManager.AddToTop(NewMoveAction(a.source, a.target, nPath[len(nPath)-1]))
 		a.start = false
 		a.isDone = true
 	}

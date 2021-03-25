@@ -4,6 +4,7 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/actions"
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
+	"github.com/timsims1717/cg_rogue_go/internal/manager"
 	"github.com/timsims1717/cg_rogue_go/internal/selectors"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"math/rand"
@@ -93,9 +94,9 @@ func (r *RandomWalker) TakeTurn() {
 	for i, act := range r.TempActions {
 		switch i % 2 {
 		case 0:
-			actions.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
+			manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
 		case 1:
-			actions.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+			manager.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
 		}
 	}
 }
@@ -219,9 +220,9 @@ func (ai *FlyChaser) TakeTurn() {
 	for i, act := range ai.TempActions {
 		switch i % 2 {
 		case 0:
-			actions.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
+			manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
 		case 1:
-			actions.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+			manager.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
 		}
 	}
 }
@@ -411,16 +412,16 @@ func (ai *Skirmisher) TakeTurn() {
 		switch ai.decision {
 		case 0:
 			act := ai.TempActions[0]
-			actions.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
+			manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
 		case 1:
 			act := ai.TempActions[0]
-			actions.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+			manager.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
 		case 2:
 			for i, act := range ai.TempActions {
 				if i == 0 {
-					actions.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
+					manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
 				} else {
-					actions.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+					manager.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
 				}
 			}
 		}
@@ -593,9 +594,9 @@ func (ai *Grenadier) Decide() {
 func (ai *Grenadier) TakeTurn() {
 	for i, act := range ai.TempActions {
 		if i == 0 {
-			actions.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+			manager.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
 		} else {
-			actions.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
+			manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
 		}
 	}
 }
@@ -733,16 +734,16 @@ func (ai *Bruiser) TakeTurn() {
 	if len(ai.TempActions) > 0 {
 		if ai.decision == 0 {
 			act := ai.TempActions[0]
-			actions.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
+			manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
 		} else if ai.decision == 1 {
 			act := ai.TempActions[0]
-			actions.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+			manager.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
 		} else {
 			for i, act := range ai.TempActions {
 				if i == 0 {
-					actions.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
+					manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
 				} else {
-					actions.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+					manager.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
 				}
 			}
 		}
@@ -798,6 +799,6 @@ func (ai *Stationary) Decide() {
 func (ai *Stationary) TakeTurn() {
 	if len(ai.TempActions) > 0 {
 		act := ai.TempActions[0]
-		actions.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+		manager.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
 	}
 }

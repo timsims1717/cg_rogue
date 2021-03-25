@@ -7,11 +7,11 @@ import (
 	"github.com/faiface/pixel/text"
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
-	"github.com/timsims1717/cg_rogue_go/internal/objects"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
 	"github.com/timsims1717/cg_rogue_go/internal/state"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
 	"github.com/timsims1717/cg_rogue_go/pkg/typeface"
+	"github.com/timsims1717/cg_rogue_go/pkg/util"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"time"
 )
@@ -81,7 +81,7 @@ func UpdateText() {
 	health.Clear()
 	if state.Machine.State == state.InGame {
 		occ := floor.CurrentFloor.GetOccupant(world.Coords{mapX, mapY})
-		if objects.NotNil(occ) {
+		if !util.IsNil(occ) {
 			if cha, ok := occ.(*characters.Character); ok {
 				fmt.Fprintf(health, "Health: %d/%d HP", cha.Health.CurrHP, cha.Health.MaxHP)
 				dispHP = true

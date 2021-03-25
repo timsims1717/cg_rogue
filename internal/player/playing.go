@@ -3,6 +3,7 @@ package player
 import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
+	uuid "github.com/satori/go.uuid"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
 )
 
@@ -31,13 +32,13 @@ func (p *PlayCard) Update(turn bool) {
 				p.Card.stop()
 			}
 		}
-		p.Card.Update()
+		p.Card.Update(pixel.Rect{})
 		if !turn || !p.Card.isPlay {
 			if p.Card.played {
 				p.Card.played = false
-				CardManager.Move(p, p.player.Discard, 0)
+				CardManager.Move(p, p.player.Discard, p.Card)
 			} else {
-				CardManager.Move(p, p.player.Hand, 0)
+				CardManager.Move(p, p.player.Hand, p.Card)
 			}
 		}
 	}
@@ -67,7 +68,7 @@ func (p *PlayCard) AddCard(card *Card) {
 	}
 }
 
-func (p *PlayCard) RemoveCard(i int) *Card {
+func (p *PlayCard) RemoveCard(uuid uuid.UUID) *Card {
 	p.update = true
 	if p.Card == nil {
 		return nil

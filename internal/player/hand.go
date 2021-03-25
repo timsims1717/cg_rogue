@@ -3,6 +3,7 @@ package player
 import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
+	uuid "github.com/satori/go.uuid"
 )
 
 type Hand struct {
@@ -47,12 +48,12 @@ func (h *Hand) Update(turn bool) {
 					card.setScalar(HandCardScale)
 				}
 			}
-			card.Update()
+			card.Update(pixel.Rect{})
 		}
 		if h.isHovered() && h.player.Input.Select.JustPressed() && turn {
 			h.player.Input.Select.Consume()
-			CardManager.Move(h.player.PlayCard, h, h.Hovered)
-			CardManager.Move(h, h.player.PlayCard, h.Hovered)
+			CardManager.Move(h.player.PlayCard, h, h.Group[h.Hovered])
+			CardManager.Move(h, h.player.PlayCard, h.Group[h.Hovered])
 		}
 		if h.update {
 			h.update = false
@@ -74,13 +75,20 @@ func (h *Hand) AddCard(card *Card) {
 	}
 }
 
-func (h *Hand) RemoveCard(i int) *Card {
+func (h *Hand) RemoveCard(id uuid.UUID) *Card {
 	h.update = true
-	if i < 0 || i >= len(h.Group) {
+	index := -1
+	for i, card := range h.Group {
+		if card.ID == id {
+			index = i
+			break
+		}
+	}
+	if index < 0 || index >= len(h.Group) {
 		return nil
 	}
-	card := h.Group[i]
-	h.Group = append(h.Group[0:i], h.Group[i+1:len(h.Group)]...)
+	card := h.Group[index]
+	h.Group = append(h.Group[0:index], h.Group[index+1:len(h.Group)]...)
 	return card
 }
 

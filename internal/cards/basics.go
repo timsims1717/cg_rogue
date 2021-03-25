@@ -3,6 +3,7 @@ package cards
 import (
 	"github.com/timsims1717/cg_rogue_go/internal/actions"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
+	"github.com/timsims1717/cg_rogue_go/internal/manager"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
 	"github.com/timsims1717/cg_rogue_go/internal/selectors"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
@@ -11,7 +12,7 @@ import (
 func CreateThrust() *player.Card {
 	values := ThrustLevel(0)
 	fn := func (targets []world.Coords, values selectors.ActionValues) {
-		actions.AddToBot(actions.NewDamageAction(targets, values))
+		manager.ActionManager.AddToBot(actions.NewDamageAction(targets, values))
 	}
 	act := player.NewPlayerAction(selectors.NewTargetSelect(), values, fn)
 	sec := player.NewCardSection("Deal 4 damage.", act)
@@ -45,7 +46,7 @@ func ThrustLevel(level int) selectors.ActionValues {
 func CreateDash() *player.Card {
 	values := DashLevel(0)
 	fn := func (path []world.Coords, values selectors.ActionValues) {
-		actions.AddToBot(actions.NewMoveSeriesAction(values.Source, values.Source, path))
+		manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(values.Source, values.Source, path))
 	}
 	sel := selectors.NewPathSelect()
 	act := player.NewPlayerAction(sel, values, fn)
@@ -70,10 +71,10 @@ func DashLevel(level int) selectors.ActionValues {
 func CreateQuickStrike() *player.Card {
 	valMov, valAtk := QuickStrikeLevel(0)
 	fnMov := func (path []world.Coords, values selectors.ActionValues) {
-		actions.AddToBot(actions.NewMoveSeriesAction(values.Source, values.Source, path))
+		manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(values.Source, values.Source, path))
 	}
 	fnAtk := func (targets []world.Coords, values selectors.ActionValues) {
-		actions.AddToBot(actions.NewDamageAction(targets, values))
+		manager.ActionManager.AddToBot(actions.NewDamageAction(targets, values))
 	}
 	selMov := selectors.NewPathSelect()
 	actMov := player.NewPlayerAction(selMov, valMov, fnMov)
@@ -122,7 +123,7 @@ func QuickStrikeLevel(level int) (selectors.ActionValues, selectors.ActionValues
 func CreateSweep() *player.Card {
 	values := SweepLevel(0)
 	fn := func (area []world.Coords, values selectors.ActionValues) {
-		actions.AddToBot(actions.NewPushMultiAction(area, values))
+		manager.ActionManager.AddToBot(actions.NewPushMultiAction(area, values))
 	}
 	act := player.NewPlayerAction(selectors.NewArcSelect(), values, fn)
 	sec := player.NewCardSection("Deal 2 damage and push 1 away.", act)
@@ -153,10 +154,10 @@ func CreateVault() *player.Card {
 		if len(path) > 0 {
 			h = path[len(path)-1]
 		}
-		actions.AddToBot(actions.NewMoveAction(values.Source, values.Source, h))
+		manager.ActionManager.AddToBot(actions.NewMoveAction(values.Source, values.Source, h))
 	}
 	fnAtk := func (targets []world.Coords, values selectors.ActionValues) {
-		actions.AddToBot(actions.NewDamageHexAction(targets, values))
+		manager.ActionManager.AddToBot(actions.NewDamageHexAction(targets, values))
 	}
 	selMov := selectors.NewEmptyHexSelect()
 	selAtk := selectors.NewHexSelect()
@@ -183,7 +184,7 @@ func VaultLevel(level int) (selectors.ActionValues, selectors.ActionValues) {
 func CreateDaggerThrow() *player.Card {
 	values := DaggerThrowLevel(0)
 	fn := func (targets []world.Coords, values selectors.ActionValues) {
-		actions.AddToBot(actions.NewDamageHexAction(targets, values))
+		manager.ActionManager.AddToBot(actions.NewDamageHexAction(targets, values))
 	}
 	sel := selectors.NewLineSelect()
 	act := player.NewPlayerAction(sel, values, fn)
