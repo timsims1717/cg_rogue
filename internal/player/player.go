@@ -4,7 +4,6 @@ import (
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/input"
-	"github.com/timsims1717/cg_rogue_go/internal/state"
 	"github.com/timsims1717/cg_rogue_go/internal/ui"
 )
 
@@ -45,41 +44,39 @@ func (p *Player) EndTurn() {
 	p.CurrAction = nil
 }
 
-func (p *Player) Update(win *pixelgl.Window) {
-	if state.Machine.State == state.InGame {
-		if p.Grid != nil {
-			p.Grid.Update()
+func (p *Player) Update() {
+	if p.Grid != nil {
+		p.Grid.Update()
+	}
+	if p.Hand != nil {
+		p.Hand.Update(p.IsTurn)
+	}
+	if p.PlayCard != nil {
+		p.PlayCard.Update(p.IsTurn)
+	}
+	if p.Discard != nil {
+		p.Discard.Update(p.IsTurn)
+	}
+	if p.RestButton != nil {
+		p.RestButton.Disabled = !p.IsTurn
+		p.RestButton.Update(p.Input)
+	}
+	if p.MoveButton != nil {
+		p.MoveButton.Disabled = !p.IsTurn
+		p.MoveButton.Update(p.Input)
+	}
+	if p.IsTurn {
+		if p.CurrAction != nil && p.PlayCard.Card == nil && p.Input.Cancel.JustPressed() {
+			p.Input.Cancel.Consume()
+			p.CurrAction = nil
 		}
-		if p.Hand != nil {
-			p.Hand.Update(p.IsTurn)
-		}
-		if p.PlayCard != nil {
-			p.PlayCard.Update(p.IsTurn)
-		}
-		if p.Discard != nil {
-			p.Discard.Update(p.IsTurn)
-		}
-		if p.RestButton != nil {
-			p.RestButton.Disabled = !p.IsTurn
-			p.RestButton.Update(p.Input)
-		}
-		if p.MoveButton != nil {
-			p.MoveButton.Disabled = !p.IsTurn
-			p.MoveButton.Update(p.Input)
-		}
-		if p.IsTurn {
-			if p.CurrAction != nil && p.PlayCard.Card == nil && p.Input.Cancel.JustPressed() {
-				p.Input.Cancel.Consume()
-				p.CurrAction = nil
-			}
-			if p.CurrAction != nil {
-				p.CurrAction.Update()
+		if p.CurrAction != nil {
+			p.CurrAction.Update()
+			if p.CurrAction.Complete {
 				if p.CurrAction.Complete {
-					if p.CurrAction.Complete {
-						p.ActionsThisTurn += 1
-					}
-					p.CurrAction = nil
+					p.ActionsThisTurn += 1
 				}
+				p.CurrAction = nil
 			}
 		}
 	}
@@ -99,4 +96,22 @@ func (p *Player) SetPlayerAction(act *PlayerAction) {
 	act.Selector.Init(p.Input)
 	act.Selector.SetValues(act.Values)
 	p.CurrAction = act
+}
+
+func (p *Player) GetDeck() []*Card {
+	var deck []*Card
+	if p.Hand != nil {
+		for _, c := range p.Hand.Group {
+			deck = append(deck, c)
+		}
+	}
+	if p.PlayCard != nil && p.PlayCard.Card != nil {
+		deck = append(deck, p.PlayCard.Card)
+	}
+	if p.Discard != nil {
+		for _, c := range p.Discard.Group {
+			deck = append(deck, c)
+		}
+	}
+	return deck
 }

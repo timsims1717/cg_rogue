@@ -19,9 +19,9 @@ type Character struct {
 	Transform   *animation.Transform
 	transEffect *animation.TransformEffect
 	Spr         *pixel.Sprite
+	OnMap       bool
 
-	Health Health
-
+	Health    Health
 	Diplomacy Diplomacy
 
 	id    uuid.UUID
@@ -32,9 +32,6 @@ type Character struct {
 }
 
 func NewCharacter(sprite *pixel.Sprite, coords world.Coords, diplomacy Diplomacy, maxHP int) *Character {
-	if floor.CurrentFloor.IsOccupied(coords) {
-		return nil
-	}
 	transform := animation.NewTransform(true)
 	transform.Pos = world.MapToWorld(coords)
 	transform.Scalar = pixel.V(cfg.Scalar, cfg.Scalar)
@@ -55,7 +52,7 @@ func NewCharacter(sprite *pixel.Sprite, coords world.Coords, diplomacy Diplomacy
 		id:        uuid.NewV4(),
 		mask:      colornames.White,
 	}
-	floor.CurrentFloor.PutOccupant(c, coords)
+	c.SetCoords(coords)
 	return c
 }
 
@@ -82,6 +79,20 @@ func (c *Character) Draw(win *pixelgl.Window) {
 	c.Health.Draw(win)
 }
 
+func (c *Character) Heal(amt int) {
+	thisAmt := amt
+	if thisAmt < 0 {
+		thisAmt = 0
+	}
+	if thisAmt > 0 {
+		c.Health.CurrHP += thisAmt
+		if c.Health.CurrHP > c.Health.MaxHP {
+			c.Health.CurrHP = c.Health.MaxHP
+			c.effect = animation.FadeFrom(c, colornames.Lightgoldenrodyellow, 0.5)
+		}
+	}
+}
+
 func (c *Character) Damage(dmg int) {
 	thisDmg := dmg
 	if thisDmg < 0 {
@@ -97,6 +108,7 @@ func (c *Character) Damage(dmg int) {
 			c.Health.Alive = false
 			c.Health.CurrHP = 0
 			floor.CurrentFloor.RemoveOccupant(c.Coords)
+			c.OnMap = false
 		} else {
 			c.effect = animation.FadeFrom(c, colornames.Red, 0.5)
 		}
@@ -124,7 +136,15 @@ func (c *Character) GetCoords() world.Coords {
 }
 
 func (c *Character) SetCoords(a world.Coords) {
-	c.Coords = a
+	if floor.CurrentFloor != nil {
+		if floor.CurrentFloor.IsOccupied(a) {
+			return
+		}
+		floor.CurrentFloor.PutOccupant(c, a)
+		c.Coords = a
+		c.SetPos(world.MapToWorld(a))
+		c.OnMap = true
+	}
 }
 
 func (c *Character) GetTransform() *animation.Transform {

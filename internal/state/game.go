@@ -1,18 +1,17 @@
-package game
+package state
 
 import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/timsims1717/cg_rogue_go/internal/actions"
 	"github.com/timsims1717/cg_rogue_go/internal/ai"
-	"github.com/timsims1717/cg_rogue_go/internal/cards"
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/generate"
 	"github.com/timsims1717/cg_rogue_go/internal/manager"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
+	"github.com/timsims1717/cg_rogue_go/internal/run"
 	"github.com/timsims1717/cg_rogue_go/internal/selectors"
-	"github.com/timsims1717/cg_rogue_go/internal/state"
 	"github.com/timsims1717/cg_rogue_go/internal/ui"
 	"github.com/timsims1717/cg_rogue_go/pkg/animation"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
@@ -23,7 +22,9 @@ import (
 	"golang.org/x/image/colornames"
 )
 
-func InitializeGame() {
+type Encounter struct {}
+
+func (s *Encounter) Initialize() {
 	uisheet, err := img.LoadSpriteSheet("assets/img/ui/selectors.json")
 	if err != nil {
 		panic(err)
@@ -31,20 +32,8 @@ func InitializeGame() {
 	selectors.SelectionSet.SetSpriteSheet(uisheet)
 
 	InitializeCenterText()
-	player.Initialize()
 
-	generate.LoadTestFloor(1)
-
-	player.Player1.Hand = player.NewHand(player.Player1)
-	player.Player1.Hand.AddCard(cards.CreateThrust())
-	player.Player1.Hand.AddCard(cards.CreateDash())
-	player.Player1.Hand.AddCard(cards.CreateQuickStrike())
-	player.Player1.Hand.AddCard(cards.CreateVault())
-	player.Player1.Hand.AddCard(cards.CreateSweep())
-	player.Player1.Hand.AddCard(cards.CreateDaggerThrow())
-	player.Player1.PlayCard = player.NewPlayCard(player.Player1)
-	player.Player1.Discard = player.NewDiscard(player.Player1)
-	player.Player1.Grid = player.NewGrid(player.Player1)
+	generate.LoadTestFloor(run.CurrentRun.Level)
 
 	restS := "Rest (R)"
 	rest := ui.NewActionText(restS)
@@ -138,32 +127,27 @@ func InitializeGame() {
 		}))
 	})
 
-	state.Machine.Phase = state.EnemyStartTurn
+	Machine.Phase = EnemyStartTurn
 	camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.White, 1.0)
 }
 
-func TransitionInGame() bool {
+func (s *Encounter) TransitionIn() bool {
 	return camera.Cam.Effect != nil
 }
 
-func TransitionOutGame() bool {
+func (s *Encounter) TransitionOut() bool {
 	return camera.Cam.Effect != nil
 }
 
-func UninitializeGame() {
+func (s *Encounter) Uninitialize() {
 	floor.CurrentFloor = nil
 	InitializeCenterText()
 	ai.AIManager.Clear()
 	characters.CharacterManager.Clear()
-	player.Player1.Hand = nil
-	player.Player1.PlayCard = nil
-	player.Player1.Discard = nil
-	player.Player1.Grid = nil
-	player.Player1.Input.RemoveHotKeys()
 }
 
-func UpdateGame(win *pixelgl.Window) {
-	UpdateGamePhase()
+func (s *Encounter) Update(win *pixelgl.Window) {
+	UpdateEncounterPhase()
 	player.Player1.Input.Update(win)
 	camera.Cam.Update(win)
 	CenterText.Update(player.Player1.Input)
@@ -173,10 +157,10 @@ func UpdateGame(win *pixelgl.Window) {
 
 	ai.AIManager.Update()
 	characters.Update()
-	player.Player1.Update(win)
+	player.Player1.Update()
 }
 
-func DrawGame(win *pixelgl.Window) {
+func (s *Encounter) Draw(win *pixelgl.Window) {
 	floor.CurrentFloor.Draw(win)
 	characters.Draw(win)
 	selectors.SelectionSet.Draw(win)
@@ -192,11 +176,11 @@ func DrawGame(win *pixelgl.Window) {
 	CenterText.Draw(win)
 }
 
-func UpdateGamePhase() {
-	if state.Machine.Phase == state.Undefined {
+func UpdateEncounterPhase() {
+	if Machine.Phase == Undefined {
 		return
 	}
-	if state.Machine.Phase != state.EncounterComplete && state.Machine.Phase != state.GameOver && player.Player1.Character.IsDestroyed() {
+	if Machine.Phase != EncounterComplete && Machine.Phase != GameOver && player.Player1.Character.IsDestroyed() {
 		player.Player1.EndTurn()
 		CenterText.Text.Raw = "Game Over"
 		CenterText.Show = true
@@ -208,9 +192,11 @@ func UpdateGamePhase() {
 		}
 		CenterText.Text.TransformEffect = transform.Build()
 		CenterText.Text.ColorEffect = animation.FadeIn(CenterText.Text, 2.0)
-		state.Machine.Phase = state.GameOver
+		Machine.Phase = GameOver
+		camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.Black,4.)
+		SwitchState(TheMainMenu)
 	}
-	if state.Machine.Phase != state.EncounterComplete && state.Machine.Phase != state.GameOver {
+	if Machine.Phase != EncounterComplete && Machine.Phase != GameOver {
 		allDead := true
 		for _, c := range characters.CharacterManager.GetDiplomatic(characters.Enemy, player.Player1.Character.GetCoords(), 50) {
 			if occ := floor.CurrentFloor.GetOccupant(c); occ != nil {
@@ -228,42 +214,44 @@ func UpdateGamePhase() {
 			CenterText.Text.TextColor = colornames.Black
 			transform := animation.TransformBuilder{
 				Transform: CenterText.Text.Transform,
-				InterX:    nil,
-				InterY:    nil,
-				InterR:    nil,
 				InterSX:   gween.New(CenterText.Text.Transform.Scalar.X, 7.0, 2.0, ease.Linear),
 				InterSY:   gween.New(CenterText.Text.Transform.Scalar.Y, 7.0, 2.0, ease.Linear),
 			}
 			CenterText.Text.TransformEffect = transform.Build()
 			CenterText.Text.ColorEffect = animation.FadeIn(CenterText, 2.0)
-			state.Machine.Phase = state.EncounterComplete
+			Machine.Phase = EncounterComplete
+			manager.ActionManager.AddToBot(actions.NewHealAction([]world.Coords{player.Player1.Character.Coords}, selectors.ActionValues{
+				Source:   player.Player1.Character,
+				Heal:     1,
+			}))
+			manager.ActionManager.AddToBot(actions.NewRestAction(player.Player1))
+			camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.Black,4.)
+			SwitchState(TheUpgrade)
 		}
 	}
-	switch state.Machine.Phase {
-	case state.PlayerStartTurn:
+	switch Machine.Phase {
+	case PlayerStartTurn:
 		// todo: effects?
 		player.Player1.StartTurn()
 		camera.Cam.MoveTo(player.Player1.Character.Transform.Pos, 0.2, true)
-		state.Machine.Phase = state.PlayerTurn
-	case state.PlayerTurn:
+		Machine.Phase = PlayerTurn
+	case PlayerTurn:
 		if player.Player1.ActionsThisTurn > 0 && player.Player1.PlayCard.Card == nil && !manager.ActionManager.IsActing() {
 			player.Player1.EndTurn()
-			state.Machine.Phase = state.EnemyStartTurn
+			Machine.Phase = EnemyStartTurn
 		}
-	case state.EnemyStartTurn:
+	case EnemyStartTurn:
 		// todo: effects?
 		ai.AIManager.StartAITurn()
-		state.Machine.Phase = state.EnemyEndTurn
-	case state.EnemyEndTurn:
+		Machine.Phase = EnemyEndTurn
+	case EnemyEndTurn:
 		if !ai.AIManager.AIActing() && !manager.ActionManager.IsActing() {
 			ai.AIManager.EndAITurn()
-			state.Machine.Phase = state.PlayerStartTurn
+			Machine.Phase = PlayerStartTurn
 		}
-	case state.EncounterComplete:
-		fallthrough
-	case state.GameOver:
-		camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.Black,4.)
-		SwitchState(state.MainMenu)
-		state.Machine.Phase = state.Undefined
 	}
+}
+
+func (s *Encounter) String() string {
+	return "Encounter"
 }

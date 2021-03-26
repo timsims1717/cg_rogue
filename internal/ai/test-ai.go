@@ -344,9 +344,9 @@ func (ai *Skirmisher) Decide() {
 			}
 			end := path[len(path)-1]
 			atkPath := floor.CurrentFloor.LongestLegalPath(floor.CurrentFloor.Line(end, targets[choice], 7), 7, atkCheck)
-			if len(atkPath) == world.DistanceSimple(end, targets[choice]) + 1 {
+			if world.CoordsIn(targets[choice], atkPath) {
 				ai.Actions = append(ai.Actions, &AIAction{
-					Path:        atkPath,
+					Path:        []world.Coords{end, targets[choice]},
 					PathCheck:   atkCheck,
 					TargetArea:  []world.Coords{world.Origin},
 					TargetCheck: atkCheck,
@@ -511,7 +511,6 @@ func (ai *Grenadier) Decide() {
 		ai.Actions = []*AIAction{}
 		atkPath := floor.CurrentFloor.LongestLegalPath(floor.CurrentFloor.Line(orig, targets[choice], 10), 10, atkCheck)
 		if world.CoordsIn(targets[choice], atkPath) {
-			// todo: add three attacks
 			switch ai.decision {
 			case 0:
 				// bombard

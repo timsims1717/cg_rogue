@@ -1,14 +1,18 @@
 package state
 
-type State int
+import "github.com/faiface/pixel/pixelgl"
 
-const (
-	NoState = iota
-	MainMenu
-	InGame
-	Pause
-	Exiting
-)
+type State interface{
+	//Load()
+	//IsLoaded() bool
+	Initialize()
+	TransitionIn() bool
+	TransitionOut() bool
+	Uninitialize()
+	Update(*pixelgl.Window)
+	Draw(*pixelgl.Window)
+	String() string
+}
 
 type phase int
 

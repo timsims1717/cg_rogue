@@ -6,7 +6,7 @@ import (
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/timsims1717/cg_rogue_go/internal/cfg"
 	"github.com/timsims1717/cg_rogue_go/internal/debug"
-	"github.com/timsims1717/cg_rogue_go/internal/game"
+	"github.com/timsims1717/cg_rogue_go/internal/state"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
 	"github.com/timsims1717/cg_rogue_go/pkg/timing"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
@@ -16,7 +16,7 @@ import (
 )
 
 func run() {
-	//seed := int64(1616173430654809847)
+	//seed := int64(1616775342718696126)
 	seed := time.Now().UnixNano()
 	rand.Seed(seed)
 	fmt.Println("Seed:", seed)
@@ -40,11 +40,11 @@ func run() {
 	for !win.Closed() {
 		timing.Update()
 		debug.Update()
-		game.Update(win)
+		state.Update(win)
 
 		win.Clear(colornames.Black)
 
-		game.Draw(win)
+		state.Draw(win)
 		debug.Draw(win)
 		win.Update()
 	}

@@ -1,11 +1,10 @@
-package game
+package state
 
 import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
-	"github.com/timsims1717/cg_rogue_go/internal/state"
 	ui2 "github.com/timsims1717/cg_rogue_go/internal/ui"
 	"github.com/timsims1717/cg_rogue_go/pkg/animation"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
@@ -13,6 +12,8 @@ import (
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"golang.org/x/image/colornames"
 )
+
+type MainMenu struct {}
 
 var (
 	cameraPan = []world.Coords{
@@ -49,16 +50,17 @@ var (
 	exitMenuItem  *ui2.ActionEl
 )
 
-func InitializeMenu(win *pixelgl.Window) {
+func (s *MainMenu) Initialize() {
 	spritesheet, err := img.LoadSpriteSheet("assets/img/testfloor.json")
 	if err != nil {
 		panic(err)
 	}
 	floor.DefaultFloor(100, 100, spritesheet)
-	player.Player1 = player.NewPlayer(nil)
 	player.Player1.Hand = nil
 	player.Player1.PlayCard = nil
 	player.Player1.Discard = nil
+	player.Player1.Grid = nil
+	player.Player1.Input.RemoveHotKeys()
 	camera.Cam.CenterOn([]pixel.Vec{world.MapToWorld(cameraPan[0])})
 	start := "Start Game"
 	startText := ui2.NewActionText(start)
@@ -80,7 +82,7 @@ func InitializeMenu(win *pixelgl.Window) {
 	})
 	startMenuItem.SetClickFn(func() {
 		camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.Black, 1.0)
-		SwitchState(state.InGame)
+		SwitchState(TheStartRun)
 	})
 	exitS := "Exit"
 	exitText := ui2.NewActionText(exitS)
@@ -102,25 +104,25 @@ func InitializeMenu(win *pixelgl.Window) {
 	})
 	exitMenuItem.SetClickFn(func() {
 		camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.Black, 1.0)
-		SwitchState(state.Exiting)
+		SwitchState(&Exiting{})
 	})
 	camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.White, 1.0)
 }
 
-func TransitionInMenu() bool {
+func (s *MainMenu) TransitionIn() bool {
 	return camera.Cam.Effect != nil
 }
 
-func TransitionOutMenu() bool {
+func (s *MainMenu) TransitionOut() bool {
 	return camera.Cam.Effect != nil
 }
 
-func UninitializeMenu() {
+func (s *MainMenu) Uninitialize() {
 	camera.Cam.Stop()
 	floor.CurrentFloor = nil
 }
 
-func UpdateMenu(win *pixelgl.Window) {
+func (s *MainMenu) Update(win *pixelgl.Window) {
 	player.Player1.Input.Update(win)
 	if !camera.Cam.Moving() {
 		panIndex += 1
@@ -132,8 +134,12 @@ func UpdateMenu(win *pixelgl.Window) {
 	exitMenuItem.Update(player.Player1.Input)
 }
 
-func DrawMenu(win *pixelgl.Window) {
+func (s *MainMenu) Draw(win *pixelgl.Window) {
 	floor.CurrentFloor.Draw(win)
 	startMenuItem.Draw(win)
 	exitMenuItem.Draw(win)
+}
+
+func (s *MainMenu) String() string {
+	return "MainMenu"
 }

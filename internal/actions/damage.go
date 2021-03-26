@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/objects"
 	"github.com/timsims1717/cg_rogue_go/internal/selectors"
@@ -9,7 +10,7 @@ import (
 
 type DamageAction struct {
 	values selectors.ActionValues
-	target objects.Targetable
+	target *characters.Character
 	coords world.Coords
 	start  bool
 	preDam bool
@@ -22,7 +23,7 @@ func NewDamageAction(area []world.Coords, values selectors.ActionValues) *Damage
 	}
 	occ := floor.CurrentFloor.GetOccupant(area[0])
 	if occ != nil {
-		if target, ok := occ.(objects.Targetable); ok {
+		if target, ok := occ.(*characters.Character); ok {
 			return &DamageAction{
 				values: values,
 				target: target,

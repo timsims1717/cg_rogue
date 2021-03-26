@@ -23,5 +23,6 @@ type ActionValues struct {
 	Range    int
 	Targets  int
 	Strength int
+	Heal     int
 	Checks   floor.PathChecks
 }

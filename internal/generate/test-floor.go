@@ -2,12 +2,12 @@ package generate
 
 import (
 	"github.com/faiface/pixel"
+	"github.com/pkg/errors"
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
-	"github.com/timsims1717/cg_rogue_go/pkg/util"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"math/rand"
 )
@@ -21,20 +21,23 @@ func LoadTestFloor(level int) {
 	if err != nil {
 		panic(err)
 	}
-	charsheet, err := img.LoadSpriteSheet("assets/character/testmananim.json")
-	if err != nil {
-		panic(err)
+
+	if player.Player1 == nil || player.Player1.Character == nil {
+		panic(errors.New("player or player character was nil"))
 	}
+	characters.CharacterManager.Add(player.Player1.Character)
+
 	floor.CurrentFloor = floor.NewFloor(12, 12, spritesheet)
 
 	pX := rand.Intn(4) + 4
 	pY := rand.Intn(4) + 4
-	character := characters.NewCharacter(pixel.NewSprite(charsheet.Img, charsheet.Sprites[rand.Intn(len(charsheet.Sprites))]), world.Coords{pX, pY}, characters.Ally, 10)
-	player.Player1 = player.NewPlayer(character)
 
-	characters.CharacterManager.Add(character)
+	player.Player1.Character.SetCoords(world.Coords{ X: pX, Y: pY })
 
-	enemyCount := 4 + util.Max((level * 2) + rand.Intn(4) - 2, 0)
+	countBase := 4 + level
+	random := (rand.Intn(countBase) - countBase / 2) / 2
+
+	enemyCount := countBase + random
 
 	var occCoords []world.Coords
 	for i := -2; i < 3; i++ {
@@ -65,5 +68,5 @@ func LoadTestFloor(level int) {
 		i += enemyLevel
 	}
 
-	camera.Cam.CenterOn([]pixel.Vec{character.Transform.Pos})
+	camera.Cam.CenterOn([]pixel.Vec{player.Player1.Character.Transform.Pos})
 }

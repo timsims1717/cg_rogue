@@ -22,6 +22,7 @@ func NewGrid(player *Player) *Grid {
 		player:  player,
 		Group:   []*Card{},
 		Hovered: -1,
+		update:  true,
 	}
 }
 
@@ -42,6 +43,9 @@ func (g *Grid) Update() {
 					break
 				}
 			}
+		}
+		if g.Hovered != -1 && g.player.Input.Select.JustPressed() {
+			g.Clicked = append(g.Clicked, g.Group[g.Hovered])
 		}
 		for i, card := range g.Group {
 			if g.update {
@@ -102,8 +106,16 @@ func (g *Grid) ReturnCards() {
 		card.trans = true
 	}
 	if g.player != nil {
-		g.player.Discard.InGrid = false
-		g.player.Discard.update = true
+		if g.player.Discard != nil {
+			g.player.Discard.InGrid = false
+			g.player.Discard.update = true
+		}
+		if g.player.PlayCard != nil {
+			g.player.PlayCard.update = true
+		}
+		if g.player.Hand != nil {
+			g.player.Hand.update = true
+		}
 	}
 	g.Group = []*Card{}
 	g.Show = false

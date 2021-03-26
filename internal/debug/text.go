@@ -79,7 +79,7 @@ func UpdateText() {
 	fmt.Fprintf(phase, "Phase: %s", state.Machine.Phase.String())
 	dispHP = false
 	health.Clear()
-	if state.Machine.State == state.InGame {
+	if state.Machine.State.String() == "Encounter" {
 		occ := floor.CurrentFloor.GetOccupant(world.Coords{mapX, mapY})
 		if !util.IsNil(occ) {
 			if cha, ok := occ.(*characters.Character); ok {
@@ -127,7 +127,7 @@ func DrawText(win *pixelgl.Window) {
 	height -= typeface.BasicAtlas.LineHeight() + 20.
 	phase.Draw(canvasText, pixel.IM.Scaled(pixel.ZV, 2.).Moved(pixel.V(20., height)))
 	height -= typeface.BasicAtlas.LineHeight() + 20.
-	if state.Machine.State == state.InGame {
+	if state.Machine.State.String() == "Encounter" {
 		if dispHP {
 			health.Draw(canvasText, pixel.IM.Scaled(pixel.ZV, 2.).Moved(pixel.V(20., height)))
 		}
