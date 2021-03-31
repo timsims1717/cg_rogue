@@ -11,7 +11,6 @@ var Player1 *Player
 
 type Player struct {
 	Character       *characters.Character
-	CurrAction      *PlayerAction
 	Input           *input.Input
 	Hand            *Hand
 	PlayCard        *PlayCard
@@ -41,7 +40,6 @@ func (p *Player) StartTurn() {
 
 func (p *Player) EndTurn() {
 	p.IsTurn = false
-	p.CurrAction = nil
 }
 
 func (p *Player) Update() {
@@ -65,21 +63,6 @@ func (p *Player) Update() {
 		p.MoveButton.Disabled = !p.IsTurn
 		p.MoveButton.Update(p.Input)
 	}
-	if p.IsTurn {
-		if p.CurrAction != nil && p.PlayCard.Card == nil && p.Input.Cancel.JustPressed() {
-			p.Input.Cancel.Consume()
-			p.CurrAction = nil
-		}
-		if p.CurrAction != nil {
-			p.CurrAction.Update()
-			if p.CurrAction.Complete {
-				if p.CurrAction.Complete {
-					p.ActionsThisTurn += 1
-				}
-				p.CurrAction = nil
-			}
-		}
-	}
 }
 
 func (p *Player) Draw(win *pixelgl.Window) {
@@ -89,13 +72,6 @@ func (p *Player) Draw(win *pixelgl.Window) {
 	if p.MoveButton != nil {
 		p.MoveButton.Draw(win)
 	}
-}
-
-func (p *Player) SetPlayerAction(act *PlayerAction) {
-	act.Complete = false
-	act.Selector.Init(p.Input)
-	act.Selector.SetValues(act.Values)
-	p.CurrAction = act
 }
 
 func (p *Player) GetDeck() []*Card {

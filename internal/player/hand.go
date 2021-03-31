@@ -52,7 +52,7 @@ func (h *Hand) Update(turn bool) {
 		}
 		if h.isHovered() && h.player.Input.Select.JustPressed() && turn {
 			h.player.Input.Select.Consume()
-			CardManager.Move(h.player.PlayCard, h, h.Group[h.Hovered])
+			//CardManager.Move(h.player.PlayCard, h, h.Group[h.Hovered])
 			CardManager.Move(h, h.player.PlayCard, h.Group[h.Hovered])
 		}
 		if h.update {

@@ -8,47 +8,42 @@ import (
 )
 
 type LineSelect struct {
-	input      *input.Input
-	clicked    []world.Coords
-	count      int
-	maxRange   int
-	origin     world.Coords
-	pathChecks floor.PathChecks
-	isDone     bool
-	isAtk      bool
+	*AbstractSelector
+	Count      int
+	MaxRange   int
+	PathChecks floor.PathChecks
 }
 
-func NewLineSelect() *LineSelect {
-	return &LineSelect{}
-}
-
-func (s *LineSelect) Init(input *input.Input) {
-	s.isDone = false
-	s.input = input
-	s.clicked = []world.Coords{}
+func NewLineSelect() *AbstractSelector {
+	sel := &AbstractSelector{}
+	target := &LineSelect{
+		sel,
+		0,
+		0,
+		floor.PathChecks{},
+	}
+	sel.Selector = target
+	return sel
 }
 
 func (s *LineSelect) SetValues(values ActionValues) {
-	s.origin = values.Source.Coords
-	s.maxRange = values.Range
-	s.count = values.Targets
-	s.isAtk = values.Damage > 0
-	s.pathChecks = values.Checks
+	s.Count = values.Targets
+	s.MaxRange = values.Range
 }
 
-func (s *LineSelect) Update() {
+func (s *LineSelect) Update(input *input.Input) {
 	if !s.isDone {
-		s.pathChecks.Orig = s.origin
-		path := floor.CurrentFloor.LongestLegalPath(floor.CurrentFloor.Line(s.origin, s.input.Coords, s.maxRange), 0, s.pathChecks)
+		s.PathChecks.Orig = s.origin
+		path := floor.CurrentFloor.LongestLegalPath(floor.CurrentFloor.Line(s.origin, input.Coords, s.MaxRange), 0, s.PathChecks)
 		targets := make([]world.Coords, 0)
-		if s.count == 0 {
+		if s.Count == 0 {
 			targets = path
 		} else {
 			for _, p := range path {
 				if p.Eq(s.origin) {
 					continue
 				}
-				if len(targets) >= s.count {
+				if len(targets) >= s.Count {
 					break
 				}
 				if occ := floor.CurrentFloor.GetOccupant(p); occ != nil {
@@ -59,20 +54,21 @@ func (s *LineSelect) Update() {
 			}
 		}
 		if len(path) > 0 {
-			if s.input.Select.JustPressed() {
-				s.input.Select.Consume()
+			if input.Select.JustPressed() {
+				input.Select.Consume()
 				// add to or remove from the clicked array
-				s.clicked = targets
+				s.area = targets
+				s.isDone = true
 			}
 			i := 0
 			for _, p := range path {
 				if i < len(targets) {
 					sel := targets[i]
 					if sel.Eq(p) {
-						if s.isAtk {
-							AddSelectUI(Attack, sel.X, sel.Y)
-						} else {
+						if s.IsMove {
 							AddSelectUI(Move, sel.X, sel.Y)
+						} else {
+							AddSelectUI(Attack, sel.X, sel.Y)
 						}
 						i++
 						continue
@@ -82,12 +78,4 @@ func (s *LineSelect) Update() {
 			}
 		}
 	}
-}
-
-func (s *LineSelect) IsDone() bool {
-	return len(s.clicked) > 0
-}
-
-func (s *LineSelect) Finish() []world.Coords {
-	return s.clicked
 }

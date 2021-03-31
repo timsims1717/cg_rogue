@@ -24,14 +24,16 @@ func (s *StartRun) Initialize() {
 	character := characters.NewCharacter(pixel.NewSprite(charsheet.Img, charsheet.Sprites[rand.Intn(len(charsheet.Sprites))]), world.Coords{X: 0, Y: 0}, characters.Ally, 10)
 	player.Player1 = player.NewPlayer(character)
 
-	player.Initialize()
+	player.InitializeCards()
 	player.Player1.Hand = player.NewHand(player.Player1)
-	player.Player1.Hand.AddCard(cards.CreateThrust())
-	player.Player1.Hand.AddCard(cards.CreateDash())
-	player.Player1.Hand.AddCard(cards.CreateQuickStrike())
-	player.Player1.Hand.AddCard(cards.CreateVault())
-	player.Player1.Hand.AddCard(cards.CreateSweep())
-	player.Player1.Hand.AddCard(cards.CreateDaggerThrow())
+	player.BuildGroup([]*player.Card{
+		cards.CreateThrust(),
+		cards.CreateDash(),
+	}, player.Player1.Hand)
+	//player.Player1.Hand.AddCard(cards.CreateQuickStrike())
+	//player.Player1.Hand.AddCard(cards.CreateVault())
+	//player.Player1.Hand.AddCard(cards.CreateSweep())
+	//player.Player1.Hand.AddCard(cards.CreateDaggerThrow())
 	player.Player1.PlayCard = player.NewPlayCard(player.Player1)
 	player.Player1.Discard = player.NewDiscard(player.Player1)
 	player.Player1.Grid = player.NewGrid(player.Player1)

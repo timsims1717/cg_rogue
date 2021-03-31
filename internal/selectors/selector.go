@@ -9,11 +9,40 @@ import (
 
 // A Selector can be updated, checked for completion, cancelled, and finished.
 type Selector interface {
-	Init(*input.Input)
+	Update(*input.Input)
 	SetValues(ActionValues)
-	Update()
-	IsDone() bool
-	Finish() []world.Coords
+}
+
+type AbstractSelector struct {
+	Selector Selector
+	IsMove   bool
+	area     []world.Coords
+	origin   world.Coords
+	isDone   bool
+	cancel   bool
+}
+
+func (s *AbstractSelector) Reset(origin world.Coords) {
+	s.origin = origin
+	s.area = []world.Coords{}
+	s.cancel = false
+	s.isDone = false
+}
+
+func (s *AbstractSelector) IsDone() bool {
+	return s.isDone
+}
+
+func (s *AbstractSelector) Finish() []world.Coords {
+	return s.area
+}
+
+func (s *AbstractSelector) Cancel() {
+	s.cancel = true
+}
+
+func (s *AbstractSelector) IsCancelled() bool {
+	return s.cancel
 }
 
 type ActionValues struct {

@@ -8,43 +8,40 @@ import (
 )
 
 type TargetSelect struct {
-	input    *input.Input
-	clicked  []world.Coords
+	*AbstractSelector
 	Count    int
 	MaxRange int
-	origin   world.Coords
-	isDone   bool
 }
 
-func NewTargetSelect() *TargetSelect {
-	return &TargetSelect{}
-}
-
-func (s *TargetSelect) Init(input *input.Input) {
-	s.isDone = false
-	s.input = input
-	s.clicked = []world.Coords{}
+func NewTargetSelect() *AbstractSelector {
+	sel := &AbstractSelector{}
+	target := &TargetSelect{
+		sel,
+		0,
+		0,
+	}
+	sel.Selector = target
+	return sel
 }
 
 func (s *TargetSelect) SetValues(values ActionValues) {
-	s.origin = values.Source.Coords
 	s.Count = values.Targets
 	s.MaxRange = values.Range
 }
 
-func (s *TargetSelect) Update() {
+func (s *TargetSelect) Update(input *input.Input) {
 	if !s.isDone {
-		x := s.input.Coords.X
-		y := s.input.Coords.Y
-		inRange := world.DistanceSimple(s.origin, s.input.Coords) <= s.MaxRange
-		occ := floor.CurrentFloor.GetOccupant(s.input.Coords)
+		x := input.Coords.X
+		y := input.Coords.Y
+		inRange := world.DistanceSimple(s.origin, input.Coords) <= s.MaxRange
+		occ := floor.CurrentFloor.GetOccupant(input.Coords)
 		if occ != nil {
 			if _, ok := occ.(objects.Targetable); ok {
 				if !inRange {
 					// todo: highlight
-				} else if s.input.Select.JustPressed() {
-					s.input.Select.Consume()
-					s.clicked = append(s.clicked, s.input.Coords)
+				} else if input.Select.JustPressed() {
+					input.Select.Consume()
+					s.area = append(s.area, input.Coords)
 					s.isDone = true
 				} else {
 					AddSelectUI(Attack, x, y)
@@ -58,12 +55,4 @@ func (s *TargetSelect) Update() {
 			}
 		}
 	}
-}
-
-func (s *TargetSelect) IsDone() bool {
-	return len(s.clicked) > 0
-}
-
-func (s *TargetSelect) Finish() []world.Coords {
-	return s.clicked
 }

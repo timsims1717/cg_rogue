@@ -16,7 +16,14 @@ type CardGroup interface {
 	RemoveCard(uuid.UUID) *Card
 }
 
+func BuildGroup(cards []*Card, group CardGroup) {
+	for _, c := range cards {
+		addCard(group, c)
+	}
+}
+
 func addCard(a CardGroup, card *Card) {
+	card.Current = a
 	a.AddCard(card)
 }
 

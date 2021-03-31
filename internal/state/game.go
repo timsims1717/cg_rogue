@@ -3,6 +3,7 @@ package state
 import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
+	uuid "github.com/satori/go.uuid"
 	"github.com/timsims1717/cg_rogue_go/internal/actions"
 	"github.com/timsims1717/cg_rogue_go/internal/ai"
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
@@ -22,7 +23,36 @@ import (
 	"golang.org/x/image/colornames"
 )
 
-type Encounter struct {}
+type DefaultActions struct {
+	player *player.Player
+	Group  []*player.Card
+}
+
+func (g *DefaultActions) AddCard(card *player.Card) {
+	if card != nil {
+		g.Group = append(g.Group, card)
+	}
+}
+
+func (g *DefaultActions) RemoveCard(id uuid.UUID) *player.Card {
+	index := -1
+	for i, card := range g.Group {
+		if card.ID == id {
+			index = i
+			break
+		}
+	}
+	if index < 0 || index >= len(g.Group) {
+		return nil
+	}
+	card := g.Group[index]
+	g.Group = append(g.Group[0:index], g.Group[index+1:len(g.Group)]...)
+	return card
+}
+
+type Encounter struct {
+	DefaultActions *DefaultActions
+}
 
 func (s *Encounter) Initialize() {
 	uisheet, err := img.LoadSpriteSheet("assets/img/ui/selectors.json")
@@ -34,6 +64,21 @@ func (s *Encounter) Initialize() {
 	InitializeCenterText()
 
 	generate.LoadTestFloor(run.CurrentRun.Level)
+
+	restCard := CreateRest(player.Player1)
+	moveCard := CreateBasicMove()
+	atkCard := CreateCheatAttack()
+	restCard.Rests = 0
+	moveCard.Rests = 0
+	atkCard.Rests = 0
+	s.DefaultActions = &DefaultActions{
+		player: player.Player1,
+	}
+	player.BuildGroup([]*player.Card{
+		restCard,
+		moveCard,
+		atkCard,
+	}, s.DefaultActions)
 
 	restS := "Rest (R)"
 	rest := ui.NewActionText(restS)
@@ -49,12 +94,7 @@ func (s *Encounter) Initialize() {
 		restButton.Text.TextColor = colornames.Purple
 	})
 	restButton.SetClickFn(func() {
-		values := selectors.ActionValues{}
-		sel := selectors.NewNullSelect()
-		player.Player1.PlayCard.CancelCard()
-		player.Player1.SetPlayerAction(player.NewPlayerAction(sel, values, func(_ []world.Coords, _ selectors.ActionValues) {
-			manager.ActionManager.AddToBot(actions.NewRestAction(player.Player1))
-		}))
+		player.CardManager.Move(s.DefaultActions, player.Player1.PlayCard, restCard)
 	})
 	restButton.SetOnDisabledFn(func() {
 		restButton.Show = false
@@ -81,25 +121,7 @@ func (s *Encounter) Initialize() {
 		moveButton.Text.TextColor = colornames.Purple
 	})
 	moveButton.SetClickFn(func() {
-		values := selectors.ActionValues{
-			Source:  player.Player1.Character,
-			Damage:  0,
-			Move:    1,
-			Range:   0,
-			Targets: 0,
-			Checks: floor.PathChecks{
-				NotFilled:     true,
-				Unoccupied:    true,
-				NonEmpty:      true,
-				EndUnoccupied: true,
-				Orig:          world.Coords{},
-			},
-		}
-		sel := selectors.NewPathSelect()
-		player.Player1.PlayCard.CancelCard()
-		player.Player1.SetPlayerAction(player.NewPlayerAction(sel, values, func(path []world.Coords, values selectors.ActionValues) {
-			manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(values.Source, values.Source, path))
-		}))
+		player.CardManager.Move(s.DefaultActions, player.Player1.PlayCard, moveCard)
 	})
 	moveButton.SetOnDisabledFn(func() {
 		moveButton.Show = false
@@ -113,18 +135,7 @@ func (s *Encounter) Initialize() {
 	})
 
 	player.Player1.Input.SetHotKey(pixelgl.KeyA, func() {
-		values := selectors.ActionValues{
-			Source:  player.Player1.Character,
-			Damage:  10,
-			Move:    0,
-			Range:   10,
-			Targets: 5,
-		}
-		sel := selectors.NewHexSelect()
-		player.Player1.PlayCard.CancelCard()
-		player.Player1.SetPlayerAction(player.NewPlayerAction(sel, values, func(targets []world.Coords, values selectors.ActionValues) {
-			manager.ActionManager.AddToBot(actions.NewDamageHexAction(targets, values))
-		}))
+		player.CardManager.Move(s.DefaultActions, player.Player1.PlayCard, atkCard)
 	})
 
 	Machine.Phase = EnemyStartTurn
@@ -254,4 +265,104 @@ func UpdateEncounterPhase() {
 
 func (s *Encounter) String() string {
 	return "Encounter"
+}
+
+type Rest struct {
+	*player.Card
+	player *player.Player
+}
+
+func (r *Rest) DoActions() {
+	manager.ActionManager.AddToBot(actions.NewRestAction(r.player))
+}
+
+func (r *Rest) SetValues(_ int) {}
+
+func (r *Rest) InitSelectors() {}
+
+func (r *Rest) SetCard(card *player.Card) {
+	r.Card = card
+}
+
+func CreateRest(thePlayer *player.Player) *player.Card {
+	card := player.NewCard("", "", &Rest{
+		player: thePlayer,
+	})
+	card.SetDraw(false)
+	return card
+}
+
+type BasicMove struct {
+	*player.Card
+}
+
+func (m *BasicMove) DoActions() {
+	manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(m.Values.Source, m.Values.Source, m.Results[0]))
+}
+
+func (m *BasicMove) SetValues(_ int) {
+	values := selectors.ActionValues{
+		Move:    1,
+		Checks: floor.PathChecks{
+			NotFilled:     true,
+			Unoccupied:    true,
+			NonEmpty:      true,
+			EndUnoccupied: true,
+			Orig:          world.Coords{},
+		},
+	}
+	m.Values = values
+}
+
+func (m *BasicMove) InitSelectors() {
+	m.Selectors = []*selectors.AbstractSelector{
+		selectors.NewPathSelect(),
+	}
+}
+
+func (m *BasicMove) SetCard(card *player.Card) {
+	m.Card = card
+}
+
+func CreateBasicMove() *player.Card {
+	card := player.NewCard("", "", &BasicMove{})
+	card.SetDraw(false)
+	return card
+}
+
+func (m *BasicMove) DoAction(path []world.Coords) {
+	manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(m.Values.Source, m.Values.Source, path))
+}
+
+type CheatAttack struct {
+	*player.Card
+}
+
+func (a *CheatAttack) DoActions() {
+	manager.ActionManager.AddToBot(actions.NewDamageHexAction(a.Results[0], a.Values))
+}
+
+func (a *CheatAttack) SetValues(_ int) {
+	values := selectors.ActionValues{
+		Damage:  10,
+		Range:   10,
+		Targets: 5,
+	}
+	a.Values = values
+}
+
+func (a *CheatAttack) InitSelectors() {
+	a.Selectors = []*selectors.AbstractSelector{
+		selectors.NewHexSelect(),
+	}
+}
+
+func (a *CheatAttack) SetCard(card *player.Card) {
+	a.Card = card
+}
+
+func CreateCheatAttack() *player.Card {
+	card := player.NewCard("", "", &CheatAttack{})
+	card.SetDraw(false)
+	return card
 }
