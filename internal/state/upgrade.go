@@ -40,8 +40,19 @@ func (s *Upgrade) Update(win *pixelgl.Window) {
 	player.Player1.Input.Update(win)
 	camera.Cam.Update(win)
 	s.Grid.Update()
+	if !s.Done {
+		for _, card := range s.Grid.Group {
+			card.Action.SetValues(card.Level)
+		}
+		if s.Grid.Hovered > -1 && s.Grid.Hovered < len(s.Grid.Group) {
+			card := s.Grid.Group[s.Grid.Hovered]
+			card.Action.SetValues(card.Level + 1)
+		}
+	}
 	if !s.Done && len(s.Grid.Clicked) > 0 {
-
+		for _, card := range s.Grid.Clicked {
+			card.Upgrade()
+		}
 		s.Done = true
 		camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.Black, 1.0)
 		SwitchState(TheEncounter)

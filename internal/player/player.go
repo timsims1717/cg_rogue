@@ -4,7 +4,6 @@ import (
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/input"
-	"github.com/timsims1717/cg_rogue_go/internal/ui"
 )
 
 var Player1 *Player
@@ -18,8 +17,6 @@ type Player struct {
 	Grid            *Grid
 	ActionsThisTurn int
 	IsTurn          bool
-	RestButton      *ui.ActionEl
-	MoveButton      *ui.ActionEl
 }
 
 func init() {
@@ -55,23 +52,9 @@ func (p *Player) Update() {
 	if p.Discard != nil {
 		p.Discard.Update(p.IsTurn)
 	}
-	if p.RestButton != nil {
-		p.RestButton.Disabled = !p.IsTurn
-		p.RestButton.Update(p.Input)
-	}
-	if p.MoveButton != nil {
-		p.MoveButton.Disabled = !p.IsTurn
-		p.MoveButton.Update(p.Input)
-	}
 }
 
 func (p *Player) Draw(win *pixelgl.Window) {
-	if p.RestButton != nil {
-		p.RestButton.Draw(win)
-	}
-	if p.MoveButton != nil {
-		p.MoveButton.Draw(win)
-	}
 }
 
 func (p *Player) GetDeck() []*Card {

@@ -166,7 +166,7 @@ func (f *Floor) MoveOccupant(m objects.Moveable, a, b world.Coords) bool {
 	}
 	success := f.RemoveOccupant(a)
 	if success {
-		success = f.PutOccupant(m, b)
+		m.SetCoords(b)
 	}
 	return success
 }

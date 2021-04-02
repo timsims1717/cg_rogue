@@ -12,8 +12,10 @@ type HexSelect struct {
 	MaxRange int
 }
 
-func NewHexSelect() *AbstractSelector {
-	sel := &AbstractSelector{}
+func NewHexSelect(isMove bool) *AbstractSelector {
+	sel := &AbstractSelector{
+		IsMove: isMove,
+	}
 	target := &HexSelect{
 		sel,
 		0,
@@ -87,22 +89,31 @@ func (s *HexSelect) Update(input *input.Input) {
 	}
 }
 
-type EmptyHexSelect struct {
+type MoveHexSelect struct {
 	*AbstractSelector
 	Count    int
 	MaxRange int
 }
 
-func NewEmptyHexSelect() *EmptyHexSelect {
-	return &EmptyHexSelect{}
+func NewMoveHexSelect() *AbstractSelector {
+	sel := &AbstractSelector{
+		IsMove: true,
+	}
+	target := &MoveHexSelect{
+		sel,
+		0,
+		0,
+	}
+	sel.Selector = target
+	return sel
 }
 
-func (s *EmptyHexSelect) SetValues(values ActionValues) {
+func (s *MoveHexSelect) SetValues(values ActionValues) {
 	s.Count = values.Targets
-	s.MaxRange = values.Range
+	s.MaxRange = values.Move
 }
 
-func (s *EmptyHexSelect) Update(input *input.Input) {
+func (s *MoveHexSelect) Update(input *input.Input) {
 	if !s.isDone {
 		x := input.Coords.X
 		y := input.Coords.Y

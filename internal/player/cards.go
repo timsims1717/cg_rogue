@@ -60,6 +60,7 @@ type Card struct {
 	played    bool
 	tempOrig  []world.Coords
 	Rests     int
+	Level     int
 
 	Current  CardGroup
 	Previous CardGroup
@@ -161,4 +162,11 @@ func (c *Card) setScalar(s float64) {
 
 func (c *Card) SetDraw(draw bool) {
 	c.draw = draw
+}
+
+func (c *Card) Upgrade() {
+	if c.Level < 6 {
+		c.Level++
+		c.Action.SetValues(c.Level)
+	}
 }

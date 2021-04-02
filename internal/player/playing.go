@@ -33,7 +33,7 @@ func (p *PlayCard) Update(turn bool) {
 			}
 			if p.Card.PointInside(p.player.Input.World) && p.player.Input.Cancel.JustPressed() {
 				p.player.Input.Cancel.Consume()
-				p.CancelCard()
+				p.CancelCard(false)
 			}
 		}
 		p.Card.Values.Source = p.player.Character
@@ -79,7 +79,7 @@ func (p *PlayCard) Update(turn bool) {
 						p.Card.actPtr--
 						p.Card.tempOrig = p.Card.tempOrig[:len(p.Card.tempOrig)-1]
 						if p.Card.actPtr < 0 {
-							p.CancelCard()
+							p.CancelCard(false)
 						} else {
 							p.NextSelector()
 						}
@@ -88,7 +88,7 @@ func (p *PlayCard) Update(turn bool) {
 			}
 		} else {
 			if p.CurrSelector != nil {
-				p.CancelCard()
+				p.CancelCard(false)
 			}
 			CardManager.Move(p, p.Card.Previous, p.Card)
 		}
@@ -111,16 +111,22 @@ func (p *PlayCard) Draw(win *pixelgl.Window) {
 	}
 }
 
-func (p *PlayCard) CancelCard() {
-	p.CurrSelector.Cancel()
+func (p *PlayCard) CancelCard(now bool) {
+	if p.CurrSelector != nil {
+		p.CurrSelector.Cancel()
+	}
 	if p.Card != nil {
-		CardManager.Move(p, p.Card.Previous, p.Card)
+		if now {
+			CardManager.MoveNow(p, p.Card.Previous, p.Card)
+		} else {
+			CardManager.Move(p, p.Card.Previous, p.Card)
+		}
 	}
 }
 
 func (p *PlayCard) AddCard(card *Card) {
 	if p.Card != nil {
-		p.CancelCard()
+		p.CancelCard(true)
 	}
 	if p.player != nil && card != nil {
 		p.update = true

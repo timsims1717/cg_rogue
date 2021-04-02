@@ -12,8 +12,10 @@ type PathSelect struct {
 	PathChecks floor.PathChecks
 }
 
-func NewPathSelect() *AbstractSelector {
-	sel := &AbstractSelector{}
+func NewPathSelect(isMove bool) *AbstractSelector {
+	sel := &AbstractSelector{
+		IsMove: isMove,
+	}
 	target := &PathSelect{
 		sel,
 		0,
@@ -25,6 +27,7 @@ func NewPathSelect() *AbstractSelector {
 
 func (s *PathSelect) SetValues(values ActionValues) {
 	s.MaxRange = values.Move
+	s.PathChecks = values.Checks
 }
 
 func (s *PathSelect) Update(input *input.Input) {

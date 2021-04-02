@@ -52,6 +52,7 @@ func (g *DefaultActions) RemoveCard(id uuid.UUID) *player.Card {
 
 type Encounter struct {
 	DefaultActions *DefaultActions
+	RestButton     *ui.ActionEl
 }
 
 func (s *Encounter) Initialize() {
@@ -102,37 +103,37 @@ func (s *Encounter) Initialize() {
 	restButton.SetEnabledFn(func() {
 		restButton.Show = true
 	})
-	player.Player1.RestButton = restButton
+	s.RestButton = restButton
 	player.Player1.Input.SetHotKey(pixelgl.KeyR, func() {
 		restButton.Click()
 	})
 
-	moveS := "Move 1 (M)"
-	move := ui.NewActionText(moveS)
-	move.Transform.Scalar = pixel.V(2.5, 2.5)
-	move.TextColor = colornames.Purple
-	moveButton := ui.NewActionEl(move, pixel.R(0., 0., move.Text.BoundsOf(moveS).W() * 2.5, move.Text.BoundsOf(moveS).H() * 2.5), true)
-	moveButton.Show = true
-	moveButton.Transform.Pos = pixel.V(camera.WindowWidthF - player.ButtonRightPad, player.MoveBottomPad)
-	moveButton.SetOnHoverFn(func() {
-		moveButton.Text.TextColor = colornames.Forestgreen
-	})
-	moveButton.SetUnHoverFn(func() {
-		moveButton.Text.TextColor = colornames.Purple
-	})
-	moveButton.SetClickFn(func() {
-		player.CardManager.Move(s.DefaultActions, player.Player1.PlayCard, moveCard)
-	})
-	moveButton.SetOnDisabledFn(func() {
-		moveButton.Show = false
-	})
-	moveButton.SetEnabledFn(func() {
-		moveButton.Show = true
-	})
-	player.Player1.MoveButton = moveButton
-	player.Player1.Input.SetHotKey(pixelgl.KeyM, func() {
-		moveButton.Click()
-	})
+	//moveS := "Move 1 (M)"
+	//move := ui.NewActionText(moveS)
+	//move.Transform.Scalar = pixel.V(2.5, 2.5)
+	//move.TextColor = colornames.Purple
+	//moveButton := ui.NewActionEl(move, pixel.R(0., 0., move.Text.BoundsOf(moveS).W() * 2.5, move.Text.BoundsOf(moveS).H() * 2.5), true)
+	//moveButton.Show = true
+	//moveButton.Transform.Pos = pixel.V(camera.WindowWidthF - player.ButtonRightPad, player.MoveBottomPad)
+	//moveButton.SetOnHoverFn(func() {
+	//	moveButton.Text.TextColor = colornames.Forestgreen
+	//})
+	//moveButton.SetUnHoverFn(func() {
+	//	moveButton.Text.TextColor = colornames.Purple
+	//})
+	//moveButton.SetClickFn(func() {
+	//	player.CardManager.Move(s.DefaultActions, player.Player1.PlayCard, moveCard)
+	//})
+	//moveButton.SetOnDisabledFn(func() {
+	//	moveButton.Show = false
+	//})
+	//moveButton.SetEnabledFn(func() {
+	//	moveButton.Show = true
+	//})
+	//s.MoveButton = moveButton
+	//player.Player1.Input.SetHotKey(pixelgl.KeyM, func() {
+	//	moveButton.Click()
+	//})
 
 	player.Player1.Input.SetHotKey(pixelgl.KeyA, func() {
 		player.CardManager.Move(s.DefaultActions, player.Player1.PlayCard, atkCard)
@@ -169,6 +170,10 @@ func (s *Encounter) Update(win *pixelgl.Window) {
 	ai.AIManager.Update()
 	characters.Update()
 	player.Player1.Update()
+	if s.RestButton != nil {
+		s.RestButton.Disabled = !player.Player1.IsTurn
+		s.RestButton.Update(player.Player1.Input)
+	}
 }
 
 func (s *Encounter) Draw(win *pixelgl.Window) {
@@ -184,6 +189,9 @@ func (s *Encounter) Draw(win *pixelgl.Window) {
 		player.Player1.Grid.Draw(win)
 	}
 	win.SetSmooth(false)
+	if s.RestButton != nil {
+		s.RestButton.Draw(win)
+	}
 	CenterText.Draw(win)
 }
 
@@ -316,7 +324,7 @@ func (m *BasicMove) SetValues(_ int) {
 
 func (m *BasicMove) InitSelectors() {
 	m.Selectors = []*selectors.AbstractSelector{
-		selectors.NewPathSelect(),
+		selectors.NewPathSelect(true),
 	}
 }
 
@@ -353,7 +361,7 @@ func (a *CheatAttack) SetValues(_ int) {
 
 func (a *CheatAttack) InitSelectors() {
 	a.Selectors = []*selectors.AbstractSelector{
-		selectors.NewHexSelect(),
+		selectors.NewHexSelect(false),
 	}
 }
 

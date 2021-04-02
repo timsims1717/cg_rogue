@@ -43,7 +43,6 @@ func (a *MoveAction) Update() {
 	y, finY := a.interY.Update(timing.DT)
 	a.target.SetPos(pixel.V(x, y))
 	if finX && finY {
-		a.target.SetCoords(a.end)
 		a.isDone = true
 		floor.CurrentFloor.MoveOccupant(a.target, a.start, a.end)
 	}
@@ -91,7 +90,6 @@ func (m *MoveSeriesAction) Update() {
 	if finX && finY {
 		if m.step >= len(m.series) - 1 {
 			next := m.series[m.step]
-			m.target.SetCoords(next)
 			m.isDone = true
 			floor.CurrentFloor.MoveOccupant(m.target, m.start, next)
 		} else {

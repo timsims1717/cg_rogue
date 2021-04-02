@@ -67,3 +67,7 @@ func (m *cardManager) Move(from, to CardGroup, card *Card) {
 		card: card,
 	})
 }
+
+func (m *cardManager) MoveNow(from, to CardGroup, card *Card) {
+	moveCard(from, to, card.ID)
+}

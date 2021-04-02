@@ -103,48 +103,50 @@ func (a *PushMultiAction) Update() {
 		a.start = false
 	}
 	if !a.values.Source.IsMoving() {
+		if a.preDam {
+			orig := a.values.Source.GetCoords()
+			for _, n := range a.area {
+				if target := floor.CurrentFloor.GetOccupant(n); target != nil {
+					checks := floor.PathChecks{
+						NotFilled:     true,
+						Unoccupied:    true,
+						NonEmpty:      false,
+						EndUnoccupied: true,
+						Orig:          n,
+					}
+					nPath := []world.Coords{n}
+					o := orig
+					for i := 0; i < a.values.Strength; i++ {
+						next := world.NextHexLine(o, n)
+						if floor.CurrentFloor.IsLegal(next, checks) != nil {
+							nPath = append(nPath, next)
+							o = n
+							n = next
+						} else {
+							break
+						}
+					}
+					a.targets = append(a.targets, target)
+					if len(nPath) < 2 {
+						a.ends = append(a.ends, target.GetCoords())
+						a.interXP = append(a.interXP, nil)
+						a.interYP = append(a.interYP, nil)
+					} else {
+						end := nPath[len(nPath)-1]
+						b := world.MapToWorld(end)
+						a.ends = append(a.ends, end)
+						p := target.GetPos()
+						a.interXP = append(a.interXP, gween.New(p.X, b.X, 0.25, ease.OutCubic))
+						a.interYP = append(a.interYP, gween.New(p.Y, b.Y, 0.25, ease.OutCubic))
+					}
+				}
+			}
+		}
 		a.preDam = false
 	}
 	if !a.preDam {
 		if !a.postDam {
 			SetResetTransform(a.values.Source)
-		}
-		orig := a.values.Source.GetCoords()
-		for _, n := range a.area {
-			if target := floor.CurrentFloor.GetOccupant(n); target != nil {
-				checks := floor.PathChecks{
-					NotFilled:     true,
-					Unoccupied:    true,
-					NonEmpty:      false,
-					EndUnoccupied: true,
-					Orig:          n,
-				}
-				nPath := []world.Coords{n}
-				o := orig
-				for i := 0; i < a.values.Strength; i++ {
-					next := world.NextHexLine(o, n)
-					if floor.CurrentFloor.IsLegal(next, checks) != nil {
-						nPath = append(nPath, next)
-						o = n
-						n = next
-					} else {
-						break
-					}
-				}
-				a.targets = append(a.targets, target)
-				if len(nPath) < 2 {
-					a.ends = append(a.ends, target.GetCoords())
-					a.interXP = append(a.interXP, nil)
-					a.interYP = append(a.interYP, nil)
-				} else {
-					end := nPath[len(nPath)-1]
-					b := world.MapToWorld(end)
-					a.ends = append(a.ends, end)
-					p := target.GetPos()
-					a.interXP = append(a.interXP, gween.New(p.X, b.X, 0.25, ease.OutCubic))
-					a.interYP = append(a.interYP, gween.New(p.Y, b.Y, 0.25, ease.OutCubic))
-				}
-			}
 		}
 
 		done := !a.values.Source.IsMoving() && a.postDam
@@ -160,7 +162,6 @@ func (a *PushMultiAction) Update() {
 				target.SetPos(pixel.V(x, y))
 				if finX && finY {
 					floor.CurrentFloor.MoveOccupant(target, target.GetCoords(), a.ends[i])
-					target.SetCoords(a.ends[i])
 					a.interXP[i] = nil
 					a.interYP[i] = nil
 				} else {

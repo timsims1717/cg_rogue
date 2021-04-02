@@ -28,6 +28,7 @@ func NewArcSelect() *AbstractSelector {
 func (s *ArcSelect) SetValues(values ActionValues) {
 	s.Count = values.Targets
 	s.MaxRange = values.Range
+	s.PathChecks = values.Checks
 }
 
 func (s *ArcSelect) Update(input *input.Input) {
