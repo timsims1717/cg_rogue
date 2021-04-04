@@ -33,6 +33,7 @@ func (s *StartRun) Initialize() {
 		cards.CreateSweep(),
 		cards.CreateVault(),
 		cards.CreateDaggerThrow(),
+		cards.CreateDisengage(),
 	}, player.Player1.Hand)
 	player.Player1.PlayCard = player.NewPlayCard(player.Player1)
 	player.Player1.Discard = player.NewDiscard(player.Player1)

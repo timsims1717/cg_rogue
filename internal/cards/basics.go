@@ -20,7 +20,7 @@ func (c *Thrust) DoActions() {
 
 func (c *Thrust) SetValues(level int) {
 	values := selectors.ActionValues{
-		Damage:  4 + level * 2,
+		Damage:  5 + level * 2,
 		Range:   1,
 		Targets: 1,
 	}
@@ -39,7 +39,7 @@ func (c *Thrust) SetCard(card *player.Card) {
 }
 
 func CreateThrust() *player.Card {
-	return player.NewCard("Thrust", "Deal 4 damage.", &Thrust{})
+	return player.NewCard("Thrust", "Deal 5 damage.", &Thrust{})
 }
 
 type Dash struct {
@@ -53,13 +53,6 @@ func (c *Dash) DoActions() {
 func (c *Dash) SetValues(level int) {
 	values := selectors.ActionValues{
 		Move: 4 + level,
-		Checks: floor.PathChecks{
-			NotFilled:     true,
-			Unoccupied:    true,
-			NonEmpty:      true,
-			EndUnoccupied: true,
-			Orig:          world.Coords{},
-		},
 	}
 	c.Values = values
 	c.RawDesc = fmt.Sprintf("Move %d.", values.Move)
@@ -67,7 +60,13 @@ func (c *Dash) SetValues(level int) {
 
 func (c *Dash) InitSelectors() {
 	c.Selectors = []*selectors.AbstractSelector{
-		selectors.NewPathSelect(true),
+		selectors.NewPathSelect(true, floor.PathChecks{
+			NotFilled:     true,
+			Unoccupied:    true,
+			NonEmpty:      true,
+			EndUnoccupied: true,
+			Orig:          world.Coords{},
+		}),
 	}
 }
 
@@ -94,13 +93,6 @@ func (c *QuickStrike) SetValues(level int) {
 		Damage:  3,
 		Range:   1,
 		Targets: 1,
-		Checks: floor.PathChecks{
-			NotFilled:     true,
-			Unoccupied:    true,
-			NonEmpty:      true,
-			EndUnoccupied: true,
-			Orig:          world.Coords{},
-		},
 	}
 	if level >= 1 {
 		values.Damage += 1
@@ -125,7 +117,13 @@ func (c *QuickStrike) SetValues(level int) {
 
 func (c *QuickStrike) InitSelectors() {
 	c.Selectors = []*selectors.AbstractSelector{
-		selectors.NewPathSelect(true),
+		selectors.NewPathSelect(true, floor.PathChecks{
+			NotFilled:     true,
+			Unoccupied:    true,
+			NonEmpty:      true,
+			EndUnoccupied: true,
+			Orig:          world.Coords{},
+		}),
 		selectors.NewTargetSelect(),
 	}
 }
@@ -148,17 +146,10 @@ func (c *Sweep) DoActions() {
 
 func (c *Sweep) SetValues(level int) {
 	values := selectors.ActionValues{
-		Damage:   2,
+		Damage:   3,
 		Range:    1,
 		Strength: 1,
 		Targets:  3,
-		Checks: floor.PathChecks{
-			NotFilled:     true,
-			Unoccupied:    false,
-			NonEmpty:      false,
-			EndUnoccupied: false,
-			Orig:          world.Coords{},
-		},
 	}
 	if level >= 1 {
 		values.Damage += 1
@@ -181,7 +172,13 @@ func (c *Sweep) SetValues(level int) {
 
 func (c *Sweep) InitSelectors() {
 	c.Selectors = []*selectors.AbstractSelector{
-		selectors.NewArcSelect(),
+		selectors.NewArcSelect(floor.PathChecks{
+			NotFilled:     true,
+			Unoccupied:    false,
+			NonEmpty:      false,
+			EndUnoccupied: false,
+			Orig:          world.Coords{},
+		}),
 	}
 }
 
@@ -190,7 +187,7 @@ func (c *Sweep) SetCard(card *player.Card) {
 }
 
 func CreateSweep() *player.Card {
-	return player.NewCard("Sweep", "Deal 2 damage and push 1 away.", &Sweep{})
+	return player.NewCard("Sweep", "Deal 3 damage and push 1 away.", &Sweep{})
 }
 
 type Vault struct {
@@ -211,22 +208,21 @@ func (c *Vault) SetValues(level int) {
 		Move:    2,
 		Range:   1,
 		Targets: 1,
-		Damage:  1,
+		Damage:  2,
 	}
 	if level >= 1 {
-		values.Damage += 1
+		values.Move += 1
 	}
 	if level >= 2 {
-		values.Move += 1
-	}
-	if level >= 3 {
 		values.Damage += 1
 	}
-	if level >= 4 {
+	if level >= 3 {
 		values.Move += 1
 	}
+	if level >= 4 {
+		values.Damage += 1
+	}
 	if level >= 5 {
-		values.Move += 1
 		values.Damage += 1
 	}
 	c.Values = values
@@ -245,7 +241,7 @@ func (c *Vault) SetCard(card *player.Card) {
 }
 
 func CreateVault() *player.Card {
-	return player.NewCard("Vault", "Jump 2. Deal 1 damage.", &Vault{})
+	return player.NewCard("Vault", "Jump 2. Deal 2 damage.", &Vault{})
 }
 
 type DaggerThrow struct {
@@ -259,15 +255,8 @@ func (c *DaggerThrow) DoActions() {
 func (c *DaggerThrow) SetValues(level int) {
 	values := selectors.ActionValues{
 		Damage:  2,
-		Range:   4,
+		Range:   5,
 		Targets: 1,
-		Checks: floor.PathChecks{
-			NotFilled:     true,
-			Unoccupied:    false,
-			NonEmpty:      false,
-			EndUnoccupied: false,
-			Orig:          world.Coords{},
-		},
 	}
 	if level >= 1 {
 		values.Damage += 1
@@ -291,7 +280,13 @@ func (c *DaggerThrow) SetValues(level int) {
 
 func (c *DaggerThrow) InitSelectors() {
 	c.Selectors = []*selectors.AbstractSelector{
-		selectors.NewLineSelect(false),
+		selectors.NewLineSelect(false, floor.PathChecks{
+			NotFilled:     true,
+			Unoccupied:    false,
+			NonEmpty:      false,
+			EndUnoccupied: false,
+			Orig:          world.Coords{},
+		}),
 	}
 }
 
@@ -300,5 +295,120 @@ func (c *DaggerThrow) SetCard(card *player.Card) {
 }
 
 func CreateDaggerThrow() *player.Card {
-	return player.NewCard("Dagger Throw", "Deal 2 damage within 4.", &DaggerThrow{})
+	return player.NewCard("Dagger Throw", "Deal 2 damage within 5.", &DaggerThrow{})
+}
+
+type Disengage struct {
+	*player.Card
+}
+
+func (c *Disengage) DoActions() {
+	manager.ActionManager.AddToBot(actions.NewDamageHexAction(c.Results[0], c.Values))
+	manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(c.Values.Source, c.Values.Source, c.Results[1]))
+}
+
+func (c *Disengage) SetValues(level int) {
+	values := selectors.ActionValues{
+		Move:    3,
+		Damage:  1,
+		Targets: 1,
+		Range:   1,
+	}
+	if level >= 1 {
+		values.Move += 1
+	}
+	if level >= 2 {
+		values.Damage += 1
+	}
+	if level >= 3 {
+		values.Targets += 1
+	}
+	if level >= 4 {
+		values.Damage += 1
+	}
+	if level >= 5 {
+		values.Targets += 1
+		values.Move += 1
+	}
+	c.Values = values
+	c.RawDesc = fmt.Sprintf("Deal %d damage. Move %d.", values.Damage, values.Move)
+}
+
+func (c *Disengage) InitSelectors() {
+	c.Selectors = []*selectors.AbstractSelector{
+		selectors.NewArcSelect(floor.PathChecks{
+			NotFilled:     true,
+			Unoccupied:    false,
+			NonEmpty:      false,
+			EndUnoccupied: false,
+			Orig:          world.Coords{},
+		}),
+		selectors.NewPathSelect(true, floor.PathChecks{
+			NotFilled:     true,
+			Unoccupied:    true,
+			NonEmpty:      true,
+			EndUnoccupied: true,
+			Orig:          world.Coords{},
+		}),
+	}
+}
+
+func (c *Disengage) SetCard(card *player.Card) {
+	c.Card = card
+}
+
+func CreateDisengage() *player.Card {
+	return player.NewCard("Disengage", "Deal 1 damage. Move 3.", &Disengage{})
+}
+
+type Slam struct {
+	*player.Card
+}
+
+func (c *Slam) DoActions() {
+	h := c.Values.Source.GetCoords()
+	if len(c.Results[0]) > 0 {
+		h = c.Results[0][len(c.Results[0])-1]
+	}
+	manager.ActionManager.AddToBot(actions.NewMoveAction(c.Values.Source, c.Values.Source, h))
+	//manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(c.Values.Source, c.Values.Source, c.Results[1]))
+}
+
+func (c *Slam) SetValues(level int) {
+	values := selectors.ActionValues{
+		Move:    2,
+		Damage:  2,
+		Range:   1,
+	}
+	if level >= 1 {
+		values.Damage += 1
+	}
+	if level >= 2 {
+		values.Move += 1
+	}
+	if level >= 3 {
+		values.Damage += 1
+	}
+	if level >= 4 {
+		values.Move += 1
+	}
+	if level >= 5 {
+		values.Range += 1
+	}
+	c.Values = values
+	c.RawDesc = fmt.Sprintf("Jump %d. Deal %d dmg w/in %d.", values.Move, values.Damage, values.Range)
+}
+
+func (c *Slam) InitSelectors() {
+	c.Selectors = []*selectors.AbstractSelector{
+		selectors.NewMoveHexSelect(),
+	}
+}
+
+func (c *Slam) SetCard(card *player.Card) {
+	c.Card = card
+}
+
+func CreateSlam() *player.Card {
+	return player.NewCard("Slam", "Jump 2. Deal 2 dmg w/in 1.", &Slam{})
 }

@@ -14,7 +14,7 @@ type LineSelect struct {
 	PathChecks floor.PathChecks
 }
 
-func NewLineSelect(isMove bool) *AbstractSelector {
+func NewLineSelect(isMove bool, checks floor.PathChecks) *AbstractSelector {
 	sel := &AbstractSelector{
 		IsMove: isMove,
 	}
@@ -22,7 +22,7 @@ func NewLineSelect(isMove bool) *AbstractSelector {
 		sel,
 		0,
 		0,
-		floor.PathChecks{},
+		checks,
 	}
 	sel.Selector = target
 	return sel
@@ -35,7 +35,7 @@ func (s *LineSelect) SetValues(values ActionValues) {
 	} else {
 		s.MaxRange = values.Range
 	}
-	s.PathChecks = values.Checks
+	s.PathChecks.Orig = s.origin
 }
 
 func (s *LineSelect) Update(input *input.Input) {

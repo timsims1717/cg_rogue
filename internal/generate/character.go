@@ -28,7 +28,7 @@ func CreateTestCharacter(coords world.Coords, spriteSheet *img.SpriteSheet) int 
 		return 2
 	} else {
 		CreateStationary(coords, spriteSheet)
-		return 1
+		return 0
 	}
 }
 
@@ -37,7 +37,7 @@ func CreateRandomWalker(coords world.Coords, spriteSheet *img.SpriteSheet) {
 		pixel.NewSprite(spriteSheet.Img, spriteSheet.Sprites[8]),
 		coords,
 		characters.Enemy,
-		2,
+		1,
 	)
 	characters.CharacterManager.Add(enemy)
 	charAi := ai.NewRandomWalker(enemy)
@@ -49,7 +49,7 @@ func CreateFlyChaser(coords world.Coords, spriteSheet *img.SpriteSheet) {
 		pixel.NewSprite(spriteSheet.Img, spriteSheet.Sprites[5]),
 		coords,
 		characters.Enemy,
-		4,
+		3,
 		)
 	characters.CharacterManager.Add(enemy)
 	charAi := ai.NewFlyChaser(enemy)
@@ -73,7 +73,7 @@ func CreateGrenadier(coords world.Coords, spriteSheet *img.SpriteSheet) {
 		pixel.NewSprite(spriteSheet.Img, spriteSheet.Sprites[6]),
 		coords,
 		characters.Enemy,
-		6,
+		5,
 	)
 	characters.CharacterManager.Add(enemy)
 	charAi := ai.NewGrenadier(enemy)
@@ -85,7 +85,7 @@ func CreateBruiser(coords world.Coords, spriteSheet *img.SpriteSheet) {
 		pixel.NewSprite(spriteSheet.Img, spriteSheet.Sprites[4]),
 		coords,
 		characters.Enemy,
-		10,
+		8,
 	)
 	characters.CharacterManager.Add(enemy)
 	charAi := ai.NewBruiser(enemy)
@@ -96,7 +96,7 @@ func CreateStationary(coords world.Coords, spriteSheet *img.SpriteSheet) {
 	enemy := characters.NewCharacter(
 		pixel.NewSprite(spriteSheet.Img, spriteSheet.Sprites[7]),
 		coords,
-		characters.Enemy,
+		characters.Neutral,
 		6,
 	)
 	characters.CharacterManager.Add(enemy)

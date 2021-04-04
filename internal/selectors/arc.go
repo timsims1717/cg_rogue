@@ -13,13 +13,13 @@ type ArcSelect struct {
 	PathChecks floor.PathChecks
 }
 
-func NewArcSelect() *AbstractSelector {
+func NewArcSelect(checks floor.PathChecks) *AbstractSelector {
 	sel := &AbstractSelector{}
 	target := &ArcSelect{
 		sel,
 		0,
 		0,
-		floor.PathChecks{},
+		checks,
 	}
 	sel.Selector = target
 	return sel
@@ -28,7 +28,7 @@ func NewArcSelect() *AbstractSelector {
 func (s *ArcSelect) SetValues(values ActionValues) {
 	s.Count = values.Targets
 	s.MaxRange = values.Range
-	s.PathChecks = values.Checks
+	s.PathChecks.Orig = s.origin
 }
 
 func (s *ArcSelect) Update(input *input.Input) {

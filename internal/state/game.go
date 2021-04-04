@@ -310,21 +310,20 @@ func (m *BasicMove) DoActions() {
 
 func (m *BasicMove) SetValues(_ int) {
 	values := selectors.ActionValues{
-		Move:    1,
-		Checks: floor.PathChecks{
-			NotFilled:     true,
-			Unoccupied:    true,
-			NonEmpty:      true,
-			EndUnoccupied: true,
-			Orig:          world.Coords{},
-		},
+		Move: 1,
 	}
 	m.Values = values
 }
 
 func (m *BasicMove) InitSelectors() {
 	m.Selectors = []*selectors.AbstractSelector{
-		selectors.NewPathSelect(true),
+		selectors.NewPathSelect(true, floor.PathChecks{
+			NotFilled:     true,
+			Unoccupied:    true,
+			NonEmpty:      true,
+			EndUnoccupied: true,
+			Orig:          world.Coords{},
+		}),
 	}
 }
 
