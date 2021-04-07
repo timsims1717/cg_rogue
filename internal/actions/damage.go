@@ -39,7 +39,7 @@ func NewDamageAction(area []world.Coords, values selectors.ActionValues) *Damage
 
 func (a *DamageAction) Update() {
 	if a.start {
-		SetAttackTransform(a.values.Source, a.coords)
+		SetAttackTransformSingle(a.values.Source, a.coords)
 		a.start = false
 	}
 	if !a.values.Source.IsMoving() {
@@ -83,7 +83,7 @@ func NewDamageHexAction(area []world.Coords, values selectors.ActionValues) *Dam
 
 func (a *DamageHexAction) Update() {
 	if a.start {
-		SetAttackTransform(a.values.Source, a.area[0])
+		SetAttackTransform(a.values.Source, a.area)
 		a.start = false
 	}
 	if !a.values.Source.IsMoving() {

@@ -99,7 +99,7 @@ func NewPushMultiAction(area []world.Coords, values selectors.ActionValues) *Pus
 
 func (a *PushMultiAction) Update() {
 	if a.start {
-		SetAttackTransform(a.values.Source, a.area[0])
+		SetAttackTransform(a.values.Source, a.area)
 		a.start = false
 	}
 	if !a.values.Source.IsMoving() {
