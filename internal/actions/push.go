@@ -2,11 +2,9 @@ package actions
 
 import (
 	"github.com/faiface/pixel"
-	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/manager"
-	"github.com/timsims1717/cg_rogue_go/internal/objects"
-	"github.com/timsims1717/cg_rogue_go/internal/selectors"
+	"github.com/timsims1717/cg_rogue_go/internal/selector"
 	gween "github.com/timsims1717/cg_rogue_go/pkg/gween64"
 	"github.com/timsims1717/cg_rogue_go/pkg/gween64/ease"
 	"github.com/timsims1717/cg_rogue_go/pkg/timing"
@@ -14,14 +12,14 @@ import (
 )
 
 type PushAction struct{
-	source *characters.Character
-	target objects.Moveable
+	source *floor.Character
+	target *floor.Character
 	push   int
 	start  bool
 	isDone bool
 }
 
-func NewPushAction(s *characters.Character, t objects.Moveable, p int) *PushAction {
+func NewPushAction(s *floor.Character, t *floor.Character, p int) *PushAction {
 	if t == nil {
 		return nil
 	}
@@ -72,20 +70,20 @@ func (a *PushAction) IsDone() bool {
 
 type PushMultiAction struct{
 	area    []world.Coords
-	values  selectors.ActionValues
+	values  selector.ActionValues
 	start   bool
 	preDam  bool
 	postDam bool
 	isDone  bool
 	interX  *gween.Tween
 	interY  *gween.Tween
-	targets []objects.Moveable
+	targets []*floor.Character
 	ends    []world.Coords
 	interXP []*gween.Tween
 	interYP []*gween.Tween
 }
 
-func NewPushMultiAction(area []world.Coords, values selectors.ActionValues) *PushMultiAction {
+func NewPushMultiAction(area []world.Coords, values selector.ActionValues) *PushMultiAction {
 	if len(area) < 1 {
 		return nil
 	}
@@ -152,9 +150,7 @@ func (a *PushMultiAction) Update() {
 		done := !a.values.Source.IsMoving() && a.postDam
 		for i, target := range a.targets {
 			if !a.postDam {
-				if t, ok := target.(objects.Targetable); ok {
-					t.Damage(a.values.Damage)
-				}
+				target.Damage(a.values.Damage)
 			}
 			if a.interXP[i] != nil && a.interYP[i] != nil {
 				x, finX := a.interXP[i].Update(timing.DT)

@@ -1,4 +1,4 @@
-package characters
+package floor
 
 type Diplomacy int
 

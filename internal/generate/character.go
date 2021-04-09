@@ -3,7 +3,7 @@ package generate
 import (
 	"github.com/faiface/pixel"
 	"github.com/timsims1717/cg_rogue_go/internal/ai"
-	"github.com/timsims1717/cg_rogue_go/internal/characters"
+	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"math/rand"
@@ -33,73 +33,73 @@ func CreateTestCharacter(coords world.Coords, spriteSheet *img.SpriteSheet) int 
 }
 
 func CreateRandomWalker(coords world.Coords, spriteSheet *img.SpriteSheet) {
-	enemy := characters.NewCharacter(
+	enemy := floor.NewCharacter(
 		pixel.NewSprite(spriteSheet.Img, spriteSheet.Sprites[8]),
 		coords,
-		characters.Enemy,
+		floor.Enemy,
 		1,
 	)
-	characters.CharacterManager.Add(enemy)
+	floor.CharacterManager.Add(enemy)
 	charAi := ai.NewRandomWalker(enemy)
 	ai.AIManager.AddAI(charAi)
 }
 
 func CreateFlyChaser(coords world.Coords, spriteSheet *img.SpriteSheet) {
-	enemy := characters.NewCharacter(
+	enemy := floor.NewCharacter(
 		pixel.NewSprite(spriteSheet.Img, spriteSheet.Sprites[5]),
 		coords,
-		characters.Enemy,
+		floor.Enemy,
 		3,
 		)
-	characters.CharacterManager.Add(enemy)
+	floor.CharacterManager.Add(enemy)
 	charAi := ai.NewFlyChaser(enemy)
 	ai.AIManager.AddAI(charAi)
 }
 
 func CreateSkirmisher(coords world.Coords, spriteSheet *img.SpriteSheet) {
-	enemy := characters.NewCharacter(
+	enemy := floor.NewCharacter(
 		pixel.NewSprite(spriteSheet.Img, spriteSheet.Sprites[0]),
 		coords,
-		characters.Enemy,
+		floor.Enemy,
 		4,
 	)
-	characters.CharacterManager.Add(enemy)
+	floor.CharacterManager.Add(enemy)
 	charAi := ai.NewSkirmisher(enemy)
 	ai.AIManager.AddAI(charAi)
 }
 
 func CreateGrenadier(coords world.Coords, spriteSheet *img.SpriteSheet) {
-	enemy := characters.NewCharacter(
+	enemy := floor.NewCharacter(
 		pixel.NewSprite(spriteSheet.Img, spriteSheet.Sprites[6]),
 		coords,
-		characters.Enemy,
+		floor.Enemy,
 		5,
 	)
-	characters.CharacterManager.Add(enemy)
+	floor.CharacterManager.Add(enemy)
 	charAi := ai.NewGrenadier(enemy)
 	ai.AIManager.AddAI(charAi)
 }
 
 func CreateBruiser(coords world.Coords, spriteSheet *img.SpriteSheet) {
-	enemy := characters.NewCharacter(
+	enemy := floor.NewCharacter(
 		pixel.NewSprite(spriteSheet.Img, spriteSheet.Sprites[4]),
 		coords,
-		characters.Enemy,
+		floor.Enemy,
 		8,
 	)
-	characters.CharacterManager.Add(enemy)
+	floor.CharacterManager.Add(enemy)
 	charAi := ai.NewBruiser(enemy)
 	ai.AIManager.AddAI(charAi)
 }
 
 func CreateStationary(coords world.Coords, spriteSheet *img.SpriteSheet) {
-	enemy := characters.NewCharacter(
+	enemy := floor.NewCharacter(
 		pixel.NewSprite(spriteSheet.Img, spriteSheet.Sprites[7]),
 		coords,
-		characters.Neutral,
+		floor.Neutral,
 		6,
 	)
-	characters.CharacterManager.Add(enemy)
+	floor.CharacterManager.Add(enemy)
 	charAi := ai.NewStationary(enemy)
 	ai.AIManager.AddAI(charAi)
 }

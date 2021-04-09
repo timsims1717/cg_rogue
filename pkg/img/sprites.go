@@ -10,19 +10,21 @@ import (
 )
 
 type SpriteSheet struct {
-	Img     pixel.Picture
-	Sprites []pixel.Rect
+	Img       pixel.Picture
+	Sprites   []pixel.Rect
+	SpriteMap map[string]pixel.Rect
 }
 
 type spriteFile struct {
-	ImgFile   string `json:"img"`
-	Sprites   []rect `json:"sprites"`
-	Width     float64 `json:"width"`
-	Height    float64 `json:"height"`
-	SingleRow bool    `json:"singleRow"`
+	ImgFile   string   `json:"img"`
+	Sprites   []sprite `json:"sprites"`
+	Width     float64  `json:"width"`
+	Height    float64  `json:"height"`
+	SingleRow bool     `json:"singleRow"`
 }
 
-type rect struct {
+type sprite struct {
+	K string  `json:"key"`
 	X float64 `json:"x"`
 	Y float64 `json:"y"`
 	W float64 `json:"w"`
@@ -49,27 +51,28 @@ func LoadSpriteSheet(path string) (*SpriteSheet, error) {
 	sheet := &SpriteSheet{
 		Img: img,
 		Sprites: make([]pixel.Rect, 0),
+		SpriteMap: make(map[string]pixel.Rect, 0),
 	}
 	x := 0.0
 	for _, r := range fileSheet.Sprites {
+		var rect pixel.Rect
+		w := fileSheet.Width
+		h := fileSheet.Height
+		if r.W > 0.0 {
+			w = r.W
+		}
 		if fileSheet.SingleRow {
-			h := fileSheet.Height
-			w := fileSheet.Width
-			if r.W > 0.0 {
-				w = r.W
-			}
-			sheet.Sprites = append(sheet.Sprites, pixel.R(x, 0.0, x+w, h))
+			rect = pixel.R(x, 0.0, x+w, h)
 			x += w
 		} else {
-			w := fileSheet.Width
-			h := fileSheet.Height
-			if r.W > 0.0 {
-				w = r.W
-			}
 			if r.H > 0.0 {
 				h = r.H
 			}
-			sheet.Sprites = append(sheet.Sprites, pixel.R(r.X, r.Y, r.X+w, r.Y+h))
+			rect = pixel.R(r.X, r.Y, r.X+w, r.Y+h)
+		}
+		sheet.Sprites = append(sheet.Sprites, rect)
+		if r.K != "" {
+			sheet.SpriteMap[r.K] = rect
 		}
 	}
 	return sheet, nil

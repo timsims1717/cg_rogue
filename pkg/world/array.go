@@ -21,7 +21,7 @@ func RandomizeList(s []Coords) []Coords {
 
 // Remove attempts to remove the Coords c from the list.
 // If c is not in the list, no change is made.
-func Remove(c Coords, list []Coords) []Coords {
+func Remove(c Coords, list []Coords) ([]Coords, int) {
 	in := -1
 	for i, l := range list {
 		if c.Eq(l) {
@@ -29,9 +29,9 @@ func Remove(c Coords, list []Coords) []Coords {
 		}
 	}
 	if in != -1 {
-		return append(list[:in], list[in+1:]...)
+		return append(list[:in], list[in+1:]...), in
 	} else {
-		return list
+		return list, in
 	}
 }
 

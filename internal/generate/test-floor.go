@@ -3,7 +3,6 @@ package generate
 import (
 	"github.com/faiface/pixel"
 	"github.com/pkg/errors"
-	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
@@ -25,7 +24,7 @@ func LoadTestFloor(level int) {
 	if player.Player1 == nil || player.Player1.Character == nil {
 		panic(errors.New("player or player character was nil"))
 	}
-	characters.CharacterManager.Add(player.Player1.Character)
+	floor.CharacterManager.Add(player.Player1.Character)
 
 	floor.CurrentFloor = floor.NewFloor(12, 12, spritesheet)
 

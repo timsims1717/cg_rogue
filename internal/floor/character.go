@@ -1,4 +1,4 @@
-package characters
+package floor
 
 import (
 	"github.com/faiface/pixel"
@@ -6,7 +6,6 @@ import (
 	"github.com/faiface/pixel/pixelgl"
 	uuid "github.com/satori/go.uuid"
 	"github.com/timsims1717/cg_rogue_go/internal/cfg"
-	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/pkg/animation"
 	"github.com/timsims1717/cg_rogue_go/pkg/util"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
@@ -107,7 +106,7 @@ func (c *Character) Damage(dmg int) {
 			c.effect = animation.FadeOut(c, 0.5)
 			c.Health.Alive = false
 			c.Health.CurrHP = 0
-			floor.CurrentFloor.RemoveOccupant(c.Coords)
+			CurrentFloor.RemoveOccupant(c.Coords)
 			c.OnMap = false
 		} else {
 			c.effect = animation.FadeFrom(c, colornames.Red, 0.5)
@@ -136,11 +135,11 @@ func (c *Character) GetCoords() world.Coords {
 }
 
 func (c *Character) SetCoords(a world.Coords) {
-	if floor.CurrentFloor != nil {
-		if floor.CurrentFloor.IsOccupied(a) {
+	if CurrentFloor != nil {
+		if CurrentFloor.IsOccupied(a) {
 			return
 		}
-		floor.CurrentFloor.PutOccupant(c, a)
+		CurrentFloor.PutOccupant(c, a)
 		c.Coords = a
 		c.SetPos(world.MapToWorld(a))
 		c.OnMap = true

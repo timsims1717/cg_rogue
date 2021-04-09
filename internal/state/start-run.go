@@ -4,7 +4,7 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/timsims1717/cg_rogue_go/internal/cards"
-	"github.com/timsims1717/cg_rogue_go/internal/characters"
+	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
 	"github.com/timsims1717/cg_rogue_go/internal/run"
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
@@ -21,7 +21,7 @@ func (s *StartRun) Initialize() {
 	if err != nil {
 		panic(err)
 	}
-	character := characters.NewCharacter(pixel.NewSprite(charsheet.Img, charsheet.Sprites[rand.Intn(len(charsheet.Sprites))]), world.Coords{X: 0, Y: 0}, characters.Ally, 10)
+	character := floor.NewCharacter(pixel.NewSprite(charsheet.Img, charsheet.Sprites[rand.Intn(len(charsheet.Sprites))]), world.Coords{X: 0, Y: 0}, floor.Ally, 10)
 	player.Player1 = player.NewPlayer(character)
 
 	player.InitializeCards()
@@ -34,6 +34,7 @@ func (s *StartRun) Initialize() {
 		cards.CreateVault(),
 		cards.CreateDaggerThrow(),
 		cards.CreateDisengage(),
+		cards.CreateSlam(),
 	}, player.Player1.Hand)
 	player.Player1.PlayCard = player.NewPlayCard(player.Player1)
 	player.Player1.Discard = player.NewDiscard(player.Player1)

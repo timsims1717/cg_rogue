@@ -3,7 +3,6 @@ package floor
 import (
 	"github.com/beefsack/go-astar"
 	"github.com/faiface/pixel"
-	"github.com/timsims1717/cg_rogue_go/internal/objects"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
@@ -14,7 +13,7 @@ type Hex struct {
 	Y        int
 	f        *Floor
 	Tile     *pixel.Sprite
-	Occupant objects.Moveable
+	Occupant *Character
 	Empty    bool
 }
 

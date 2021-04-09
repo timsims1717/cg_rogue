@@ -166,11 +166,11 @@ func OutInExpo(t, b, c, d float64) float64 {
 }
 
 func InCirc(t, b, c, d float64) float64 {
-	return (-c*(sqrt(1-pow(t/d, 2))-1) + b)
+	return -c*(sqrt(1-pow(t/d, 2))-1) + b
 }
 
 func OutCirc(t, b, c, d float64) float64 {
-	return (c*sqrt(1-pow(t/d-1, 2)) + b)
+	return c*sqrt(1-pow(t/d-1, 2)) + b
 }
 
 func InOutCirc(t, b, c, d float64) float64 {

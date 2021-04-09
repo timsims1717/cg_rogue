@@ -1,4 +1,4 @@
-package characters
+package floor
 
 import (
 	"github.com/faiface/pixel"

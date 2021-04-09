@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"github.com/timsims1717/cg_rogue_go/internal/actions"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
-	"github.com/timsims1717/cg_rogue_go/internal/manager"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
-	"github.com/timsims1717/cg_rogue_go/internal/selectors"
+	"github.com/timsims1717/cg_rogue_go/internal/selector"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
@@ -15,11 +14,11 @@ type Thrust struct {
 }
 
 func (c *Thrust) DoActions() {
-	manager.ActionManager.AddToBot(actions.NewDamageAction(c.Results[0], c.Values))
+	AddToBot(actions.NewDamageAction(c.Results[0][0].Area, c.Values))
 }
 
 func (c *Thrust) SetValues(level int) {
-	values := selectors.ActionValues{
+	values := selector.ActionValues{
 		Damage:  5 + level * 2,
 		Range:   1,
 		Targets: 1,
@@ -29,8 +28,10 @@ func (c *Thrust) SetValues(level int) {
 }
 
 func (c *Thrust) InitSelectors() {
-	c.Selectors = []*selectors.AbstractSelector{
-		selectors.NewTargetSelect(),
+	c.Selectors = []*selector.AbstractSelector{
+		selector.NewSelector(&selector.TargetSelect{
+			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}),
+		}, false),
 	}
 }
 
@@ -47,11 +48,11 @@ type Dash struct {
 }
 
 func (c *Dash) DoActions() {
-	manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(c.Values.Source, c.Values.Source, c.Results[0]))
+	AddToBot(actions.NewMoveSeriesAction(c.Values.Source, c.Values.Source, c.Results[0][0].Area))
 }
 
 func (c *Dash) SetValues(level int) {
-	values := selectors.ActionValues{
+	values := selector.ActionValues{
 		Move: 4 + level,
 	}
 	c.Values = values
@@ -59,14 +60,16 @@ func (c *Dash) SetValues(level int) {
 }
 
 func (c *Dash) InitSelectors() {
-	c.Selectors = []*selectors.AbstractSelector{
-		selectors.NewPathSelect(true, floor.PathChecks{
-			NotFilled:     true,
-			Unoccupied:    true,
-			NonEmpty:      true,
-			EndUnoccupied: true,
-			Orig:          world.Coords{},
-		}),
+	c.Selectors = []*selector.AbstractSelector{
+		selector.NewSelector(&selector.PathSelect{
+			PathChecks: floor.PathChecks{
+				NotFilled:     true,
+				Unoccupied:    true,
+				NonEmpty:      true,
+				EndUnoccupied: true,
+			},
+			Effect: selector.NewSelectionEffect(&selector.MoveEffect{}),
+		}, true),
 	}
 }
 
@@ -83,12 +86,12 @@ type QuickStrike struct {
 }
 
 func (c *QuickStrike) DoActions() {
-	manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(c.Values.Source, c.Values.Source, c.Results[0]))
-	manager.ActionManager.AddToBot(actions.NewDamageAction(c.Results[1], c.Values))
+	AddToBot(actions.NewMoveSeriesAction(c.Values.Source, c.Values.Source, c.Results[0][0].Area))
+	AddToBot(actions.NewDamageAction(c.Results[1][0].Area, c.Values))
 }
 
 func (c *QuickStrike) SetValues(level int) {
-	values := selectors.ActionValues{
+	values := selector.ActionValues{
 		Move:    1,
 		Damage:  3,
 		Range:   1,
@@ -116,15 +119,19 @@ func (c *QuickStrike) SetValues(level int) {
 }
 
 func (c *QuickStrike) InitSelectors() {
-	c.Selectors = []*selectors.AbstractSelector{
-		selectors.NewPathSelect(true, floor.PathChecks{
-			NotFilled:     true,
-			Unoccupied:    true,
-			NonEmpty:      true,
-			EndUnoccupied: true,
-			Orig:          world.Coords{},
-		}),
-		selectors.NewTargetSelect(),
+	c.Selectors = []*selector.AbstractSelector{
+		selector.NewSelector(&selector.PathSelect{
+			PathChecks: floor.PathChecks{
+				NotFilled:     true,
+				Unoccupied:    true,
+				NonEmpty:      true,
+				EndUnoccupied: true,
+			},
+			Effect: selector.NewSelectionEffect(&selector.MoveEffect{}),
+		}, true),
+		selector.NewSelector(&selector.TargetSelect{
+			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}),
+		}, false),
 	}
 }
 
@@ -141,11 +148,11 @@ type Sweep struct {
 }
 
 func (c *Sweep) DoActions() {
-	manager.ActionManager.AddToBot(actions.NewPushMultiAction(c.Results[0], c.Values))
+	AddToBot(actions.NewPushMultiAction(c.Results[0][0].Area, c.Values))
 }
 
 func (c *Sweep) SetValues(level int) {
-	values := selectors.ActionValues{
+	values := selector.ActionValues{
 		Damage:   3,
 		Range:    1,
 		Strength: 1,
@@ -171,14 +178,16 @@ func (c *Sweep) SetValues(level int) {
 }
 
 func (c *Sweep) InitSelectors() {
-	c.Selectors = []*selectors.AbstractSelector{
-		selectors.NewArcSelect(floor.PathChecks{
-			NotFilled:     true,
-			Unoccupied:    false,
-			NonEmpty:      false,
-			EndUnoccupied: false,
-			Orig:          world.Coords{},
-		}),
+	c.Selectors = []*selector.AbstractSelector{
+		selector.NewSelector(&selector.ArcSelect{
+			PathChecks: floor.PathChecks{
+				NotFilled:     true,
+				Unoccupied:    false,
+				NonEmpty:      false,
+				EndUnoccupied: false,
+			},
+			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}),
+		}, false),
 	}
 }
 
@@ -197,14 +206,14 @@ type Vault struct {
 func (c *Vault) DoActions() {
 	h := c.Values.Source.GetCoords()
 	if len(c.Results[0]) > 0 {
-		h = c.Results[0][len(c.Results[0])-1]
+		h = c.Results[0][0].Area[len(c.Results[0])-1]
 	}
-	manager.ActionManager.AddToBot(actions.NewMoveAction(c.Values.Source, c.Values.Source, h))
-	manager.ActionManager.AddToBot(actions.NewDamageHexAction(c.Results[1], c.Values))
+	AddToBot(actions.NewMoveAction(c.Values.Source, c.Values.Source, h))
+	AddToBot(actions.NewDamageHexAction(c.Results[1][0].Area, c.Values))
 }
 
 func (c *Vault) SetValues(level int) {
-	values := selectors.ActionValues{
+	values := selector.ActionValues{
 		Move:    2,
 		Range:   1,
 		Targets: 1,
@@ -230,9 +239,25 @@ func (c *Vault) SetValues(level int) {
 }
 
 func (c *Vault) InitSelectors() {
-	c.Selectors = []*selectors.AbstractSelector{
-		selectors.NewMoveHexSelect(),
-		selectors.NewHexSelect(false),
+	c.Selectors = []*selector.AbstractSelector{
+		selector.NewSelector(&selector.HexSelect{
+			PathChecks: floor.PathChecks{
+				NotFilled:     true,
+				Unoccupied:    true,
+				NonEmpty:      true,
+				EndUnoccupied: true,
+			},
+			Effect: selector.NewSelectionEffect(&selector.MoveEffect{}),
+		}, true),
+		selector.NewSelector(&selector.HexSelect{
+			PathChecks: floor.PathChecks{
+				NotFilled:     true,
+				Unoccupied:    false,
+				NonEmpty:      false,
+				EndUnoccupied: false,
+			},
+			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}),
+		}, false),
 	}
 }
 
@@ -249,11 +274,11 @@ type DaggerThrow struct {
 }
 
 func (c *DaggerThrow) DoActions() {
-	manager.ActionManager.AddToBot(actions.NewDamageHexAction(c.Results[0], c.Values))
+	AddToBot(actions.NewDamageHexAction(c.Results[0][0].Area, c.Values))
 }
 
 func (c *DaggerThrow) SetValues(level int) {
-	values := selectors.ActionValues{
+	values := selector.ActionValues{
 		Damage:  2,
 		Range:   5,
 		Targets: 1,
@@ -279,14 +304,17 @@ func (c *DaggerThrow) SetValues(level int) {
 }
 
 func (c *DaggerThrow) InitSelectors() {
-	c.Selectors = []*selectors.AbstractSelector{
-		selectors.NewLineSelect(false, floor.PathChecks{
-			NotFilled:     true,
-			Unoccupied:    false,
-			NonEmpty:      false,
-			EndUnoccupied: false,
-			Orig:          world.Coords{},
-		}),
+	c.Selectors = []*selector.AbstractSelector{
+		selector.NewSelector(&selector.LineTargetSelect{
+			PathChecks: floor.PathChecks{
+				NotFilled:     true,
+				Unoccupied:    false,
+				NonEmpty:      false,
+				EndUnoccupied: false,
+			},
+			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}),
+			SecEffect: selector.NewSelectionEffect(&selector.HighlightEffect{}),
+		}, false),
 	}
 }
 
@@ -303,12 +331,12 @@ type Disengage struct {
 }
 
 func (c *Disengage) DoActions() {
-	manager.ActionManager.AddToBot(actions.NewDamageHexAction(c.Results[0], c.Values))
-	manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(c.Values.Source, c.Values.Source, c.Results[1]))
+	AddToBot(actions.NewDamageHexAction(c.Results[0][0].Area, c.Values))
+	AddToBot(actions.NewMoveSeriesAction(c.Values.Source, c.Values.Source, c.Results[1][0].Area))
 }
 
 func (c *Disengage) SetValues(level int) {
-	values := selectors.ActionValues{
+	values := selector.ActionValues{
 		Move:    3,
 		Damage:  1,
 		Targets: 1,
@@ -335,21 +363,25 @@ func (c *Disengage) SetValues(level int) {
 }
 
 func (c *Disengage) InitSelectors() {
-	c.Selectors = []*selectors.AbstractSelector{
-		selectors.NewArcSelect(floor.PathChecks{
-			NotFilled:     true,
-			Unoccupied:    false,
-			NonEmpty:      false,
-			EndUnoccupied: false,
-			Orig:          world.Coords{},
-		}),
-		selectors.NewPathSelect(true, floor.PathChecks{
-			NotFilled:     true,
-			Unoccupied:    true,
-			NonEmpty:      true,
-			EndUnoccupied: true,
-			Orig:          world.Coords{},
-		}),
+	c.Selectors = []*selector.AbstractSelector{
+		selector.NewSelector(&selector.ArcSelect{
+			PathChecks: floor.PathChecks{
+				NotFilled:     true,
+				Unoccupied:    false,
+				NonEmpty:      false,
+				EndUnoccupied: false,
+			},
+			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}),
+		}, false),
+		selector.NewSelector(&selector.PathSelect{
+			PathChecks: floor.PathChecks{
+				NotFilled:     true,
+				Unoccupied:    true,
+				NonEmpty:      true,
+				EndUnoccupied: true,
+			},
+			Effect: selector.NewSelectionEffect(&selector.MoveEffect{}),
+		}, true),
 	}
 }
 
@@ -368,17 +400,19 @@ type Slam struct {
 func (c *Slam) DoActions() {
 	h := c.Values.Source.GetCoords()
 	if len(c.Results[0]) > 0 {
-		h = c.Results[0][len(c.Results[0])-1]
+		h = c.Results[0][0].Area[len(c.Results[0][0].Area)-1]
 	}
-	manager.ActionManager.AddToBot(actions.NewMoveAction(c.Values.Source, c.Values.Source, h))
-	//manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(c.Values.Source, c.Values.Source, c.Results[1]))
+	AddToBot(actions.NewSlamAction(h, c.Results[0][1].Area, c.Values))
+	//AddToBot(actions.NewMoveAction(c.Values.Source, c.Values.Source, h))
+	//AddToBot(actions.NewDamageHexAction(c.Results[0][1].Area, c.Values))
 }
 
 func (c *Slam) SetValues(level int) {
-	values := selectors.ActionValues{
-		Move:    2,
-		Damage:  2,
-		Range:   1,
+	values := selector.ActionValues{
+		Move:    1,
+		Damage:  1,
+		Targets: 1,
+		Area:    world.Spiral(6),
 	}
 	if level >= 1 {
 		values.Damage += 1
@@ -393,15 +427,30 @@ func (c *Slam) SetValues(level int) {
 		values.Move += 1
 	}
 	if level >= 5 {
-		values.Range += 1
+		values.Damage += 1
 	}
 	c.Values = values
-	c.RawDesc = fmt.Sprintf("Jump %d. Deal %d dmg w/in %d.", values.Move, values.Damage, values.Range)
+	c.RawDesc = fmt.Sprintf("Jump %d. Deal %d dmg w/in 1.", values.Move, values.Damage)
 }
 
 func (c *Slam) InitSelectors() {
-	c.Selectors = []*selectors.AbstractSelector{
-		selectors.NewMoveHexSelect(),
+	c.Selectors = []*selector.AbstractSelector{
+		selector.NewSelector(&selector.HexAreaSplitSelect{
+			PathChecks: floor.PathChecks{
+				NotFilled:     true,
+				Unoccupied:    true,
+				NonEmpty:      true,
+				EndUnoccupied: true,
+			},
+			SecPathChecks: floor.PathChecks{
+				NotFilled:     true,
+				Unoccupied:    false,
+				NonEmpty:      false,
+				EndUnoccupied: false,
+			},
+			Effect:    selector.NewSelectionEffect(&selector.MoveEffect{}),
+			SecEffect: selector.NewSelectionEffect(&selector.AttackEffect{}),
+		}, true),
 	}
 }
 
@@ -410,5 +459,5 @@ func (c *Slam) SetCard(card *player.Card) {
 }
 
 func CreateSlam() *player.Card {
-	return player.NewCard("Slam", "Jump 2. Deal 2 dmg w/in 1.", &Slam{})
+	return player.NewCard("Slam", "Jump 1. Deal 1 dmg w/in 1.", &Slam{})
 }

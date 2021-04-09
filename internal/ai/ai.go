@@ -1,9 +1,8 @@
 package ai
 
 import (
-	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
-	"github.com/timsims1717/cg_rogue_go/internal/selectors"
+	"github.com/timsims1717/cg_rogue_go/internal/selector"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
@@ -16,7 +15,7 @@ type AbstractAI struct {
 	AI            AI
 	Actions       []*AIAction
 	TempActions   []*TempAIAction
-	Character     *characters.Character
+	Character     *floor.Character
 	TempCoords    world.Coords
 	PrevDecicions []int
 }
@@ -26,12 +25,12 @@ type AIAction struct {
 	PathCheck   floor.PathChecks
 	TargetArea  []world.Coords
 	TargetCheck floor.PathChecks
-	Values      selectors.ActionValues
+	Values      selector.ActionValues
 }
 
 type TempAIAction struct {
 	Area   []world.Coords
-	Values selectors.ActionValues
+	Values selector.ActionValues
 }
 
 func (ai *AbstractAI) IsAlive() bool {
@@ -60,7 +59,7 @@ func (ai *AbstractAI) Update() {
 				tCheck := act.TargetCheck
 				target := tPath[len(tPath)-1]
 				tCheck.Orig = target
-				tArea = world.Remove(ai.TempCoords, floor.CurrentFloor.IsSetLegal(tCheck.Orig.PathFrom(act.TargetArea), tCheck))
+				tArea, _ = world.Remove(ai.TempCoords, floor.CurrentFloor.IsSetLegal(tCheck.Orig.PathFrom(act.TargetArea), tCheck))
 			}
 			// update the temp actions with the results of the check
 			ai.TempActions[i] = &TempAIAction{
@@ -76,10 +75,10 @@ func (ai *AbstractAI) Update() {
 				for _, c := range act.Area {
 					if act.Values.Move > 0 {
 						if len(act.Area) > 1 {
-							selectors.AddSelectUI(selectors.Move, c.X, c.Y)
+							selector.AddSelectUI(selector.Move, c.X, c.Y)
 						}
 					} else {
-						selectors.AddSelectUI(selectors.Attack, c.X, c.Y)
+						selector.AddSelectUI(selector.Attack, c.X, c.Y)
 					}
 				}
 			}

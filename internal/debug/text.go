@@ -5,14 +5,11 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"
-	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
 	"github.com/timsims1717/cg_rogue_go/internal/state"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
 	"github.com/timsims1717/cg_rogue_go/pkg/typeface"
-	"github.com/timsims1717/cg_rogue_go/pkg/util"
-	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"time"
 )
 
@@ -68,24 +65,21 @@ func UpdateText() {
 	}
 	mousePtr := player.Player1.Input.Cursor
 	wrldPtr := player.Player1.Input.World
-	mapX, mapY := world.WorldToMap(wrldPtr.X, wrldPtr.Y)
+	mapPtr := player.Player1.Input.Coords
 	mouse.Clear()
 	worlds.Clear()
 	maps.Clear()
 	fmt.Fprintf(mouse, "Mouse (X,Y): (%d,%d)", int(mousePtr.X), int(mousePtr.Y))
 	fmt.Fprintf(worlds, "World (X,Y): (%d,%d)", int(wrldPtr.X), int(wrldPtr.Y))
-	fmt.Fprintf(maps, "Map (X,Y): (%d,%d)", mapX, mapY)
+	fmt.Fprintf(maps, "Map (X,Y): (%d,%d)", mapPtr.X, mapPtr.Y)
 	phase.Clear()
 	fmt.Fprintf(phase, "Phase: %s", state.Machine.Phase.String())
 	dispHP = false
 	health.Clear()
 	if state.Machine.State.String() == "Encounter" {
-		occ := floor.CurrentFloor.GetOccupant(world.Coords{mapX, mapY})
-		if !util.IsNil(occ) {
-			if cha, ok := occ.(*characters.Character); ok {
-				fmt.Fprintf(health, "Health: %d/%d HP", cha.Health.CurrHP, cha.Health.MaxHP)
-				dispHP = true
-			}
+		if cha := floor.CurrentFloor.GetOccupant(mapPtr); cha != nil {
+			fmt.Fprintf(health, "Health: %d/%d HP", cha.Health.CurrHP, cha.Health.MaxHP)
+			dispHP = true
 		}
 		hand.Clear()
 		fmt.Fprintf(hand, "Player 1 Hand: (Hovered: %d)\n", player.Player1.Hand.Hovered)

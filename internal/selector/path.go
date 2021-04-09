@@ -1,4 +1,4 @@
-package selectors
+package selector
 
 import (
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
@@ -10,19 +10,7 @@ type PathSelect struct {
 	*AbstractSelector
 	MaxRange   int
 	PathChecks floor.PathChecks
-}
-
-func NewPathSelect(isMove bool, checks floor.PathChecks) *AbstractSelector {
-	sel := &AbstractSelector{
-		IsMove: isMove,
-	}
-	target := &PathSelect{
-		sel,
-		0,
-		checks,
-	}
-	sel.Selector = target
-	return sel
+	Effect     *AbstractSelectionEffect
 }
 
 func (s *PathSelect) SetValues(values ActionValues) {
@@ -32,30 +20,37 @@ func (s *PathSelect) SetValues(values ActionValues) {
 
 func (s *PathSelect) Update(input *input.Input) {
 	if !s.isDone {
-		x, y := input.Coords.X, input.Coords.Y
+		//x, y := input.Coords.X, input.Coords.Y
+		s.area = []world.Coords{}
 		s.PathChecks.Orig = s.origin
 		hex := floor.CurrentFloor.IsLegal(input.Coords, s.PathChecks)
 		legal := hex != nil && world.DistanceSimple(s.origin, input.Coords) <= s.MaxRange
 		if legal {
 			path, dist, found := floor.CurrentFloor.FindPath(s.origin, input.Coords, s.PathChecks)
 			if found && dist <= s.MaxRange {
+				for _, h := range path {
+					s.area = append(s.area, h)
+				}
+				if s.Effect != nil {
+					s.Effect.SetArea(s.area)
+					AddSelectionEffect(s.Effect)
+				}
 				if input.Select.JustPressed() {
 					input.Select.Consume()
-					for _, h := range path {
-						if h.X != s.origin.X || h.Y != s.origin.Y {
-							s.area = append(s.area, h)
-						}
-					}
 					s.isDone = true
-				}
-				for _, h := range path {
-					if h.X == x && h.Y == y {
-						AddSelectUI(MoveSolid, h.X, h.Y)
-					} else {
-						AddSelectUI(Move, h.X, h.Y)
+					s.results = []*Result{
+						NewResult(s.area, s.Effect, s.IsMove),
 					}
 				}
 			}
 		}
+		if input.Cancel.JustPressed() {
+			input.Cancel.Consume()
+			s.Cancel()
+		}
 	}
+}
+
+func (s *PathSelect) SetAbstract(sel *AbstractSelector) {
+	s.AbstractSelector = sel
 }

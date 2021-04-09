@@ -33,7 +33,7 @@ func (f *Floor) isLegal(a world.Coords) *Hex {
 
 // IsSetLegal filters out the world.Coords that are not legal according to the PathChecks
 func (f *Floor) IsSetLegal(set []world.Coords, checks PathChecks) []world.Coords {
-	legal := []world.Coords{}
+	var legal []world.Coords
 	for _, c := range set {
 		if f.IsLegal(c, checks) != nil {
 			legal = append(legal, c)
@@ -192,7 +192,7 @@ func (f *Floor) LongestLegalPath(path []world.Coords, max int, check PathChecks)
 // FindPathPerpendicularTo finds a semi-random path perpendicular to the specified world.Coords.
 func (f *Floor) FindPathPerpendicularTo(orig, to world.Coords, within, dist int, check, endCheck PathChecks) ([]world.Coords, int, bool) {
 	distTo := world.DistanceSimple(orig, to)
-	allPossible := world.Remove(orig, f.AllWithin(orig, within, check))
+	allPossible, _ := world.Remove(orig, f.AllWithin(orig, within, check))
 	var possible []world.Coords
 	for _, c := range allPossible {
 		if world.DistanceSimple(to, c) <= dist {
@@ -214,7 +214,7 @@ func (f *Floor) FindPathPerpendicularTo(orig, to world.Coords, within, dist int,
 
 // FindPathAwayFrom finds a semi-random path away from the specified world.Coords.
 func (f *Floor) FindPathAwayFrom(orig, from world.Coords, dist int, check PathChecks) ([]world.Coords, int, bool) {
-	possible := world.Remove(orig, f.AllWithin(orig, dist, check))
+	possible, _ := world.Remove(orig, f.AllWithin(orig, dist, check))
 	if len(possible) > 0 {
 		ordered := world.ReverseList(world.OrderByDistSimple(from, possible))
 		if len(ordered) > 6 {

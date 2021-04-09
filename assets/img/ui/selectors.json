@@ -4,9 +4,17 @@
   "width": 40.0,
   "singleRow": true,
   "sprites": [
-    {},
-    {},
-    {},
-    {}
+    {
+      "key": "default"
+    },
+    {
+      "key": "move"
+    },
+    {
+      "key": "move-solid"
+    },
+    {
+      "key": "attack"
+    }
   ]
 }

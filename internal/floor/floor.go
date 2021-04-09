@@ -5,7 +5,6 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/timsims1717/cg_rogue_go/internal/cfg"
-	"github.com/timsims1717/cg_rogue_go/internal/objects"
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
 	"github.com/timsims1717/cg_rogue_go/pkg/util"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
@@ -129,7 +128,7 @@ func (f *Floor) IsOccupied(a world.Coords) bool {
 	return hex == nil || !util.IsNil(hex.Occupant)
 }
 
-func (f *Floor) GetOccupant(a world.Coords) objects.Moveable {
+func (f *Floor) GetOccupant(a world.Coords) *Character {
 	hex := f.Get(a)
 	if hex != nil && !util.IsNil(hex.Occupant) {
 		return hex.Occupant
@@ -142,10 +141,10 @@ func (f *Floor) HasOccupant(a world.Coords) bool {
 	return hex != nil && !util.IsNil(hex.Occupant)
 }
 
-func (f *Floor) PutOccupant(m objects.Moveable, a world.Coords) bool {
+func (f *Floor) PutOccupant(c *Character, a world.Coords) bool {
 	hex := f.Get(a)
 	if hex != nil && util.IsNil(hex.Occupant) {
-		hex.Occupant = m
+		hex.Occupant = c
 		return true
 	}
 	return false
@@ -160,13 +159,13 @@ func (f *Floor) RemoveOccupant(a world.Coords) bool {
 	return false
 }
 
-func (f *Floor) MoveOccupant(m objects.Moveable, a, b world.Coords) bool {
+func (f *Floor) MoveOccupant(c *Character, a, b world.Coords) bool {
 	if !f.Exists(a) || !f.Exists(b) {
 		return false
 	}
 	success := f.RemoveOccupant(a)
 	if success {
-		m.SetCoords(b)
+		c.SetCoords(b)
 	}
 	return success
 }

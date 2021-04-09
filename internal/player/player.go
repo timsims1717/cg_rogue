@@ -2,14 +2,14 @@ package player
 
 import (
 	"github.com/faiface/pixel/pixelgl"
-	"github.com/timsims1717/cg_rogue_go/internal/characters"
+	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/input"
 )
 
 var Player1 *Player
 
 type Player struct {
-	Character       *characters.Character
+	Character       *floor.Character
 	Input           *input.Input
 	Hand            *Hand
 	PlayCard        *PlayCard
@@ -23,7 +23,7 @@ func init() {
 	Player1 = NewPlayer(nil)
 }
 
-func NewPlayer(character *characters.Character) *Player {
+func NewPlayer(character *floor.Character) *Player {
 	return &Player{
 		Character: character,
 		Input:     input.NewInput(),

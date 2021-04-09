@@ -3,7 +3,7 @@ package actions
 import (
 	"github.com/faiface/pixel"
 	"github.com/timsims1717/cg_rogue_go/internal/cfg"
-	"github.com/timsims1717/cg_rogue_go/internal/objects"
+	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/pkg/animation"
 	gween "github.com/timsims1717/cg_rogue_go/pkg/gween64"
 	"github.com/timsims1717/cg_rogue_go/pkg/gween64/ease"
@@ -11,7 +11,7 @@ import (
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
-func SetAttackTransformSingle(source objects.Moveable, target world.Coords) {
+func SetAttackTransformSingle(source *floor.Character, target world.Coords) {
 	p := source.GetPos()
 	b := world.MapToWorld(target).Sub(p)
 	r := util.Normalize(b).Scaled(0.4 * cfg.ScaledTileSize)
@@ -24,7 +24,7 @@ func SetAttackTransformSingle(source objects.Moveable, target world.Coords) {
 	source.SetTransformEffect(transform.Build())
 }
 
-func SetAttackTransform(source objects.Moveable, targets []world.Coords) {
+func SetAttackTransform(source *floor.Character, targets []world.Coords) {
 	p := source.GetPos()
 	xs := 0.
 	ys := 0.
@@ -35,6 +35,10 @@ func SetAttackTransform(source objects.Moveable, targets []world.Coords) {
 	}
 	l := float64(len(targets))
 	a := pixel.V(xs/l, ys/l)
+	if a.Eq(p) {
+		// todo: add jump/slam animation?
+		a.Y += 1.0
+	}
 	b := a.Sub(p)
 	r := util.Normalize(b).Scaled(0.4 * cfg.ScaledTileSize)
 	e := p.Add(r)
@@ -46,7 +50,7 @@ func SetAttackTransform(source objects.Moveable, targets []world.Coords) {
 	source.SetTransformEffect(transform.Build())
 }
 
-func SetResetTransform(source objects.Moveable) {
+func SetResetTransform(source *floor.Character) {
 	o := world.MapToWorld(source.GetCoords())
 	v := source.GetPos()
 	transform := animation.TransformBuilder{

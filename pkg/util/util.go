@@ -36,6 +36,8 @@ func PointInside(p pixel.Vec, r pixel.Rect, m pixel.Matrix) bool {
 	return r.Moved(pixel.V(-(r.W() / 2.0), -(r.H() / 2.0))).Contains(m.Unproject(p))
 }
 
+// Normalize takes a pixel.Vec and returns a normalized vector, or
+// one with a magnitude of 1.0
 func Normalize(p pixel.Vec) pixel.Vec {
 	return p.Scaled(1/math.Sqrt(p.X * p.X + p.Y * p.Y))
 }

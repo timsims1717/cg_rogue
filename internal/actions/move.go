@@ -2,9 +2,7 @@ package actions
 
 import (
 	"github.com/faiface/pixel"
-	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
-	"github.com/timsims1717/cg_rogue_go/internal/objects"
 	"github.com/timsims1717/cg_rogue_go/pkg/gween64"
 	"github.com/timsims1717/cg_rogue_go/pkg/gween64/ease"
 	"github.com/timsims1717/cg_rogue_go/pkg/timing"
@@ -12,8 +10,8 @@ import (
 )
 
 type MoveAction struct{
-	source *characters.Character
-	target objects.Moveable
+	source *floor.Character
+	target *floor.Character
 	start  world.Coords
 	end    world.Coords
 	isDone bool
@@ -21,7 +19,7 @@ type MoveAction struct{
 	interY *gween.Tween
 }
 
-func NewMoveAction(source *characters.Character, target objects.Moveable, end world.Coords) *MoveAction {
+func NewMoveAction(source *floor.Character, target *floor.Character, end world.Coords) *MoveAction {
 	if end.Eq(target.GetCoords()) {
 		return nil
 	}
@@ -53,8 +51,8 @@ func (a *MoveAction) IsDone() bool {
 }
 
 type MoveSeriesAction struct{
-	source *characters.Character
-	target objects.Moveable
+	source *floor.Character
+	target *floor.Character
 	series []world.Coords
 	step   int
 	start  world.Coords
@@ -63,7 +61,7 @@ type MoveSeriesAction struct{
 	interY *gween.Tween
 }
 
-func NewMoveSeriesAction(source *characters.Character, target objects.Moveable, series []world.Coords) *MoveSeriesAction {
+func NewMoveSeriesAction(source *floor.Character, target *floor.Character, series []world.Coords) *MoveSeriesAction {
 	if len(series) == 0 {
 		return nil
 	} else {

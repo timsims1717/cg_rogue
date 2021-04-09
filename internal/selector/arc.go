@@ -1,4 +1,4 @@
-package selectors
+package selector
 
 import (
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
@@ -8,26 +8,15 @@ import (
 
 type ArcSelect struct {
 	*AbstractSelector
-	Count      int
-	MaxRange   int
+	count      int
+	maxRange   int
 	PathChecks floor.PathChecks
-}
-
-func NewArcSelect(checks floor.PathChecks) *AbstractSelector {
-	sel := &AbstractSelector{}
-	target := &ArcSelect{
-		sel,
-		0,
-		0,
-		checks,
-	}
-	sel.Selector = target
-	return sel
+	Effect     *AbstractSelectionEffect
 }
 
 func (s *ArcSelect) SetValues(values ActionValues) {
-	s.Count = values.Targets
-	s.MaxRange = values.Range
+	s.count = values.Targets
+	s.maxRange = values.Range
 	s.PathChecks.Orig = s.origin
 }
 
@@ -42,9 +31,9 @@ func (s *ArcSelect) Update(input *input.Input) {
 		}
 		var closest []world.Coords
 		for i, n := range neighbors {
-			if i < s.Count {
+			if i < s.count {
 				hex := floor.CurrentFloor.IsLegal(n, s.PathChecks)
-				legal := hex != nil && world.DistanceSimple(s.origin, n) <= s.MaxRange
+				legal := hex != nil && world.DistanceSimple(s.origin, n) <= s.maxRange
 				if legal {
 					closest = append(closest, n)
 				}
@@ -53,19 +42,26 @@ func (s *ArcSelect) Update(input *input.Input) {
 			}
 		}
 		if len(closest) > 0 {
+			s.area = closest
+			if s.Effect != nil {
+				s.Effect.SetArea(s.area)
+				AddSelectionEffect(s.Effect)
+			}
 			if input.Select.JustPressed() {
 				input.Select.Consume()
-				// add to or remove from the clicked array
-				s.area = closest
 				s.isDone = true
-			}
-			for _, sel := range closest {
-				if s.IsMove {
-					AddSelectUI(Move, sel.X, sel.Y)
-				} else {
-					AddSelectUI(Attack, sel.X, sel.Y)
+				s.results = []*Result{
+					NewResult(s.area, s.Effect, s.IsMove),
 				}
 			}
 		}
+		if input.Cancel.JustPressed() {
+			input.Cancel.Consume()
+			s.Cancel()
+		}
 	}
+}
+
+func (s *ArcSelect) SetAbstract(sel *AbstractSelector) {
+	s.AbstractSelector = sel
 }

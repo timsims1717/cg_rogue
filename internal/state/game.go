@@ -6,13 +6,12 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/timsims1717/cg_rogue_go/internal/actions"
 	"github.com/timsims1717/cg_rogue_go/internal/ai"
-	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/generate"
 	"github.com/timsims1717/cg_rogue_go/internal/manager"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
 	"github.com/timsims1717/cg_rogue_go/internal/run"
-	"github.com/timsims1717/cg_rogue_go/internal/selectors"
+	"github.com/timsims1717/cg_rogue_go/internal/selector"
 	"github.com/timsims1717/cg_rogue_go/internal/ui"
 	"github.com/timsims1717/cg_rogue_go/pkg/animation"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
@@ -60,7 +59,7 @@ func (s *Encounter) Initialize() {
 	if err != nil {
 		panic(err)
 	}
-	selectors.SelectionSet.SetSpriteSheet(uisheet)
+	selector.SelectionSet.SetSpriteSheet(uisheet)
 
 	InitializeCenterText()
 
@@ -155,7 +154,7 @@ func (s *Encounter) Uninitialize() {
 	floor.CurrentFloor = nil
 	InitializeCenterText()
 	ai.AIManager.Clear()
-	characters.CharacterManager.Clear()
+	floor.CharacterManager.Clear()
 }
 
 func (s *Encounter) Update(win *pixelgl.Window) {
@@ -168,7 +167,7 @@ func (s *Encounter) Update(win *pixelgl.Window) {
 	manager.ActionManager.Update()
 
 	ai.AIManager.Update()
-	characters.Update()
+	floor.Update()
 	player.Player1.Update()
 	if s.RestButton != nil {
 		s.RestButton.Disabled = !player.Player1.IsTurn
@@ -178,8 +177,8 @@ func (s *Encounter) Update(win *pixelgl.Window) {
 
 func (s *Encounter) Draw(win *pixelgl.Window) {
 	floor.CurrentFloor.Draw(win)
-	characters.Draw(win)
-	selectors.SelectionSet.Draw(win)
+	floor.Draw(win)
+	selector.SelectionSet.Draw(win)
 	player.Player1.Draw(win)
 	win.SetSmooth(true)
 	player.Player1.Hand.Draw(win)
@@ -217,12 +216,10 @@ func UpdateEncounterPhase() {
 	}
 	if Machine.Phase != EncounterComplete && Machine.Phase != GameOver {
 		allDead := true
-		for _, c := range characters.CharacterManager.GetDiplomatic(characters.Enemy, player.Player1.Character.GetCoords(), 50) {
-			if occ := floor.CurrentFloor.GetOccupant(c); occ != nil {
-				if cha, ok := occ.(*characters.Character); ok {
-					if !cha.IsDestroyed() {
-						allDead = false
-					}
+		for _, c := range floor.CharacterManager.GetDiplomatic(floor.Enemy, player.Player1.Character.GetCoords(), 50) {
+			if cha := floor.CurrentFloor.GetOccupant(c); cha != nil {
+				if !cha.IsDestroyed() {
+					allDead = false
 				}
 			}
 		}
@@ -239,7 +236,7 @@ func UpdateEncounterPhase() {
 			CenterText.Text.TransformEffect = transform.Build()
 			CenterText.Text.ColorEffect = animation.FadeIn(CenterText, 2.0)
 			Machine.Phase = EncounterComplete
-			manager.ActionManager.AddToBot(actions.NewHealAction([]world.Coords{player.Player1.Character.Coords}, selectors.ActionValues{
+			manager.ActionManager.AddToBot(actions.NewHealAction([]world.Coords{player.Player1.Character.Coords}, selector.ActionValues{
 				Source:   player.Player1.Character,
 				Heal:     1,
 			}))
@@ -305,25 +302,28 @@ type BasicMove struct {
 }
 
 func (m *BasicMove) DoActions() {
-	manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(m.Values.Source, m.Values.Source, m.Results[0]))
+	manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(m.Values.Source, m.Values.Source, m.Results[0][0].Area))
 }
 
 func (m *BasicMove) SetValues(_ int) {
-	values := selectors.ActionValues{
+	values := selector.ActionValues{
 		Move: 1,
 	}
 	m.Values = values
 }
 
 func (m *BasicMove) InitSelectors() {
-	m.Selectors = []*selectors.AbstractSelector{
-		selectors.NewPathSelect(true, floor.PathChecks{
-			NotFilled:     true,
-			Unoccupied:    true,
-			NonEmpty:      true,
-			EndUnoccupied: true,
-			Orig:          world.Coords{},
-		}),
+	m.Selectors = []*selector.AbstractSelector{
+		selector.NewSelector(&selector.PathSelect{
+			PathChecks: floor.PathChecks{
+				NotFilled:     true,
+				Unoccupied:    true,
+				NonEmpty:      true,
+				EndUnoccupied: true,
+				Orig:          world.Coords{},
+			},
+			Effect: selector.NewSelectionEffect(&selector.MoveEffect{}),
+		}, true),
 	}
 }
 
@@ -346,11 +346,11 @@ type CheatAttack struct {
 }
 
 func (a *CheatAttack) DoActions() {
-	manager.ActionManager.AddToBot(actions.NewDamageHexAction(a.Results[0], a.Values))
+	manager.ActionManager.AddToBot(actions.NewDamageHexAction(a.Results[0][0].Area, a.Values))
 }
 
 func (a *CheatAttack) SetValues(_ int) {
-	values := selectors.ActionValues{
+	values := selector.ActionValues{
 		Damage:  10,
 		Range:   10,
 		Targets: 5,
@@ -359,8 +359,17 @@ func (a *CheatAttack) SetValues(_ int) {
 }
 
 func (a *CheatAttack) InitSelectors() {
-	a.Selectors = []*selectors.AbstractSelector{
-		selectors.NewHexSelect(false),
+	a.Selectors = []*selector.AbstractSelector{
+		selector.NewSelector(&selector.HexSelect{
+			PathChecks: floor.PathChecks{
+				NotFilled:     true,
+				Unoccupied:    false,
+				NonEmpty:      false,
+				EndUnoccupied: false,
+				Orig:          world.Coords{},
+			},
+			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}),
+		}, false),
 	}
 }
 

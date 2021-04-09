@@ -6,7 +6,7 @@ import (
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"
 	uuid "github.com/satori/go.uuid"
-	"github.com/timsims1717/cg_rogue_go/internal/selectors"
+	"github.com/timsims1717/cg_rogue_go/internal/selector"
 	"github.com/timsims1717/cg_rogue_go/pkg/animation"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
 	gween "github.com/timsims1717/cg_rogue_go/pkg/gween64"
@@ -52,9 +52,9 @@ type Card struct {
 	ScaEffect *animation.TransformEffect
 	trans     bool
 
-	Selectors []*selectors.AbstractSelector
-	Results   [][]world.Coords
-	Values    selectors.ActionValues
+	Selectors []*selector.AbstractSelector
+	Results   [][]*selector.Result
+	Values    selector.ActionValues
 	actPtr    int
 	isPlay    bool
 	played    bool

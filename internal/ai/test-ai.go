@@ -2,10 +2,9 @@ package ai
 
 import (
 	"github.com/timsims1717/cg_rogue_go/internal/actions"
-	"github.com/timsims1717/cg_rogue_go/internal/characters"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/manager"
-	"github.com/timsims1717/cg_rogue_go/internal/selectors"
+	"github.com/timsims1717/cg_rogue_go/internal/selector"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"math/rand"
 )
@@ -14,7 +13,7 @@ type RandomWalker struct {
 	*AbstractAI
 }
 
-func NewRandomWalker(character *characters.Character) *AbstractAI {
+func NewRandomWalker(character *floor.Character) *AbstractAI {
 	newAI := &AbstractAI{
 		Character: character,
 	}
@@ -74,7 +73,7 @@ func (r *RandomWalker) Decide() {
 			PathCheck:   movCheck,
 			TargetArea:  nil,
 			TargetCheck: floor.PathChecks{},
-			Values:      selectors.ActionValues{
+			Values:      selector.ActionValues{
 				Move: 1,
 			},
 		},
@@ -83,7 +82,7 @@ func (r *RandomWalker) Decide() {
 			PathCheck:   floor.PathChecks{},
 			TargetArea:  []world.Coords{world.Origin},
 			TargetCheck: atkCheck,
-			Values:      selectors.ActionValues{
+			Values:      selector.ActionValues{
 				Damage: 1,
 			},
 		},
@@ -111,7 +110,7 @@ type FlyChaser struct {
 	atkCnt int
 }
 
-func NewFlyChaser(character *characters.Character) *AbstractAI {
+func NewFlyChaser(character *floor.Character) *AbstractAI {
 	newAI := &AbstractAI{
 		Character: character,
 	}
@@ -144,7 +143,7 @@ func (ai *FlyChaser) Decide() {
 		EndUnoccupied: false,
 		Orig:          orig,
 	}
-	targets := characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 6)
+	targets := floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 6)
 	if len(targets) > 0 {
 		for i := 0; i < 3; i++ {
 			choice := targets[rand.Intn(len(targets))]
@@ -158,7 +157,7 @@ func (ai *FlyChaser) Decide() {
 								PathCheck:   movCheck,
 								TargetArea:  nil,
 								TargetCheck: floor.PathChecks{},
-								Values: selectors.ActionValues{
+								Values: selector.ActionValues{
 									Move: len(tPath),
 								},
 							},
@@ -172,7 +171,7 @@ func (ai *FlyChaser) Decide() {
 							PathCheck:   movCheck,
 							TargetArea:  nil,
 							TargetCheck: floor.PathChecks{},
-							Values: selectors.ActionValues{
+							Values: selector.ActionValues{
 								Move: 1,
 							},
 						},
@@ -181,7 +180,7 @@ func (ai *FlyChaser) Decide() {
 							PathCheck:   floor.NoCheck,
 							TargetArea:  []world.Coords{world.Origin},
 							TargetCheck: atkCheck,
-							Values:      selectors.ActionValues{
+							Values:      selector.ActionValues{
 								Damage: 1,
 							},
 						},
@@ -194,7 +193,7 @@ func (ai *FlyChaser) Decide() {
 	}
 	if rand.Intn(2) > 0 {
 		// 50% chance random walk
-		within := world.Remove(orig, floor.CurrentFloor.AllWithin(orig, 2, movCheck))
+		within, _ := world.Remove(orig, floor.CurrentFloor.AllWithin(orig, 2, movCheck))
 		if len(within) > 0 {
 			for i := 0; i < 3; i++ {
 				choice := within[rand.Intn(len(within))]
@@ -205,7 +204,7 @@ func (ai *FlyChaser) Decide() {
 							PathCheck:   movCheck,
 							TargetArea:  nil,
 							TargetCheck: floor.PathChecks{},
-							Values: selectors.ActionValues{
+							Values: selector.ActionValues{
 								Move: d,
 							},
 						},
@@ -239,7 +238,7 @@ type Skirmisher struct {
 	decision int
 }
 
-func NewSkirmisher(character *characters.Character) *AbstractAI {
+func NewSkirmisher(character *floor.Character) *AbstractAI {
 	newAI := &AbstractAI{
 		Character: character,
 	}
@@ -270,7 +269,7 @@ func (ai *Skirmisher) Decide() {
 		Orig:          orig,
 	}
 	if len(ai.patrol) == 0 {
-		patrolCand := world.Remove(orig, floor.CurrentFloor.AllWithin(orig, 6, movCheck))
+		patrolCand, _ := world.Remove(orig, floor.CurrentFloor.AllWithin(orig, 6, movCheck))
 		ordered := world.ReverseList(world.OrderByDistSimple(orig, patrolCand))
 		choice := 0
 		if len(ordered) > 8 {
@@ -283,7 +282,7 @@ func (ai *Skirmisher) Decide() {
 		}
 		ai.patrolling = 1
 	}
-	targets := characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 1)
+	targets := floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 1)
 	if len(targets) > 0 {
 		choice := 0
 		if len(targets) > 1 {
@@ -295,7 +294,7 @@ func (ai *Skirmisher) Decide() {
 				PathCheck:   floor.NoCheck,
 				TargetArea:  []world.Coords{world.Origin},
 				TargetCheck: atkCheck,
-				Values:      selectors.ActionValues{
+				Values:      selector.ActionValues{
 					Damage: 1,
 				},
 			},
@@ -303,7 +302,7 @@ func (ai *Skirmisher) Decide() {
 		ai.decision++
 		return
 	}
-	targets = characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 3)
+	targets = floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 3)
 	if len(targets) > 0 {
 		dist := world.OrderByDistSimple(orig, targets)
 		path, d, legal := floor.CurrentFloor.FindPathAwayFrom(orig, dist[0], 3, movCheck)
@@ -314,7 +313,7 @@ func (ai *Skirmisher) Decide() {
 					PathCheck:   movCheck,
 					TargetArea:  nil,
 					TargetCheck: floor.PathChecks{},
-					Values: selectors.ActionValues{
+					Values: selector.ActionValues{
 						Move: d,
 					},
 				},
@@ -323,7 +322,7 @@ func (ai *Skirmisher) Decide() {
 			return
 		}
 	}
-	targets = characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 7)
+	targets = floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 7)
 	if len(targets) > 0 {
 		choice := 0
 		if len(targets) > 1 {
@@ -337,7 +336,7 @@ func (ai *Skirmisher) Decide() {
 					PathCheck:   movCheck,
 					TargetArea:  nil,
 					TargetCheck: floor.PathChecks{},
-					Values: selectors.ActionValues{
+					Values: selector.ActionValues{
 						Move: d,
 					},
 				},
@@ -350,7 +349,7 @@ func (ai *Skirmisher) Decide() {
 					PathCheck:   atkCheck,
 					TargetArea:  []world.Coords{world.Origin},
 					TargetCheck: atkCheck,
-					Values: selectors.ActionValues{
+					Values: selector.ActionValues{
 						Damage: 1,
 					},
 				})
@@ -359,7 +358,7 @@ func (ai *Skirmisher) Decide() {
 		ai.decision = 2
 		return
 	}
-	targets = characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 10)
+	targets = floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 10)
 	if len(targets) > 0 {
 		choice := targets[rand.Intn(len(targets))]
 		if path, _, legal := floor.CurrentFloor.FindPathWithinOne(orig, choice, movCheck); legal {
@@ -371,7 +370,7 @@ func (ai *Skirmisher) Decide() {
 						PathCheck:   movCheck,
 						TargetArea:  nil,
 						TargetCheck: floor.PathChecks{},
-						Values: selectors.ActionValues{
+						Values: selector.ActionValues{
 							Move: len(tPath),
 						},
 					},
@@ -391,7 +390,7 @@ func (ai *Skirmisher) Decide() {
 						PathCheck:   movCheck,
 						TargetArea:  nil,
 						TargetCheck: floor.PathChecks{},
-						Values: selectors.ActionValues{
+						Values: selector.ActionValues{
 							Move: len(tPath),
 						},
 					},
@@ -439,7 +438,7 @@ type Grenadier struct {
 	decision int
 }
 
-func NewGrenadier(character *characters.Character) *AbstractAI {
+func NewGrenadier(character *floor.Character) *AbstractAI {
 	newAI := &AbstractAI{
 		Character: character,
 	}
@@ -472,7 +471,7 @@ func (ai *Grenadier) Decide() {
 		EndUnoccupied: false,
 		Orig:          orig,
 	}
-	targets := characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 3)
+	targets := floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 3)
 	if len(targets) > 0 {
 		ai.decision = 2
 		choice := 0
@@ -487,7 +486,7 @@ func (ai *Grenadier) Decide() {
 				PathCheck:   atkCheck,
 				TargetArea:  area,
 				TargetCheck: atkCheck,
-				Values: selectors.ActionValues{
+				Values: selector.ActionValues{
 					Damage: 3,
 				},
 			})
@@ -495,7 +494,7 @@ func (ai *Grenadier) Decide() {
 		}
 		return
 	}
-	targets = characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 10)
+	targets = floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 10)
 	if len(targets) > 0 {
 		dec := 0
 		if ai.decision == 0 {
@@ -520,16 +519,16 @@ func (ai *Grenadier) Decide() {
 				if len(n) > 1 {
 					for _, c := range n {
 						tpts := 0
-						if cha, ok := floor.CurrentFloor.GetOccupant(c).(*characters.Character); ok {
-							if cha.Diplomacy == characters.Ally {
+						if cha := floor.CurrentFloor.GetOccupant(c); cha != nil {
+							if cha.Diplomacy == floor.Ally {
 								tpts += 1
 							} else {
 								tpts -= 1
 							}
 						}
 						next := world.NextHexRot(c, targets[choice], true)
-						if cha, ok := floor.CurrentFloor.GetOccupant(next).(*characters.Character); ok {
-							if cha.Diplomacy == characters.Ally {
+						if cha := floor.CurrentFloor.GetOccupant(next); cha != nil {
+							if cha.Diplomacy == floor.Ally {
 								tpts += 1
 							} else {
 								tpts -= 1
@@ -545,7 +544,7 @@ func (ai *Grenadier) Decide() {
 						PathCheck:   atkCheck,
 						TargetArea:  append([]world.Coords{targets[choice]}, best...),
 						TargetCheck: atkCheck,
-						Values: selectors.ActionValues{
+						Values: selector.ActionValues{
 							Damage: 2,
 						},
 					})
@@ -554,7 +553,8 @@ func (ai *Grenadier) Decide() {
 			case 1:
 				// scatter shot
 				atkCheck.Orig = targets[choice]
-				n := world.RandomizeList(world.Remove(targets[choice], floor.CurrentFloor.AllWithin(targets[choice], 2, atkCheck)))
+				s, _ := world.Remove(targets[choice], floor.CurrentFloor.AllWithin(targets[choice], 2, atkCheck))
+				n := world.RandomizeList(s)
 				count := len(n) / 3
 				if count > 3 {
 					count = 3
@@ -568,7 +568,7 @@ func (ai *Grenadier) Decide() {
 					PathCheck:   atkCheck,
 					TargetArea:  append([]world.Coords{targets[choice]}, hits...),
 					TargetCheck: atkCheck,
-					Values: selectors.ActionValues{
+					Values: selector.ActionValues{
 						Damage: 2,
 					},
 				})
@@ -582,7 +582,7 @@ func (ai *Grenadier) Decide() {
 				PathCheck:   movCheck,
 				TargetArea:  nil,
 				TargetCheck: floor.PathChecks{},
-				Values: selectors.ActionValues{
+				Values: selector.ActionValues{
 					Move: d,
 				},
 			})
@@ -611,7 +611,7 @@ type Bruiser struct {
 	decision int
 }
 
-func NewBruiser(character *characters.Character) *AbstractAI {
+func NewBruiser(character *floor.Character) *AbstractAI {
 	newAI := &AbstractAI{
 		Character: character,
 	}
@@ -645,7 +645,7 @@ func (ai *Bruiser) Decide() {
 		EndUnoccupied: false,
 		Orig:          orig,
 	}
-	targets := characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 1)
+	targets := floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 1)
 	if len(targets) > 0 {
 		ai.decision = 1
 		choice := 0
@@ -654,7 +654,7 @@ func (ai *Bruiser) Decide() {
 		}
 		ai.Actions = []*AIAction{}
 		area := []world.Coords{orig}
-		n1 := world.Remove(world.NextHexLine(targets[choice], orig), world.OrderByDist(targets[choice], orig.Neighbors(floor.CurrentFloor.Dimensions())))
+		n1, _ := world.Remove(world.NextHexLine(targets[choice], orig), world.OrderByDist(targets[choice], orig.Neighbors(floor.CurrentFloor.Dimensions())))
 		n2 := targets[choice].Neighbors(floor.CurrentFloor.Dimensions())
 		area = world.Combine(area, world.Combine(n1, n2))
 		if world.CoordsIn(targets[choice], area) {
@@ -663,7 +663,7 @@ func (ai *Bruiser) Decide() {
 				PathCheck:   atkCheck,
 				TargetArea:  area,
 				TargetCheck: atkCheck,
-				Values: selectors.ActionValues{
+				Values: selector.ActionValues{
 					Damage: 4,
 				},
 			})
@@ -671,7 +671,7 @@ func (ai *Bruiser) Decide() {
 		}
 		return
 	}
-	targets = characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 3)
+	targets = floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 3)
 	if len(targets) > 0 {
 		ai.decision = 2
 		choice := 0
@@ -686,7 +686,7 @@ func (ai *Bruiser) Decide() {
 						PathCheck:   movCheck,
 						TargetArea:  nil,
 						TargetCheck: floor.PathChecks{},
-						Values: selectors.ActionValues{
+						Values: selector.ActionValues{
 							Move: d,
 						},
 					},
@@ -698,7 +698,7 @@ func (ai *Bruiser) Decide() {
 					PathCheck:   floor.NoCheck,
 					TargetArea:  []world.Coords{tOrig, targets[choice], next},
 					TargetCheck: atkCheck,
-					Values: selectors.ActionValues{
+					Values: selector.ActionValues{
 						Damage: 2,
 					},
 				})
@@ -707,7 +707,7 @@ func (ai *Bruiser) Decide() {
 			}
 		}
 	}
-	targets = characters.CharacterManager.GetDiplomatic(characters.Ally, orig, 10)
+	targets = floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 10)
 	if len(targets) > 0 {
 		ai.decision = 0
 		choice := 0
@@ -721,7 +721,7 @@ func (ai *Bruiser) Decide() {
 				PathCheck:   movCheck,
 				TargetArea:  nil,
 				TargetCheck: floor.PathChecks{},
-				Values: selectors.ActionValues{
+				Values: selector.ActionValues{
 					Move: 1,
 				},
 			})
@@ -755,7 +755,7 @@ type Stationary struct {
 	decision int
 }
 
-func NewStationary(character *characters.Character) *AbstractAI {
+func NewStationary(character *floor.Character) *AbstractAI {
 	newAI := &AbstractAI{
 		Character: character,
 	}
@@ -784,7 +784,7 @@ func (ai *Stationary) Decide() {
 				PathCheck:   floor.NoCheck,
 				TargetArea:  area,
 				TargetCheck: atkCheck,
-				Values: selectors.ActionValues{
+				Values: selector.ActionValues{
 					Damage: 1,
 				},
 			},

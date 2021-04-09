@@ -5,7 +5,7 @@ import (
 	"github.com/faiface/pixel/pixelgl"
 	uuid "github.com/satori/go.uuid"
 	"github.com/timsims1717/cg_rogue_go/internal/manager"
-	"github.com/timsims1717/cg_rogue_go/internal/selectors"
+	"github.com/timsims1717/cg_rogue_go/internal/selector"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
@@ -14,7 +14,7 @@ type PlayCard struct {
 	player       *Player
 	Card         *Card
 	update       bool
-	CurrSelector *selectors.AbstractSelector
+	CurrSelector *selector.AbstractSelector
 }
 
 func NewPlayCard(player *Player) *PlayCard {
@@ -53,7 +53,7 @@ func (p *PlayCard) Update(turn bool) {
 					p.Card.isPlay = true
 					p.Card.actPtr = 0
 					p.Card.played = false
-					p.Card.Results = make([][]world.Coords, len(p.Card.Selectors))
+					p.Card.Results = make([][]*selector.Result, len(p.Card.Selectors))
 					p.Card.tempOrig = []world.Coords{p.player.Character.GetCoords()}
 					p.NextSelector()
 				}
@@ -71,7 +71,11 @@ func (p *PlayCard) Update(turn bool) {
 						p.Card.actPtr++
 						newOrig := p.player.Character.GetCoords()
 						if moved && len(results) > 0 {
-							newOrig = results[len(results)-1]
+							for _, result := range results {
+								if result.IsMove && len(result.Area) > 0 {
+									newOrig = result.Area[len(result.Area)-1]
+								}
+							}
 						}
 						p.Card.tempOrig = append(p.Card.tempOrig, newOrig)
 						p.NextSelector()

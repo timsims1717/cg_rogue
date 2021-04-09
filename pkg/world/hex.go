@@ -12,6 +12,48 @@ type Coords struct {
 	Y int
 }
 
+// Up returns the Coords above
+func (a Coords) Up() Coords {
+	return Coords{ X: a.X, Y: a.Y + 1 }
+}
+
+// Down returns the Coords below
+func (a Coords) Down() Coords {
+	return Coords{ X: a.X, Y: a.Y - 1 }
+}
+
+func (a Coords) LeftUp() Coords {
+	if a.X % 2 == 0 {
+		return Coords{ X: a.X - 1, Y: a.Y }
+	} else {
+		return Coords{ X: a.X - 1, Y: a.Y + 1 }
+	}
+}
+
+func (a Coords) LeftDown() Coords {
+	if a.X % 2 == 0 {
+		return Coords{ X: a.X - 1, Y: a.Y - 1 }
+	} else {
+		return Coords{ X: a.X - 1, Y: a.Y }
+	}
+}
+
+func (a Coords) RightUp() Coords {
+	if a.X % 2 == 0 {
+		return Coords{ X: a.X + 1, Y: a.Y }
+	} else {
+		return Coords{ X: a.X + 1, Y: a.Y + 1 }
+	}
+}
+
+func (a Coords) RightDown() Coords {
+	if a.X % 2 == 0 {
+		return Coords{ X: a.X + 1, Y: a.Y - 1 }
+	} else {
+		return Coords{ X: a.X + 1, Y: a.Y }
+	}
+}
+
 // Eq checks if a and b are equal.
 func (a Coords) Eq(b Coords) bool {
 	return a.X == b.X && a.Y == b.Y
