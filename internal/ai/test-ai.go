@@ -286,7 +286,7 @@ func (ai *Skirmisher) Decide() {
 	if len(targets) > 0 {
 		choice := 0
 		if len(targets) > 1 {
-			choice = rand.Intn(len(targets)-1)
+			choice = rand.Intn(len(targets))
 		}
 		ai.Actions = []*AIAction{
 			{
@@ -326,7 +326,7 @@ func (ai *Skirmisher) Decide() {
 	if len(targets) > 0 {
 		choice := 0
 		if len(targets) > 1 {
-			choice = rand.Intn(len(targets)-1)
+			choice = rand.Intn(len(targets))
 		}
 		path, d, legal := floor.CurrentFloor.FindPathPerpendicularTo(orig, targets[choice], 3, 7, movCheck, atkCheck)
 		if legal {
@@ -476,7 +476,7 @@ func (ai *Grenadier) Decide() {
 		ai.decision = 2
 		choice := 0
 		if len(targets) > 1 {
-			choice = rand.Intn(len(targets)-1)
+			choice = rand.Intn(len(targets))
 		}
 		ai.Actions = []*AIAction{}
 		area := floor.CurrentFloor.AllInSextant(orig, targets[choice], 3, atkCheck)
@@ -505,7 +505,7 @@ func (ai *Grenadier) Decide() {
 		ai.decision = dec
 		choice := 0
 		if len(targets) > 1 {
-			choice = rand.Intn(len(targets)-1)
+			choice = rand.Intn(len(targets))
 		}
 		ai.Actions = []*AIAction{}
 		atkPath := floor.CurrentFloor.LongestLegalPath(floor.CurrentFloor.Line(orig, targets[choice], 10), 10, atkCheck)
@@ -650,7 +650,7 @@ func (ai *Bruiser) Decide() {
 		ai.decision = 1
 		choice := 0
 		if len(targets) > 1 {
-			choice = rand.Intn(len(targets)-1)
+			choice = rand.Intn(len(targets))
 		}
 		ai.Actions = []*AIAction{}
 		area := []world.Coords{orig}
@@ -676,7 +676,7 @@ func (ai *Bruiser) Decide() {
 		ai.decision = 2
 		choice := 0
 		if len(targets) > 1 {
-			choice = rand.Intn(len(targets)-1)
+			choice = rand.Intn(len(targets))
 		}
 		if path, d, legal := floor.CurrentFloor.FindPathWithinOne(orig, targets[choice], movCheck); legal {
 			if d <= 3 {
@@ -712,7 +712,7 @@ func (ai *Bruiser) Decide() {
 		ai.decision = 0
 		choice := 0
 		if len(targets) > 1 {
-			choice = rand.Intn(len(targets)-1)
+			choice = rand.Intn(len(targets))
 		}
 		if path, _, legal := floor.CurrentFloor.FindPathWithinOne(orig, targets[choice], movCheck); legal {
 			tPath := floor.CurrentFloor.LongestLegalPath(path, 2, movCheck)

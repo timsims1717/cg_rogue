@@ -18,6 +18,7 @@ import (
 	gween "github.com/timsims1717/cg_rogue_go/pkg/gween64"
 	"github.com/timsims1717/cg_rogue_go/pkg/gween64/ease"
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
+	"github.com/timsims1717/cg_rogue_go/pkg/sfx"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"golang.org/x/image/colornames"
 )
@@ -107,33 +108,6 @@ func (s *Encounter) Initialize() {
 		restButton.Click()
 	})
 
-	//moveS := "Move 1 (M)"
-	//move := ui.NewActionText(moveS)
-	//move.Transform.Scalar = pixel.V(2.5, 2.5)
-	//move.TextColor = colornames.Purple
-	//moveButton := ui.NewActionEl(move, pixel.R(0., 0., move.Text.BoundsOf(moveS).W() * 2.5, move.Text.BoundsOf(moveS).H() * 2.5), true)
-	//moveButton.Show = true
-	//moveButton.Transform.Pos = pixel.V(camera.WindowWidthF - player.ButtonRightPad, player.MoveBottomPad)
-	//moveButton.SetOnHoverFn(func() {
-	//	moveButton.Text.TextColor = colornames.Forestgreen
-	//})
-	//moveButton.SetUnHoverFn(func() {
-	//	moveButton.Text.TextColor = colornames.Purple
-	//})
-	//moveButton.SetClickFn(func() {
-	//	player.CardManager.Move(s.DefaultActions, player.Player1.PlayCard, moveCard)
-	//})
-	//moveButton.SetOnDisabledFn(func() {
-	//	moveButton.Show = false
-	//})
-	//moveButton.SetEnabledFn(func() {
-	//	moveButton.Show = true
-	//})
-	//s.MoveButton = moveButton
-	//player.Player1.Input.SetHotKey(pixelgl.KeyM, func() {
-	//	moveButton.Click()
-	//})
-
 	player.Player1.Input.SetHotKey(pixelgl.KeyA, func() {
 		player.CardManager.Move(s.DefaultActions, player.Player1.PlayCard, atkCard)
 	})
@@ -143,7 +117,12 @@ func (s *Encounter) Initialize() {
 }
 
 func (s *Encounter) TransitionIn() bool {
-	return camera.Cam.Effect != nil
+	if camera.Cam.Effect != nil {
+		return true
+	}
+	sfx.MusicPlayer.SetCurrentTracks([]string{"test_track", "test_ambience"})
+	sfx.MusicPlayer.PlayNextTrack(0.0, 1., 0.5)
+	return false
 }
 
 func (s *Encounter) TransitionOut() bool {
@@ -212,6 +191,7 @@ func UpdateEncounterPhase() {
 		CenterText.Text.ColorEffect = animation.FadeIn(CenterText.Text, 2.0)
 		Machine.Phase = GameOver
 		camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.Black,4.)
+		sfx.MusicPlayer.FadeOut(4.)
 		SwitchState(TheMainMenu)
 	}
 	if Machine.Phase != EncounterComplete && Machine.Phase != GameOver {

@@ -8,6 +8,7 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/debug"
 	"github.com/timsims1717/cg_rogue_go/internal/state"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
+	"github.com/timsims1717/cg_rogue_go/pkg/sfx"
 	"github.com/timsims1717/cg_rogue_go/pkg/timing"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"golang.org/x/image/colornames"
@@ -34,6 +35,9 @@ func run() {
 
 	camera.Cam = camera.New()
 
+	sfx.MusicPlayer.RegisterMusicTrack("assets/music/test_track.MP3", "test_track")
+	sfx.MusicPlayer.RegisterMusicTrack("assets/music/test_ambience.MP3", "test_ambience")
+
 	debug.Initialize()
 
 	timing.Reset()
@@ -41,6 +45,7 @@ func run() {
 		timing.Update()
 		debug.Update()
 		state.Update(win)
+		sfx.MusicPlayer.Update()
 
 		win.Clear(colornames.Black)
 
