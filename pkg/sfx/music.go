@@ -10,6 +10,7 @@ import (
 	gween "github.com/timsims1717/cg_rogue_go/pkg/gween64"
 	"github.com/timsims1717/cg_rogue_go/pkg/gween64/ease"
 	"github.com/timsims1717/cg_rogue_go/pkg/timing"
+	"github.com/timsims1717/cg_rogue_go/pkg/util"
 	"math/rand"
 	"os"
 	"time"
@@ -18,7 +19,8 @@ import (
 var MusicPlayer *musicPlayer
 
 type musicPlayer struct {
-	curr     []string
+	currSet  []string
+	curr     string
 	next     string
 	tracks   map[string]string
 	ctrl     *beep.Ctrl
@@ -43,21 +45,17 @@ func (p *musicPlayer) Update() {
 			if err := p.loadTrack(p.next); err != nil {
 				fmt.Printf("music player error %s: %s\n", p.next, err)
 			}
-			p.next = ""
 		}
 	}
 	if p.volume != nil {
 		if p.interV != nil {
 			v, fin := p.interV.Update(timing.DT)
-			speaker.Lock()
 			if fin {
-				p.volume.Silent = true
 				p.silent = true
 				p.interV = nil
 			} else {
-				p.volume.Volume = v
+				p.volNum = v
 			}
-			speaker.Unlock()
 		}
 		if p.silent != p.volume.Silent {
 			speaker.Lock()
@@ -69,6 +67,11 @@ func (p *musicPlayer) Update() {
 			p.volume.Volume = p.volNum
 			speaker.Unlock()
 		}
+		if p.volume.Base != getMusicVolume() {
+			speaker.Lock()
+			p.volume.Base = getMusicVolume()
+			speaker.Unlock()
+		}
 	}
 }
 
@@ -77,7 +80,7 @@ func (p *musicPlayer) RegisterMusicTrack(path, key string) {
 }
 
 func (p *musicPlayer) SetCurrentTracks(keys []string) {
-	p.curr = keys
+	p.currSet = keys
 }
 
 func (p *musicPlayer) PlayTrack(key string, fadeOut, wait, variance float64) {
@@ -85,19 +88,19 @@ func (p *musicPlayer) PlayTrack(key string, fadeOut, wait, variance float64) {
 	p.wait = wait
 	p.variance = variance
 	if p.volume != nil {
-		p.interV = gween.New(p.volume.Volume, -10., fadeOut, ease.Linear)
+		p.interV = gween.New(p.volume.Volume, -8., fadeOut, ease.Linear)
 	}
 }
 
-func (p *musicPlayer) PlayNextTrack(fadeOut, wait, variance float64) {
-	if len(p.curr) > 0 {
-		p.PlayTrack(p.curr[rand.Intn(len(p.curr))], fadeOut, wait, variance)
+func (p *musicPlayer) PlayNextTrack(fadeOut, wait, variance float64, mustSwitch bool) {
+	if len(p.currSet) > 0 && (mustSwitch || !util.ContainsStr(p.curr, p.currSet)) {
+		p.PlayTrack(p.currSet[rand.Intn(len(p.currSet))], fadeOut, wait, variance)
 	}
 }
 
 func (p *musicPlayer) FadeOut(fade float64) {
 	if p.volume != nil {
-		p.interV = gween.New(p.volume.Volume, -10., fade, ease.Linear)
+		p.interV = gween.New(p.volume.Volume, -8., fade, ease.Linear)
 	}
 }
 
@@ -120,31 +123,44 @@ func (p *musicPlayer) loadTrack(key string) error {
 		if err != nil {
 			return errors.Wrap(err, errMsg)
 		}
-		speaker.Clear()
+		speaker.Lock()
+		if p.ctrl != nil {
+			p.ctrl.Paused = true
+		}
+		if p.volume != nil {
+			p.volume.Silent = true
+		}
 		p.ctrl = &beep.Ctrl{
 			Streamer: streamer,
 			Paused:   false,
 		}
 		p.volume = &effects.Volume{
 			Streamer: p.ctrl,
-			Base:     2,
+			Base:     getMusicVolume(),
 			Volume:   0,
 			Silent:   false,
 		}
 		p.volNum = 0
 		p.silent = false
 		p.format = format
+		p.curr = p.next
+		p.next = ""
+		p.interV = nil
+		speaker.Unlock()
 		speaker.Play(beep.Seq(
 			beep.Callback(func() {
-				v := (rand.Float64() * 2. - 1.) * p.variance
-				time.Sleep(time.Duration(p.wait + v) * time.Second)
+				if p.wait > 0. {
+					v := (rand.Float64()*2. - 1.) * p.variance
+					time.Sleep(time.Duration(p.wait+v) * time.Second)
+				}
 			}),
 			p.volume,
 			beep.Callback(func() {
-			if len(p.curr) > 0 {
-				p.PlayTrack(p.curr[rand.Intn(len(p.curr) - 1)], 0., 8., 5.)
-			}
-		})))
+				if len(p.currSet) > 0 {
+					p.PlayTrack(p.currSet[rand.Intn(len(p.currSet) - 1)], 0., 8., 5.)
+				}
+			}),
+		))
 		return nil
 	}
 	return errors.Wrap(fmt.Errorf("key %s is not a registered track", key), errMsg)

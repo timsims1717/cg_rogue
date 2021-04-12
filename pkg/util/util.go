@@ -30,6 +30,15 @@ func Max(a, b int) int {
 	return b
 }
 
+func ContainsStr(s string, a []string) bool {
+	for _, as := range a {
+		if as == s {
+			return true
+		}
+	}
+	return false
+}
+
 // PointInside returns true if the pixel.Vec is inside the pixel.Rect
 // when unprojected by the pixel.Matrix
 func PointInside(p pixel.Vec, r pixel.Rect, m pixel.Matrix) bool {

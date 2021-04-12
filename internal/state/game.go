@@ -112,16 +112,21 @@ func (s *Encounter) Initialize() {
 		player.CardManager.Move(s.DefaultActions, player.Player1.PlayCard, atkCard)
 	})
 
+	player.Player1.Input.SetHotKey(pixelgl.KeyN, func() {
+		sfx.MusicPlayer.PlayNextTrack(0.0, 0., 0., true)
+	})
+
 	Machine.Phase = EnemyStartTurn
-	camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.White, 1.0)
+	//camera.Cam.Mask = colornames.White
+	camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.White, 0.1)
+	sfx.MusicPlayer.SetCurrentTracks([]string{"test_track", "test_ambience"})
+	sfx.MusicPlayer.PlayNextTrack(0.0, 0.1, 0., false)
 }
 
 func (s *Encounter) TransitionIn() bool {
 	if camera.Cam.Effect != nil {
 		return true
 	}
-	sfx.MusicPlayer.SetCurrentTracks([]string{"test_track", "test_ambience"})
-	sfx.MusicPlayer.PlayNextTrack(0.0, 1., 0.5)
 	return false
 }
 
@@ -134,6 +139,7 @@ func (s *Encounter) Uninitialize() {
 	InitializeCenterText()
 	ai.AIManager.Clear()
 	floor.CharacterManager.Clear()
+	player.Player1.Input.RemoveHotKeys()
 }
 
 func (s *Encounter) Update(win *pixelgl.Window) {

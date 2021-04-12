@@ -9,6 +9,7 @@ import (
 	"github.com/timsims1717/cg_rogue_go/pkg/animation"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
+	"github.com/timsims1717/cg_rogue_go/pkg/sfx"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"golang.org/x/image/colornames"
 )
@@ -82,6 +83,7 @@ func (s *MainMenu) Initialize() {
 	})
 	startMenuItem.SetClickFn(func() {
 		camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.Black, 1.0)
+		sfx.MusicPlayer.FadeOut(1.0)
 		SwitchState(TheStartRun)
 	})
 	exitS := "Exit"
@@ -103,10 +105,13 @@ func (s *MainMenu) Initialize() {
 		exitMenuItem.Transform.Pos.X += 2.
 	})
 	exitMenuItem.SetClickFn(func() {
-		camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.Black, 1.0)
+		camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.Black, 0.2)
+		sfx.MusicPlayer.FadeOut(0.5)
 		SwitchState(&Exiting{})
 	})
 	camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.White, 1.0)
+	sfx.MusicPlayer.SetCurrentTracks([]string{"main_menu"})
+	sfx.MusicPlayer.PlayNextTrack(0.0, 0.5, 0., false)
 }
 
 func (s *MainMenu) TransitionIn() bool {

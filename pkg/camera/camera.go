@@ -19,7 +19,7 @@ type Camera struct {
 	Pos    pixel.Vec
 	Zoom   float64
 	Opt    CameraOptions
-	Color  color.RGBA
+	Mask   color.RGBA
 	Effect *animation.ColorEffect
 
 	interX *gween.Tween
@@ -42,7 +42,7 @@ func New() *Camera {
 			ScrollSpeed: 500.0,
 			ZoomSpeed:   1.2,
 		},
-		Color: colornames.Black,
+		Mask: colornames.Black,
 	}
 }
 
@@ -90,7 +90,7 @@ func (c *Camera) Update(win *pixelgl.Window) {
 	}
 	c.Mat = pixel.IM.Scaled(c.Pos, c.Zoom).Moved(win.Bounds().Center().Sub(c.Pos))
 	win.SetMatrix(c.Mat)
-	win.SetColorMask(c.Color)
+	win.SetColorMask(c.Mask)
 }
 
 func (c *Camera) Stop() {
@@ -162,9 +162,9 @@ func (c *Camera) UITransform(pos, scalar pixel.Vec, rot float64) pixel.Matrix {
 }
 
 func (c *Camera) GetColor() color.RGBA {
-	return c.Color
+	return c.Mask
 }
 
 func (c *Camera) SetColor(col color.RGBA) {
-	c.Color = col
+	c.Mask = col
 }

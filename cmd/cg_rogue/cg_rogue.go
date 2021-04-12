@@ -37,6 +37,7 @@ func run() {
 
 	sfx.MusicPlayer.RegisterMusicTrack("assets/music/test_track.MP3", "test_track")
 	sfx.MusicPlayer.RegisterMusicTrack("assets/music/test_ambience.MP3", "test_ambience")
+	sfx.MusicPlayer.RegisterMusicTrack("assets/music/main_menu.MP3", "main_menu")
 
 	debug.Initialize()
 
