@@ -75,6 +75,7 @@ func (s *MainMenu) Initialize() {
 		startMenuItem.Text.TextColor = colornames.Forestgreen
 		startMenuItem.Transform.Scalar = pixel.V(1.05, 1.05)
 		startMenuItem.Transform.Pos.X -= 5.
+		sfx.SoundPlayer.PlaySound("click")
 	})
 	startMenuItem.SetUnHoverFn(func() {
 		startMenuItem.Text.TextColor = colornames.Purple
@@ -98,6 +99,7 @@ func (s *MainMenu) Initialize() {
 		exitMenuItem.Text.TextColor = colornames.Forestgreen
 		exitMenuItem.Transform.Scalar = pixel.V(1.05, 1.05)
 		exitMenuItem.Transform.Pos.X -= 2.
+		sfx.SoundPlayer.PlaySound("click")
 	})
 	exitMenuItem.SetUnHoverFn(func() {
 		exitMenuItem.Text.TextColor = colornames.Purple

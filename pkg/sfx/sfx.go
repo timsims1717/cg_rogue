@@ -1,12 +1,19 @@
 package sfx
 
 import (
+	"fmt"
 	"github.com/faiface/beep"
+	"github.com/faiface/beep/mp3"
 	"github.com/faiface/beep/speaker"
+	"github.com/faiface/beep/vorbis"
+	"github.com/faiface/beep/wav"
+	"github.com/pkg/errors"
+	"os"
+	"strings"
 	"time"
 )
 
-const sampleRate = beep.SampleRate(44100)
+const sampleRate = beep.SampleRate(44100 * 4)
 
 // Volumes are stored as integers from 0 to 100.
 var (
@@ -21,7 +28,7 @@ var (
 )
 
 func init() {
-	err := speaker.Init(sampleRate, sampleRate.N(time.Second/10))
+	err := speaker.Init(sampleRate, sampleRate.N(time.Second/100))
 	if err != nil {
 		panic(err)
 	}
@@ -29,33 +36,33 @@ func init() {
 
 func getMasterVolume() float64 {
 	if masterMuted {
-		return -8.
+		return -5.
 	} else {
-		return float64(masterVolume) / 10. - 8.
+		return float64(masterVolume) / 20. - 5.
 	}
 }
 
 func getMusicVolume() float64 {
 	if musicMuted || masterMuted {
-		return -8.
+		return -5.
 	} else {
-		return float64(musicVolume * masterVolume) / 1000. - 8.
+		return float64(musicVolume * masterVolume) / 2000. - 5.
 	}
 }
 
 func getSoundVolume() float64 {
 	if soundMuted || masterMuted {
-		return -8.
+		return -5.
 	} else {
-		return float64(soundVolume * masterVolume) / 1000. - 8.
+		return float64(soundVolume * masterVolume) / 2000. - 5.
 	}
 }
 
 func getSfxVolume(key string) float64 {
 	if sfxMuted[key] || masterMuted {
-		return -8.
+		return -5.
 	} else {
-		return float64(sfxVolume[key] * masterVolume) / 1000. - 8.
+		return float64(sfxVolume[key] * masterVolume) / 2000. - 5.
 	}
 }
 
@@ -63,7 +70,7 @@ func GetMasterVolume() int {
 	if masterMuted {
 		return 0
 	} else {
-		return int((masterVolume + 8.) * 10.)
+		return masterVolume
 	}
 }
 
@@ -71,7 +78,7 @@ func GetMusicVolume() int {
 	if musicMuted {
 		return 0
 	} else {
-		return int((musicVolume + 8.) * 10.)
+		return musicVolume
 	}
 }
 
@@ -79,7 +86,7 @@ func GetSoundVolume() int {
 	if soundMuted {
 		return 0
 	} else {
-		return int((soundVolume + 8.) * 10.)
+		return soundVolume
 	}
 }
 
@@ -87,7 +94,7 @@ func GetSfxVolume(key string) int {
 	if sfxMuted[key] {
 		return 0
 	} else {
-		return int((sfxVolume[key] + 8.) * 10.)
+		return sfxVolume[key]
 	}
 }
 
@@ -125,4 +132,23 @@ func SetSfxVolume(v int, key string) {
 		sfxMuted[key] = false
 	}
 	sfxVolume[key] = v
+}
+
+func loadSoundFile(path string) (beep.StreamSeekCloser, beep.Format, error) {
+	errMsg := "load sound file"
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, beep.Format{}, errors.Wrap(err, errMsg)
+	}
+	p := strings.ToLower(path)
+	if strings.Contains(p, "mp3") {
+		return mp3.Decode(file)
+	} else if strings.Contains(p, "wav") {
+		return wav.Decode(file)
+	} else if strings.Contains(p, "ogg") {
+		return vorbis.Decode(file)
+	} else if strings.Contains(p, "flac") {
+		return vorbis.Decode(file)
+	}
+	return nil, beep.Format{}, errors.Wrap(fmt.Errorf("could not determine file type of %s", path), errMsg)
 }

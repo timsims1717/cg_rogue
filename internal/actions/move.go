@@ -5,6 +5,7 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/pkg/gween64"
 	"github.com/timsims1717/cg_rogue_go/pkg/gween64/ease"
+	"github.com/timsims1717/cg_rogue_go/pkg/sfx"
 	"github.com/timsims1717/cg_rogue_go/pkg/timing"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
@@ -43,6 +44,7 @@ func (a *MoveAction) Update() {
 	if finX && finY {
 		a.isDone = true
 		floor.CurrentFloor.MoveOccupant(a.target, a.start, a.end)
+		sfx.SoundPlayer.PlaySound("step1")
 	}
 }
 
@@ -91,6 +93,7 @@ func (m *MoveSeriesAction) Update() {
 			m.isDone = true
 			floor.CurrentFloor.MoveOccupant(m.target, m.start, next)
 		} else {
+			sfx.SoundPlayer.PlaySound("step1")
 			next := m.series[m.step + 1]
 			b := world.MapToWorld(next)
 			if m.step >= len(m.series) - 2 {

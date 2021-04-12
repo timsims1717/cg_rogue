@@ -90,6 +90,7 @@ func (s *Encounter) Initialize() {
 	restButton.Transform.Pos = pixel.V(camera.WindowWidthF - player.ButtonRightPad, player.RestBottomPad)
 	restButton.SetOnHoverFn(func() {
 		restButton.Text.TextColor = colornames.Forestgreen
+		sfx.SoundPlayer.PlaySound("click")
 	})
 	restButton.SetUnHoverFn(func() {
 		restButton.Text.TextColor = colornames.Purple

@@ -7,6 +7,7 @@ import (
 	"github.com/timsims1717/cg_rogue_go/internal/selector"
 	gween "github.com/timsims1717/cg_rogue_go/pkg/gween64"
 	"github.com/timsims1717/cg_rogue_go/pkg/gween64/ease"
+	"github.com/timsims1717/cg_rogue_go/pkg/sfx"
 	"github.com/timsims1717/cg_rogue_go/pkg/timing"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
@@ -147,9 +148,14 @@ func (a *PushMultiAction) Update() {
 			SetResetTransform(a.values.Source)
 		}
 
+		first := true
 		done := !a.values.Source.IsMoving() && a.postDam
 		for i, target := range a.targets {
 			if !a.postDam {
+				if first {
+					sfx.SoundPlayer.PlaySound("punch_hit")
+					first = false
+				}
 				target.Damage(a.values.Damage)
 			}
 			if a.interXP[i] != nil && a.interYP[i] != nil {
@@ -166,6 +172,9 @@ func (a *PushMultiAction) Update() {
 			}
 		}
 		if !a.postDam {
+			if first {
+				sfx.SoundPlayer.PlaySound("punch_miss")
+			}
 			a.postDam = true
 		}
 		if done {

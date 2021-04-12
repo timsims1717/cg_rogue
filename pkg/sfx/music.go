@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/effects"
-	"github.com/faiface/beep/mp3"
 	"github.com/faiface/beep/speaker"
 	"github.com/pkg/errors"
 	gween "github.com/timsims1717/cg_rogue_go/pkg/gween64"
@@ -12,7 +11,6 @@ import (
 	"github.com/timsims1717/cg_rogue_go/pkg/timing"
 	"github.com/timsims1717/cg_rogue_go/pkg/util"
 	"math/rand"
-	"os"
 	"time"
 )
 
@@ -23,12 +21,12 @@ type musicPlayer struct {
 	curr     string
 	next     string
 	tracks   map[string]string
+	stream   beep.StreamSeekCloser
 	ctrl     *beep.Ctrl
 	volume   *effects.Volume
 	interV   *gween.Tween
 	format   beep.Format
 	silent   bool
-	volNum   float64
 	wait     float64
 	variance float64
 }
@@ -51,25 +49,18 @@ func (p *musicPlayer) Update() {
 		if p.interV != nil {
 			v, fin := p.interV.Update(timing.DT)
 			if fin {
+				p.volume.Silent = true
 				p.silent = true
 				p.interV = nil
 			} else {
-				p.volNum = v
+				speaker.Lock()
+				p.volume.Volume = v
+				speaker.Unlock()
 			}
-		}
-		if p.silent != p.volume.Silent {
+		} else {
 			speaker.Lock()
-			p.volume.Silent = p.silent
-			speaker.Unlock()
-		}
-		if p.volNum != p.volume.Volume {
-			speaker.Lock()
-			p.volume.Volume = p.volNum
-			speaker.Unlock()
-		}
-		if p.volume.Base != getMusicVolume() {
-			speaker.Lock()
-			p.volume.Base = getMusicVolume()
+			p.volume.Silent = musicMuted || p.silent
+			p.volume.Volume = getMusicVolume()
 			speaker.Unlock()
 		}
 	}
@@ -104,43 +95,37 @@ func (p *musicPlayer) FadeOut(fade float64) {
 	}
 }
 
-func (p *musicPlayer) Silence(s bool) {
-	p.silent = s
-}
-
-func (p *musicPlayer) SetVolume(v float64) {
-	p.volNum = v
-}
-
 func (p *musicPlayer) loadTrack(key string) error {
 	errMsg := "load track"
 	if path, ok := p.tracks[key]; ok {
-		file, err := os.Open(path)
-		if err != nil {
-			return errors.Wrap(err, errMsg)
-		}
-		streamer, format, err := mp3.Decode(file)
+		streamer, format, err := loadSoundFile(path)
 		if err != nil {
 			return errors.Wrap(err, errMsg)
 		}
 		speaker.Lock()
+		if p.stream != nil {
+			err = p.stream.Close()
+			if err != nil {
+				fmt.Println(errors.Wrap(err, errMsg))
+			}
+		}
 		if p.ctrl != nil {
 			p.ctrl.Paused = true
 		}
 		if p.volume != nil {
 			p.volume.Silent = true
 		}
+		p.stream = streamer
 		p.ctrl = &beep.Ctrl{
-			Streamer: streamer,
+			Streamer: p.stream,
 			Paused:   false,
 		}
 		p.volume = &effects.Volume{
 			Streamer: p.ctrl,
-			Base:     getMusicVolume(),
-			Volume:   0,
+			Base:     2,
+			Volume:   getMusicVolume(),
 			Silent:   false,
 		}
-		p.volNum = 0
 		p.silent = false
 		p.format = format
 		p.curr = p.next
@@ -154,7 +139,7 @@ func (p *musicPlayer) loadTrack(key string) error {
 					time.Sleep(time.Duration(p.wait+v) * time.Second)
 				}
 			}),
-			p.volume,
+			beep.Resample(4, format.SampleRate, sampleRate, p.volume),
 			beep.Callback(func() {
 				if len(p.currSet) > 0 {
 					p.PlayTrack(p.currSet[rand.Intn(len(p.currSet) - 1)], 0., 8., 5.)

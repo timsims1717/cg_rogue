@@ -3,6 +3,7 @@ package actions
 import (
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/selector"
+	"github.com/timsims1717/cg_rogue_go/pkg/sfx"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
@@ -36,6 +37,7 @@ func NewDamageAction(area []world.Coords, values selector.ActionValues) *DamageA
 func (a *DamageAction) Update() {
 	if a.start {
 		SetAttackTransformSingle(a.values.Source, a.coords)
+		sfx.SoundPlayer.PlaySound("punch_hit")
 		a.start = false
 	}
 	if !a.values.Source.IsMoving() {
@@ -84,14 +86,22 @@ func (a *DamageHexAction) Update() {
 	}
 	if !a.values.Source.IsMoving() {
 		if a.preDam {
+			first := true
 			SetResetTransform(a.values.Source)
 			for _, h := range a.area {
 				// todo: add an effect
 
 				// todo: this is where the damage modification happens
 				if cha := floor.CurrentFloor.GetOccupant(h); cha != nil {
+					if first {
+						sfx.SoundPlayer.PlaySound("punch_hit")
+						first = false
+					}
 					cha.Damage(a.values.Damage)
 				}
+			}
+			if first {
+				sfx.SoundPlayer.PlaySound("punch_miss")
 			}
 			a.preDam = false
 		} else {

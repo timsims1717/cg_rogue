@@ -6,6 +6,7 @@ import (
 	"github.com/timsims1717/cg_rogue_go/pkg/animation"
 	gween "github.com/timsims1717/cg_rogue_go/pkg/gween64"
 	"github.com/timsims1717/cg_rogue_go/pkg/gween64/ease"
+	"github.com/timsims1717/cg_rogue_go/pkg/sfx"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
@@ -45,13 +46,21 @@ func (a *SlamAction) Update() {
 	if !a.values.Source.IsMoving() {
 		a.isDone = true
 		floor.CurrentFloor.MoveOccupant(a.values.Source, a.values.Source.Coords, a.landing)
+		first := true
 		for _, h := range a.area {
 			// todo: add an effect
 
 			// todo: this is where the damage modification happens
 			if cha := floor.CurrentFloor.GetOccupant(h); cha != nil {
+				if first {
+					sfx.SoundPlayer.PlaySound("punch_hit")
+					first = false
+				}
 				cha.Damage(a.values.Damage)
 			}
+		}
+		if first {
+			sfx.SoundPlayer.PlaySound("punch_miss")
 		}
 	}
 }
