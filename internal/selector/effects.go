@@ -74,7 +74,9 @@ func AddSelectUI(t SelectionType, x, y int) {
 }
 
 func AddSelectionEffect(effect *AbstractSelectionEffect) {
-	SelectionSet.nset = append(SelectionSet.nset, effect.Effect)
+	if effect != nil {
+		SelectionSet.nset = append(SelectionSet.nset, effect.Effect)
+	}
 }
 
 func (s *selectionSet) SetSpriteSheet(sheet *img.SpriteSheet) {

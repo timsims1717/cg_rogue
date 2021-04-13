@@ -17,7 +17,7 @@ import (
 )
 
 func run() {
-	//seed := int64(1617372779626977911)
+	//seed := int64(1618338917942045051)
 	seed := time.Now().UnixNano()
 	rand.Seed(seed)
 	fmt.Println("Seed:", seed)

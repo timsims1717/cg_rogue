@@ -113,7 +113,7 @@ func (s *MainMenu) Initialize() {
 	})
 	camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.White, 1.0)
 	sfx.MusicPlayer.SetCurrentTracks([]string{"main_menu"})
-	sfx.MusicPlayer.PlayNextTrack(0.0, 0.5, 0., false)
+	sfx.MusicPlayer.PlayNextTrack(0.0, false)
 }
 
 func (s *MainMenu) TransitionIn() bool {

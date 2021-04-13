@@ -11,7 +11,6 @@ import (
 	"github.com/timsims1717/cg_rogue_go/pkg/timing"
 	"github.com/timsims1717/cg_rogue_go/pkg/util"
 	"math/rand"
-	"time"
 )
 
 var MusicPlayer *musicPlayer
@@ -27,8 +26,7 @@ type musicPlayer struct {
 	interV   *gween.Tween
 	format   beep.Format
 	silent   bool
-	wait     float64
-	variance float64
+	loading  bool
 }
 
 func init() {
@@ -38,30 +36,36 @@ func init() {
 }
 
 func (p *musicPlayer) Update() {
-	if p.next != "" {
-		if p.volume == nil || p.volume.Silent {
-			if err := p.loadTrack(p.next); err != nil {
-				fmt.Printf("music player error %s: %s\n", p.next, err)
+	if !p.loading {
+		if p.next != "" {
+			if p.volume == nil || p.volume.Silent {
+				p.loading = true
+				go func() {
+					if err := p.loadTrack(p.next); err != nil {
+						fmt.Printf("music player error %s: %s\n", p.next, err)
+					}
+					p.loading = false
+				}()
 			}
 		}
-	}
-	if p.volume != nil {
-		if p.interV != nil {
-			v, fin := p.interV.Update(timing.DT)
-			if fin {
-				p.volume.Silent = true
-				p.silent = true
-				p.interV = nil
+		if p.volume != nil {
+			if p.interV != nil {
+				v, fin := p.interV.Update(timing.DT)
+				if fin {
+					p.volume.Silent = true
+					p.silent = true
+					p.interV = nil
+				} else {
+					speaker.Lock()
+					p.volume.Volume = v
+					speaker.Unlock()
+				}
 			} else {
 				speaker.Lock()
-				p.volume.Volume = v
+				p.volume.Silent = musicMuted || p.silent
+				p.volume.Volume = getMusicVolume()
 				speaker.Unlock()
 			}
-		} else {
-			speaker.Lock()
-			p.volume.Silent = musicMuted || p.silent
-			p.volume.Volume = getMusicVolume()
-			speaker.Unlock()
 		}
 	}
 }
@@ -74,18 +78,16 @@ func (p *musicPlayer) SetCurrentTracks(keys []string) {
 	p.currSet = keys
 }
 
-func (p *musicPlayer) PlayTrack(key string, fadeOut, wait, variance float64) {
+func (p *musicPlayer) PlayTrack(key string, fadeOut float64) {
 	p.next = key
-	p.wait = wait
-	p.variance = variance
 	if p.volume != nil {
 		p.interV = gween.New(p.volume.Volume, -8., fadeOut, ease.Linear)
 	}
 }
 
-func (p *musicPlayer) PlayNextTrack(fadeOut, wait, variance float64, mustSwitch bool) {
+func (p *musicPlayer) PlayNextTrack(fadeOut float64, mustSwitch bool) {
 	if len(p.currSet) > 0 && (mustSwitch || !util.ContainsStr(p.curr, p.currSet)) {
-		p.PlayTrack(p.currSet[rand.Intn(len(p.currSet))], fadeOut, wait, variance)
+		p.PlayTrack(p.currSet[rand.Intn(len(p.currSet))], fadeOut)
 	}
 }
 
@@ -133,16 +135,10 @@ func (p *musicPlayer) loadTrack(key string) error {
 		p.interV = nil
 		speaker.Unlock()
 		speaker.Play(beep.Seq(
-			beep.Callback(func() {
-				if p.wait > 0. {
-					v := (rand.Float64()*2. - 1.) * p.variance
-					time.Sleep(time.Duration(p.wait+v) * time.Second)
-				}
-			}),
 			beep.Resample(4, format.SampleRate, sampleRate, p.volume),
 			beep.Callback(func() {
 				if len(p.currSet) > 0 {
-					p.PlayTrack(p.currSet[rand.Intn(len(p.currSet)-1)], 0., 8., 5.)
+					p.PlayTrack(p.currSet[rand.Intn(len(p.currSet)-1)], 0.)
 				}
 			}),
 		))

@@ -1,7 +1,6 @@
 package action
 
 import (
-	"github.com/phf/go-queue/queue"
 	"github.com/timsims1717/cg_rogue_go/internal/selector"
 	"github.com/timsims1717/cg_rogue_go/pkg/util"
 )
@@ -11,7 +10,7 @@ var ActionManager *actionManager
 
 // actionManager stores the action queue and the current Action
 type actionManager struct {
-	qu  queue.Queue
+	qu  Queue
 	act *AbstractAction
 }
 
@@ -70,10 +69,7 @@ func (m *actionManager) AddToBot(a Action, effects []*selector.AbstractSelection
 func (m *actionManager) Update() {
 	if util.IsNil(m.act) {
 		if m.qu.Front() != nil {
-			inter := m.qu.PopFront()
-			if act, ok := inter.(*AbstractAction); ok {
-				m.act = act
-			}
+			m.act = m.qu.PopFront()
 		}
 	}
 	if !util.IsNil(m.act) {
@@ -83,6 +79,13 @@ func (m *actionManager) Update() {
 		}
 		if m.act.IsDone {
 			m.act = nil
+		}
+	}
+	for _, act := range m.qu.rep {
+		if act != nil {
+			for _, effect := range act.SelectionEffects {
+				selector.AddSelectionEffect(effect)
+			}
 		}
 	}
 }

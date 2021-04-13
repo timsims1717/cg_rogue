@@ -1,7 +1,6 @@
 package ai
 
 import (
-	"github.com/timsims1717/cg_rogue_go/internal/action"
 	"github.com/timsims1717/cg_rogue_go/internal/actions"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/selector"
@@ -16,6 +15,7 @@ type RandomWalker struct {
 func NewRandomWalker(character *floor.Character) *AbstractAI {
 	newAI := &AbstractAI{
 		Character: character,
+		decision: -1,
 	}
 	walker := &RandomWalker{
 		newAI,
@@ -24,8 +24,8 @@ func NewRandomWalker(character *floor.Character) *AbstractAI {
 	return newAI
 }
 
-func (r *RandomWalker) Decide() {
-	orig := r.Character.Coords
+func (ai *RandomWalker) Decide() {
+	orig := ai.Character.Coords
 	movCheck := floor.PathChecks{
 		NotFilled:     true,
 		Unoccupied:    true,
@@ -67,35 +67,36 @@ func (r *RandomWalker) Decide() {
 	}
 	atkCheck.Orig = mov
 
-	r.Actions = []*AIAction{
+	ai.currValues = selector.ActionValues{
+		Damage: 1,
+		Move:   1,
+	}
+	ai.Actions = []*AIAction{
 		{
 			Path:        path,
 			PathCheck:   movCheck,
 			TargetArea:  nil,
 			TargetCheck: floor.PathChecks{},
-			Values: selector.ActionValues{
-				Move: 1,
-			},
+			Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+			IsMove:      true,
 		},
 		{
 			Path:        atk,
 			PathCheck:   floor.PathChecks{},
 			TargetArea:  []world.Coords{world.Origin},
 			TargetCheck: atkCheck,
-			Values: selector.ActionValues{
-				Damage: 1,
-			},
+			Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}),
 		},
 	}
 }
 
-func (r *RandomWalker) TakeTurn() {
-	for i, act := range r.TempActions {
+func (ai *RandomWalker) TakeTurn() {
+	for i, act := range ai.TempActions {
 		switch i % 2 {
 		case 0:
-			action.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area), nil)
+			AddToBot(actions.NewMoveSeriesAction(ai.currValues.Source, ai.currValues.Source, act.Area), act.Effect)
 		case 1:
-			action.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values), nil)
+			AddToBot(actions.NewDamageHexAction(act.Area, ai.currValues), act.Effect)
 		}
 	}
 }
@@ -113,6 +114,7 @@ type FlyChaser struct {
 func NewFlyChaser(character *floor.Character) *AbstractAI {
 	newAI := &AbstractAI{
 		Character: character,
+		decision: -1,
 	}
 	flyChaser := &FlyChaser{
 		newAI,
@@ -157,32 +159,31 @@ func (ai *FlyChaser) Decide() {
 								PathCheck:   movCheck,
 								TargetArea:  nil,
 								TargetCheck: floor.PathChecks{},
-								Values: selector.ActionValues{
-									Move: len(tPath),
-								},
+								Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+								IsMove:      true,
 							},
 						}
 						return
 					}
 				} else {
+					ai.currValues = selector.ActionValues{
+						Damage: 1,
+					}
 					ai.Actions = []*AIAction{
 						{
 							Path:        path,
 							PathCheck:   movCheck,
 							TargetArea:  nil,
 							TargetCheck: floor.PathChecks{},
-							Values: selector.ActionValues{
-								Move: 1,
-							},
+							Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+							IsMove:      true,
 						},
 						{
 							Path:        []world.Coords{path[len(path)-1], choice},
 							PathCheck:   floor.NoCheck,
 							TargetArea:  []world.Coords{world.Origin},
 							TargetCheck: atkCheck,
-							Values: selector.ActionValues{
-								Damage: 1,
-							},
+							Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}),
 						},
 					}
 					ai.atkCnt++
@@ -204,9 +205,8 @@ func (ai *FlyChaser) Decide() {
 							PathCheck:   movCheck,
 							TargetArea:  nil,
 							TargetCheck: floor.PathChecks{},
-							Values: selector.ActionValues{
-								Move: d,
-							},
+							Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+							IsMove:      true,
 						},
 					}
 				}
@@ -219,9 +219,9 @@ func (ai *FlyChaser) TakeTurn() {
 	for i, act := range ai.TempActions {
 		switch i % 2 {
 		case 0:
-			action.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area), nil)
+			AddToBot(actions.NewMoveSeriesAction(ai.Character, ai.Character, act.Area), act.Effect)
 		case 1:
-			action.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values), nil)
+			AddToBot(actions.NewDamageHexAction(act.Area, ai.currValues), act.Effect)
 		}
 	}
 }
@@ -235,17 +235,16 @@ type Skirmisher struct {
 	*AbstractAI
 	patrol     []world.Coords
 	patrolling int
-	decision   int
 }
 
 func NewSkirmisher(character *floor.Character) *AbstractAI {
 	newAI := &AbstractAI{
 		Character: character,
+		decision: -1,
 	}
 	skirm := &Skirmisher{
 		newAI,
 		[]world.Coords{},
-		0,
 		0,
 	}
 	newAI.AI = skirm
@@ -267,6 +266,9 @@ func (ai *Skirmisher) Decide() {
 		NonEmpty:      false,
 		EndUnoccupied: false,
 		Orig:          orig,
+	}
+	ai.currValues = selector.ActionValues{
+		Damage: 1,
 	}
 	if len(ai.patrol) == 0 {
 		patrolCand, _ := world.Remove(orig, floor.CurrentFloor.AllWithin(orig, 6, movCheck))
@@ -294,9 +296,7 @@ func (ai *Skirmisher) Decide() {
 				PathCheck:   floor.NoCheck,
 				TargetArea:  []world.Coords{world.Origin},
 				TargetCheck: atkCheck,
-				Values: selector.ActionValues{
-					Damage: 1,
-				},
+				Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}),
 			},
 		}
 		ai.decision++
@@ -305,7 +305,7 @@ func (ai *Skirmisher) Decide() {
 	targets = floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 3)
 	if len(targets) > 0 {
 		dist := world.OrderByDistSimple(orig, targets)
-		path, d, legal := floor.CurrentFloor.FindPathAwayFrom(orig, dist[0], 3, movCheck)
+		path, _, legal := floor.CurrentFloor.FindPathAwayFrom(orig, dist[0], 3, movCheck)
 		if legal {
 			ai.Actions = []*AIAction{
 				{
@@ -313,9 +313,8 @@ func (ai *Skirmisher) Decide() {
 					PathCheck:   movCheck,
 					TargetArea:  nil,
 					TargetCheck: floor.PathChecks{},
-					Values: selector.ActionValues{
-						Move: d,
-					},
+					Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+					IsMove:      true,
 				},
 			}
 			ai.decision = 0
@@ -328,7 +327,7 @@ func (ai *Skirmisher) Decide() {
 		if len(targets) > 1 {
 			choice = rand.Intn(len(targets))
 		}
-		path, d, legal := floor.CurrentFloor.FindPathPerpendicularTo(orig, targets[choice], 3, 7, movCheck, atkCheck)
+		path, _, legal := floor.CurrentFloor.FindPathPerpendicularTo(orig, targets[choice], 3, 7, movCheck, atkCheck)
 		if legal {
 			ai.Actions = []*AIAction{
 				{
@@ -336,9 +335,8 @@ func (ai *Skirmisher) Decide() {
 					PathCheck:   movCheck,
 					TargetArea:  nil,
 					TargetCheck: floor.PathChecks{},
-					Values: selector.ActionValues{
-						Move: d,
-					},
+					Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+					IsMove:      true,
 				},
 			}
 			end := path[len(path)-1]
@@ -349,9 +347,7 @@ func (ai *Skirmisher) Decide() {
 					PathCheck:   atkCheck,
 					TargetArea:  []world.Coords{world.Origin},
 					TargetCheck: atkCheck,
-					Values: selector.ActionValues{
-						Damage: 1,
-					},
+					Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}),
 				})
 			}
 		}
@@ -370,9 +366,8 @@ func (ai *Skirmisher) Decide() {
 						PathCheck:   movCheck,
 						TargetArea:  nil,
 						TargetCheck: floor.PathChecks{},
-						Values: selector.ActionValues{
-							Move: len(tPath),
-						},
+						Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+						IsMove:      true,
 					},
 				}
 				ai.decision = 0
@@ -390,9 +385,8 @@ func (ai *Skirmisher) Decide() {
 						PathCheck:   movCheck,
 						TargetArea:  nil,
 						TargetCheck: floor.PathChecks{},
-						Values: selector.ActionValues{
-							Move: len(tPath),
-						},
+						Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+						IsMove:      true,
 					},
 				}
 				ai.decision = 0
@@ -411,16 +405,16 @@ func (ai *Skirmisher) TakeTurn() {
 		switch ai.decision {
 		case 0:
 			act := ai.TempActions[0]
-			action.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area), nil)
+			AddToBot(actions.NewMoveSeriesAction(ai.Character, ai.Character, act.Area), act.Effect)
 		case 1:
 			act := ai.TempActions[0]
-			action.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values), nil)
+			AddToBot(actions.NewDamageHexAction(act.Area, ai.currValues), act.Effect)
 		case 2:
 			for i, act := range ai.TempActions {
 				if i == 0 {
-					action.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area), nil)
+					AddToBot(actions.NewMoveSeriesAction(ai.Character, ai.Character, act.Area), act.Effect)
 				} else {
-					action.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values), nil)
+					AddToBot(actions.NewDamageHexAction(act.Area, ai.currValues), act.Effect)
 				}
 			}
 		}
@@ -435,17 +429,16 @@ func (ai *Skirmisher) TakeTurn() {
 type Grenadier struct {
 	*AbstractAI
 	atkCnt   int
-	decision int
 }
 
 func NewGrenadier(character *floor.Character) *AbstractAI {
 	newAI := &AbstractAI{
 		Character: character,
+		decision: -1,
 	}
 	gren := &Grenadier{
 		newAI,
 		0,
-		-1,
 	}
 	newAI.AI = gren
 	return newAI
@@ -471,6 +464,9 @@ func (ai *Grenadier) Decide() {
 		EndUnoccupied: false,
 		Orig:          orig,
 	}
+	ai.currValues = selector.ActionValues{
+		Damage: 0,
+	}
 	targets := floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 3)
 	if len(targets) > 0 {
 		ai.decision = 2
@@ -481,14 +477,13 @@ func (ai *Grenadier) Decide() {
 		ai.Actions = []*AIAction{}
 		area := floor.CurrentFloor.AllInSextant(orig, targets[choice], 3, atkCheck)
 		if world.CoordsIn(targets[choice], area) {
+			ai.currValues.Damage = 3
 			ai.Actions = append(ai.Actions, &AIAction{
 				Path:        []world.Coords{orig},
 				PathCheck:   atkCheck,
 				TargetArea:  area,
 				TargetCheck: atkCheck,
-				Values: selector.ActionValues{
-					Damage: 3,
-				},
+				Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}),
 			})
 			ai.atkCnt += 2
 		}
@@ -539,14 +534,13 @@ func (ai *Grenadier) Decide() {
 							pts = tpts
 						}
 					}
+					ai.currValues.Damage = 2
 					ai.Actions = append(ai.Actions, &AIAction{
 						Path:        []world.Coords{orig, targets[choice]},
 						PathCheck:   atkCheck,
 						TargetArea:  append([]world.Coords{targets[choice]}, best...),
 						TargetCheck: atkCheck,
-						Values: selector.ActionValues{
-							Damage: 2,
-						},
+						Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}),
 					})
 					ai.atkCnt += 1
 				}
@@ -563,28 +557,26 @@ func (ai *Grenadier) Decide() {
 				for i := 0; i < count; i++ {
 					hits = append(hits, n[rand.Intn(len(n)-1)])
 				}
+				ai.currValues.Damage = 2
 				ai.Actions = append(ai.Actions, &AIAction{
 					Path:        []world.Coords{orig, targets[choice]},
 					PathCheck:   atkCheck,
 					TargetArea:  append([]world.Coords{targets[choice]}, hits...),
 					TargetCheck: atkCheck,
-					Values: selector.ActionValues{
-						Damage: 2,
-					},
+					Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}),
 				})
 				ai.atkCnt += 1
 			}
 		}
-		path, d, legal := floor.CurrentFloor.FindPathPerpendicularTo(orig, targets[choice], 3, 10, movCheck, atkCheck)
+		path, _, legal := floor.CurrentFloor.FindPathPerpendicularTo(orig, targets[choice], 3, 10, movCheck, atkCheck)
 		if legal {
 			ai.Actions = append(ai.Actions, &AIAction{
 				Path:        path,
 				PathCheck:   movCheck,
 				TargetArea:  nil,
 				TargetCheck: floor.PathChecks{},
-				Values: selector.ActionValues{
-					Move: d,
-				},
+				Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+				IsMove:      true,
 			})
 		}
 	}
@@ -593,9 +585,9 @@ func (ai *Grenadier) Decide() {
 func (ai *Grenadier) TakeTurn() {
 	for i, act := range ai.TempActions {
 		if i == 0 {
-			action.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values), nil)
+			AddToBot(actions.NewDamageHexAction(act.Area, ai.currValues), act.Effect)
 		} else {
-			action.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area), nil)
+			AddToBot(actions.NewMoveSeriesAction(ai.Character, ai.Character, act.Area), act.Effect)
 		}
 	}
 }
@@ -608,17 +600,16 @@ func (ai *Grenadier) TakeTurn() {
 type Bruiser struct {
 	*AbstractAI
 	atkCnt   int
-	decision int
 }
 
 func NewBruiser(character *floor.Character) *AbstractAI {
 	newAI := &AbstractAI{
 		Character: character,
+		decision: -1,
 	}
 	bruiser := &Bruiser{
 		newAI,
 		0,
-		-1,
 	}
 	newAI.AI = bruiser
 	return newAI
@@ -658,14 +649,13 @@ func (ai *Bruiser) Decide() {
 		n2 := targets[choice].Neighbors(floor.CurrentFloor.Dimensions())
 		area = world.Combine(area, world.Combine(n1, n2))
 		if world.CoordsIn(targets[choice], area) {
+			ai.currValues.Damage = 4
 			ai.Actions = append(ai.Actions, &AIAction{
 				Path:        []world.Coords{orig},
 				PathCheck:   atkCheck,
 				TargetArea:  area,
 				TargetCheck: atkCheck,
-				Values: selector.ActionValues{
-					Damage: 4,
-				},
+				Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}),
 			})
 			ai.atkCnt++
 		}
@@ -686,21 +676,19 @@ func (ai *Bruiser) Decide() {
 						PathCheck:   movCheck,
 						TargetArea:  nil,
 						TargetCheck: floor.PathChecks{},
-						Values: selector.ActionValues{
-							Move: d,
-						},
+						Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+						IsMove:      true,
 					},
 				}
 				tOrig := path[len(path)-1]
 				next := world.NextHexLine(tOrig, targets[choice])
+				ai.currValues.Damage = 2
 				ai.Actions = append(ai.Actions, &AIAction{
 					Path:        []world.Coords{tOrig},
 					PathCheck:   floor.NoCheck,
 					TargetArea:  []world.Coords{tOrig, targets[choice], next},
 					TargetCheck: atkCheck,
-					Values: selector.ActionValues{
-						Damage: 2,
-					},
+					Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}),
 				})
 				ai.atkCnt++
 				return
@@ -721,9 +709,8 @@ func (ai *Bruiser) Decide() {
 				PathCheck:   movCheck,
 				TargetArea:  nil,
 				TargetCheck: floor.PathChecks{},
-				Values: selector.ActionValues{
-					Move: 1,
-				},
+				Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+				IsMove:      true,
 			})
 		}
 	}
@@ -733,16 +720,16 @@ func (ai *Bruiser) TakeTurn() {
 	if len(ai.TempActions) > 0 {
 		if ai.decision == 0 {
 			act := ai.TempActions[0]
-			action.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area), nil)
+			AddToBot(actions.NewMoveSeriesAction(ai.Character, ai.Character, act.Area), act.Effect)
 		} else if ai.decision == 1 {
 			act := ai.TempActions[0]
-			action.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values), nil)
+			AddToBot(actions.NewDamageHexAction(act.Area, ai.currValues), act.Effect)
 		} else {
 			for i, act := range ai.TempActions {
 				if i == 0 {
-					action.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area), nil)
+					AddToBot(actions.NewMoveSeriesAction(ai.Character, ai.Character, act.Area), act.Effect)
 				} else {
-					action.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values), nil)
+					AddToBot(actions.NewDamageHexAction(act.Area, ai.currValues), act.Effect)
 				}
 			}
 		}
@@ -777,6 +764,7 @@ func (ai *Stationary) Decide() {
 			EndUnoccupied: false,
 			Orig:          orig,
 		}
+		ai.currValues.Damage = 2
 		area := append([]world.Coords{orig}, orig.Neighbors(floor.CurrentFloor.Dimensions())...)
 		ai.Actions = []*AIAction{
 			{
@@ -784,9 +772,7 @@ func (ai *Stationary) Decide() {
 				PathCheck:   floor.NoCheck,
 				TargetArea:  area,
 				TargetCheck: atkCheck,
-				Values: selector.ActionValues{
-					Damage: 1,
-				},
+				Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}),
 			},
 		}
 		ai.decision = 1
@@ -798,6 +784,6 @@ func (ai *Stationary) Decide() {
 func (ai *Stationary) TakeTurn() {
 	if len(ai.TempActions) > 0 {
 		act := ai.TempActions[0]
-		action.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values), nil)
+		AddToBot(actions.NewDamageHexAction(act.Area, ai.currValues), act.Effect)
 	}
 }

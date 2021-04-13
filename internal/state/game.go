@@ -114,14 +114,14 @@ func (s *Encounter) Initialize() {
 	})
 
 	player.Player1.Input.SetHotKey(pixelgl.KeyN, func() {
-		sfx.MusicPlayer.PlayNextTrack(0.0, 0., 0., true)
+		sfx.MusicPlayer.PlayNextTrack(0.0, true)
 	})
 
 	Machine.Phase = EnemyStartTurn
 	//camera.Cam.Mask = colornames.White
 	camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.White, 0.1)
 	sfx.MusicPlayer.SetCurrentTracks([]string{"test_track", "test_ambience"})
-	sfx.MusicPlayer.PlayNextTrack(0.0, 0.1, 0., false)
+	sfx.MusicPlayer.PlayNextTrack(0.0, false)
 }
 
 func (s *Encounter) TransitionIn() bool {

@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"github.com/timsims1717/cg_rogue_go/internal/action"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/selector"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
@@ -18,19 +19,23 @@ type AbstractAI struct {
 	Character     *floor.Character
 	TempCoords    world.Coords
 	PrevDecicions []int
+	Stamina       int
+	decision      int
+	currValues    selector.ActionValues
 }
 
 type AIAction struct {
+	Effect      *selector.AbstractSelectionEffect
 	Path        []world.Coords
 	PathCheck   floor.PathChecks
 	TargetArea  []world.Coords
 	TargetCheck floor.PathChecks
-	Values      selector.ActionValues
+	IsMove      bool
 }
 
 type TempAIAction struct {
 	Area   []world.Coords
-	Values selector.ActionValues
+	Effect *selector.AbstractSelectionEffect
 }
 
 func (ai *AbstractAI) IsAlive() bool {
@@ -39,9 +44,7 @@ func (ai *AbstractAI) IsAlive() bool {
 
 func (ai *AbstractAI) Update() {
 	if ai.Character.Health.Alive {
-		for _, act := range ai.Actions {
-			act.Values.Source = ai.Character
-		}
+		ai.currValues.Source = ai.Character
 		ai.TempActions = make([]*TempAIAction, len(ai.Actions))
 		ai.TempCoords = ai.Character.GetCoords()
 		for i, act := range ai.Actions {
@@ -64,24 +67,26 @@ func (ai *AbstractAI) Update() {
 			// update the temp actions with the results of the check
 			ai.TempActions[i] = &TempAIAction{
 				Area:   tArea,
-				Values: act.Values,
+				Effect: act.Effect,
 			}
-			if act.Values.Move > 0 && len(tPath) > 0 {
+			if act.IsMove && len(tPath) > 0 {
 				ai.TempCoords = tPath[len(tPath)-1]
 			}
 		}
 		for _, act := range ai.TempActions {
-			if act.Area != nil && len(act.Area) > 0 {
-				for _, c := range act.Area {
-					if act.Values.Move > 0 {
-						if len(act.Area) > 1 {
-							selector.AddSelectUI(selector.Move, c.X, c.Y)
-						}
-					} else {
-						selector.AddSelectUI(selector.Attack, c.X, c.Y)
-					}
-				}
+			if act.Area != nil && len(act.Area) > 0 && act.Effect != nil {
+				act.Effect.SetArea(act.Area)
+				selector.AddSelectionEffect(act.Effect)
 			}
 		}
 	}
 }
+
+func AddToTop(a action.Action, effects... *selector.AbstractSelectionEffect) {
+	action.ActionManager.AddToTop(a, effects)
+}
+
+func AddToBot(a action.Action, effects... *selector.AbstractSelectionEffect) {
+	action.ActionManager.AddToBot(a, effects)
+}
+

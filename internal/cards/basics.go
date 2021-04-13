@@ -14,7 +14,7 @@ type Thrust struct {
 }
 
 func (c *Thrust) DoActions() {
-	AddToBot(actions.NewDamageAction(c.Results[0][0].Area, c.Values), nil)
+	AddToBot(actions.NewDamageAction(c.Results[0][0].Area, c.Values), c.Results[0][0].Effect)
 }
 
 func (c *Thrust) SetValues(level int) {
@@ -48,7 +48,7 @@ type Dash struct {
 }
 
 func (c *Dash) DoActions() {
-	AddToBot(actions.NewMoveSeriesAction(c.Values.Source, c.Values.Source, c.Results[0][0].Area), nil)
+	AddToBot(actions.NewMoveSeriesAction(c.Values.Source, c.Values.Source, c.Results[0][0].Area), c.Results[0][0].Effect)
 }
 
 func (c *Dash) SetValues(level int) {
@@ -86,8 +86,8 @@ type QuickStrike struct {
 }
 
 func (c *QuickStrike) DoActions() {
-	AddToBot(actions.NewMoveSeriesAction(c.Values.Source, c.Values.Source, c.Results[0][0].Area), nil)
-	AddToBot(actions.NewDamageAction(c.Results[1][0].Area, c.Values), nil)
+	AddToBot(actions.NewMoveSeriesAction(c.Values.Source, c.Values.Source, c.Results[0][0].Area), c.Results[0][0].Effect)
+	AddToBot(actions.NewDamageAction(c.Results[1][0].Area, c.Values), c.Results[1][0].Effect)
 }
 
 func (c *QuickStrike) SetValues(level int) {
@@ -148,7 +148,7 @@ type Sweep struct {
 }
 
 func (c *Sweep) DoActions() {
-	AddToBot(actions.NewPushMultiAction(c.Results[0][0].Area, c.Values), nil)
+	AddToBot(actions.NewPushMultiAction(c.Results[0][0].Area, c.Values), c.Results[0][0].Effect)
 }
 
 func (c *Sweep) SetValues(level int) {
@@ -208,8 +208,8 @@ func (c *Vault) DoActions() {
 	if len(c.Results[0]) > 0 {
 		h = c.Results[0][0].Area[len(c.Results[0])-1]
 	}
-	AddToBot(actions.NewMoveAction(c.Values.Source, c.Values.Source, h), nil)
-	AddToBot(actions.NewDamageHexAction(c.Results[1][0].Area, c.Values), nil)
+	AddToBot(actions.NewMoveAction(c.Values.Source, c.Values.Source, h), c.Results[0][0].Effect)
+	AddToBot(actions.NewDamageHexAction(c.Results[1][0].Area, c.Values), c.Results[1][0].Effect)
 }
 
 func (c *Vault) SetValues(level int) {
@@ -274,7 +274,7 @@ type DaggerThrow struct {
 }
 
 func (c *DaggerThrow) DoActions() {
-	AddToBot(actions.NewDamageHexAction(c.Results[0][0].Area, c.Values), nil)
+	AddToBot(actions.NewDamageHexAction(c.Results[0][0].Area, c.Values), c.Results[0][0].Effect, c.Results[0][1].Effect)
 }
 
 func (c *DaggerThrow) SetValues(level int) {
@@ -331,8 +331,8 @@ type Disengage struct {
 }
 
 func (c *Disengage) DoActions() {
-	AddToBot(actions.NewDamageHexAction(c.Results[0][0].Area, c.Values), nil)
-	AddToBot(actions.NewMoveSeriesAction(c.Values.Source, c.Values.Source, c.Results[1][0].Area), nil)
+	AddToBot(actions.NewDamageHexAction(c.Results[0][0].Area, c.Values), c.Results[0][0].Effect)
+	AddToBot(actions.NewMoveSeriesAction(c.Values.Source, c.Values.Source, c.Results[1][0].Area), c.Results[1][0].Effect)
 }
 
 func (c *Disengage) SetValues(level int) {
@@ -402,7 +402,7 @@ func (c *Slam) DoActions() {
 	if len(c.Results[0]) > 0 {
 		h = c.Results[0][0].Area[len(c.Results[0][0].Area)-1]
 	}
-	AddToBot(actions.NewSlamAction(h, c.Results[0][1].Area, c.Values), nil)
+	AddToBot(actions.NewSlamAction(h, c.Results[0][1].Area, c.Values), c.Results[0][0].Effect, c.Results[0][1].Effect)
 }
 
 func (c *Slam) SetValues(level int) {
