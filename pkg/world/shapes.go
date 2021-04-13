@@ -1,7 +1,7 @@
 package world
 
 func Spiral(l int) []Coords {
-	list := []Coords{ Origin }
+	list := []Coords{Origin}
 	start := Origin
 	first := Origin.Up()
 	curr := first

@@ -49,8 +49,8 @@ func LoadSpriteSheet(path string) (*SpriteSheet, error) {
 		return nil, errors.Wrap(err, errMsg)
 	}
 	sheet := &SpriteSheet{
-		Img: img,
-		Sprites: make([]pixel.Rect, 0),
+		Img:       img,
+		Sprites:   make([]pixel.Rect, 0),
 		SpriteMap: make(map[string]pixel.Rect, 0),
 	}
 	x := 0.0

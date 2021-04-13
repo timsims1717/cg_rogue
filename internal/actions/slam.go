@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"github.com/timsims1717/cg_rogue_go/internal/action"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/selector"
 	"github.com/timsims1717/cg_rogue_go/pkg/animation"
@@ -11,11 +12,11 @@ import (
 )
 
 type SlamAction struct {
+	*action.AbstractAction
 	values  selector.ActionValues
 	area    []world.Coords
 	landing world.Coords
 	start   bool
-	isDone  bool
 }
 
 func NewSlamAction(landing world.Coords, area []world.Coords, values selector.ActionValues) *SlamAction {
@@ -27,7 +28,6 @@ func NewSlamAction(landing world.Coords, area []world.Coords, values selector.Ac
 		area:    area,
 		landing: landing,
 		start:   true,
-		isDone:  false,
 	}
 }
 
@@ -44,7 +44,7 @@ func (a *SlamAction) Update() {
 		a.start = false
 	}
 	if !a.values.Source.IsMoving() {
-		a.isDone = true
+		a.IsDone = true
 		floor.CurrentFloor.MoveOccupant(a.values.Source, a.values.Source.Coords, a.landing)
 		first := true
 		for _, h := range a.area {
@@ -65,6 +65,6 @@ func (a *SlamAction) Update() {
 	}
 }
 
-func (a *SlamAction) IsDone() bool {
-	return a.isDone
+func (a *SlamAction) SetAbstract(abstractAction *action.AbstractAction) {
+	a.AbstractAction = abstractAction
 }

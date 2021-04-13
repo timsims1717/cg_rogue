@@ -1,9 +1,9 @@
 package ai
 
 import (
+	"github.com/timsims1717/cg_rogue_go/internal/action"
 	"github.com/timsims1717/cg_rogue_go/internal/actions"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
-	"github.com/timsims1717/cg_rogue_go/internal/manager"
 	"github.com/timsims1717/cg_rogue_go/internal/selector"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"math/rand"
@@ -73,7 +73,7 @@ func (r *RandomWalker) Decide() {
 			PathCheck:   movCheck,
 			TargetArea:  nil,
 			TargetCheck: floor.PathChecks{},
-			Values:      selector.ActionValues{
+			Values: selector.ActionValues{
 				Move: 1,
 			},
 		},
@@ -82,7 +82,7 @@ func (r *RandomWalker) Decide() {
 			PathCheck:   floor.PathChecks{},
 			TargetArea:  []world.Coords{world.Origin},
 			TargetCheck: atkCheck,
-			Values:      selector.ActionValues{
+			Values: selector.ActionValues{
 				Damage: 1,
 			},
 		},
@@ -93,9 +93,9 @@ func (r *RandomWalker) TakeTurn() {
 	for i, act := range r.TempActions {
 		switch i % 2 {
 		case 0:
-			manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
+			action.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area), nil)
 		case 1:
-			manager.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+			action.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values), nil)
 		}
 	}
 }
@@ -180,7 +180,7 @@ func (ai *FlyChaser) Decide() {
 							PathCheck:   floor.NoCheck,
 							TargetArea:  []world.Coords{world.Origin},
 							TargetCheck: atkCheck,
-							Values:      selector.ActionValues{
+							Values: selector.ActionValues{
 								Damage: 1,
 							},
 						},
@@ -219,9 +219,9 @@ func (ai *FlyChaser) TakeTurn() {
 	for i, act := range ai.TempActions {
 		switch i % 2 {
 		case 0:
-			manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
+			action.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area), nil)
 		case 1:
-			manager.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+			action.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values), nil)
 		}
 	}
 }
@@ -233,9 +233,9 @@ func (ai *FlyChaser) TakeTurn() {
 // Otherwise, plink the player
 type Skirmisher struct {
 	*AbstractAI
-	patrol []world.Coords
+	patrol     []world.Coords
 	patrolling int
-	decision int
+	decision   int
 }
 
 func NewSkirmisher(character *floor.Character) *AbstractAI {
@@ -294,7 +294,7 @@ func (ai *Skirmisher) Decide() {
 				PathCheck:   floor.NoCheck,
 				TargetArea:  []world.Coords{world.Origin},
 				TargetCheck: atkCheck,
-				Values:      selector.ActionValues{
+				Values: selector.ActionValues{
 					Damage: 1,
 				},
 			},
@@ -411,16 +411,16 @@ func (ai *Skirmisher) TakeTurn() {
 		switch ai.decision {
 		case 0:
 			act := ai.TempActions[0]
-			manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
+			action.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area), nil)
 		case 1:
 			act := ai.TempActions[0]
-			manager.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+			action.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values), nil)
 		case 2:
 			for i, act := range ai.TempActions {
 				if i == 0 {
-					manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
+					action.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area), nil)
 				} else {
-					manager.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+					action.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values), nil)
 				}
 			}
 		}
@@ -593,9 +593,9 @@ func (ai *Grenadier) Decide() {
 func (ai *Grenadier) TakeTurn() {
 	for i, act := range ai.TempActions {
 		if i == 0 {
-			manager.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+			action.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values), nil)
 		} else {
-			manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
+			action.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area), nil)
 		}
 	}
 }
@@ -626,7 +626,7 @@ func NewBruiser(character *floor.Character) *AbstractAI {
 
 func (ai *Bruiser) Decide() {
 	b := rand.Intn(2)
-	if ai.atkCnt > 3 + b {
+	if ai.atkCnt > 3+b {
 		ai.atkCnt = 0
 		return
 	}
@@ -733,16 +733,16 @@ func (ai *Bruiser) TakeTurn() {
 	if len(ai.TempActions) > 0 {
 		if ai.decision == 0 {
 			act := ai.TempActions[0]
-			manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
+			action.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area), nil)
 		} else if ai.decision == 1 {
 			act := ai.TempActions[0]
-			manager.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+			action.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values), nil)
 		} else {
 			for i, act := range ai.TempActions {
 				if i == 0 {
-					manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area))
+					action.ActionManager.AddToBot(actions.NewMoveSeriesAction(act.Values.Source, act.Values.Source, act.Area), nil)
 				} else {
-					manager.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+					action.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values), nil)
 				}
 			}
 		}
@@ -798,6 +798,6 @@ func (ai *Stationary) Decide() {
 func (ai *Stationary) TakeTurn() {
 	if len(ai.TempActions) > 0 {
 		act := ai.TempActions[0]
-		manager.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values))
+		action.ActionManager.AddToBot(actions.NewDamageHexAction(act.Area, act.Values), nil)
 	}
 }

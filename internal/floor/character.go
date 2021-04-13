@@ -69,7 +69,7 @@ func (c *Character) Update() {
 			c.effect = nil
 		}
 	}
-	c.Health.pos = pixel.V(c.Transform.Pos.X, c.Transform.Pos.Y + 50.)
+	c.Health.pos = pixel.V(c.Transform.Pos.X, c.Transform.Pos.Y+50.)
 	c.Health.Update()
 }
 

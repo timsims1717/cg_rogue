@@ -61,7 +61,7 @@ func (s *AbstractSelector) IsCancelled() bool {
 
 type Result struct {
 	Area   []world.Coords
-	Effect SelectionEffect
+	Effect *AbstractSelectionEffect
 	IsMove bool
 }
 
@@ -69,7 +69,7 @@ func NewResult(area []world.Coords, effect *AbstractSelectionEffect, isMove bool
 	if effect != nil {
 		return &Result{
 			Area:   area,
-			Effect: effect.Effect,
+			Effect: effect,
 			IsMove: isMove,
 		}
 	}

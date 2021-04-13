@@ -8,7 +8,7 @@ const (
 	// Hand constants
 	HandCardScale    = 0.65
 	HandHovCardScale = 0.8
-	HandLeftPad      = BaseCardWidth *0.5
+	HandLeftPad      = BaseCardWidth * 0.5
 	HandBottomPad    = BaseCardHeight * 0.25 * HandCardScale
 
 	// PlayCard constants
@@ -28,6 +28,6 @@ const (
 
 	// Action Button constants
 	ButtonRightPad = 220.
-	RestBottomPad = 60.
-	MoveBottomPad = 100.
+	RestBottomPad  = 60.
+	MoveBottomPad  = 100.
 )

@@ -14,7 +14,7 @@ import (
 	"golang.org/x/image/colornames"
 )
 
-type MainMenu struct {}
+type MainMenu struct{}
 
 var (
 	cameraPan = []world.Coords{
@@ -67,7 +67,7 @@ func (s *MainMenu) Initialize() {
 	startText := ui2.NewActionText(start)
 	startText.Transform.Scalar = pixel.V(4., 4.)
 	startText.TextColor = colornames.Purple
-	startR := pixel.R(0., 0., startText.Text.BoundsOf(start).W() * 4., startText.Text.BoundsOf(start).H() * 3.75)
+	startR := pixel.R(0., 0., startText.Text.BoundsOf(start).W()*4., startText.Text.BoundsOf(start).H()*3.75)
 	startMenuItem = ui2.NewActionEl(startText, startR, true)
 	startMenuItem.Show = true
 	startMenuItem.Transform.Pos = pixel.V(20., 280.)
@@ -91,7 +91,7 @@ func (s *MainMenu) Initialize() {
 	exitText := ui2.NewActionText(exitS)
 	exitText.Transform.Scalar = pixel.V(4., 4.)
 	exitText.TextColor = colornames.Purple
-	exitR := pixel.R(0., 0., exitText.Text.BoundsOf(exitS).W() * 4., exitText.Text.BoundsOf(exitS).H() * 3.75)
+	exitR := pixel.R(0., 0., exitText.Text.BoundsOf(exitS).W()*4., exitText.Text.BoundsOf(exitS).H()*3.75)
 	exitMenuItem = ui2.NewActionEl(exitText, exitR, true)
 	exitMenuItem.Show = true
 	exitMenuItem.Transform.Pos = pixel.V(20., 220.)

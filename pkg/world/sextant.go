@@ -34,17 +34,17 @@ func AngleBetween(a, b Coords) float64 {
 func GetSextant(subject, pivot Coords) Sextant {
 	angle := AngleBetween(subject, pivot)
 	const (
-		upl = 2.67
+		upl  = 2.67
 		upl1 = 2.68
-		top = 1.57
+		top  = 1.57
 		top1 = 1.58
-		upr = 0.46
+		upr  = 0.46
 		upr1 = 0.47
-		dnr = -upr
+		dnr  = -upr
 		dnr1 = -upr1
-		dwn = -top
+		dwn  = -top
 		dwn1 = -top1
-		dnl = -upl
+		dnl  = -upl
 		dnl1 = -upl1
 	)
 	if angle <= upl1 && angle >= upl {
@@ -126,9 +126,9 @@ func GetSextantWorld(subject, pivot pixel.Vec) Sextant {
 	mag := subject.Sub(pivot)
 	angle := mag.Angle()
 	const (
-		upl = (math.Pi/6.)*5.
-		top = math.Pi/2.
-		upr = math.Pi/6.
+		upl = (math.Pi / 6.) * 5.
+		top = math.Pi / 2.
+		upr = math.Pi / 6.
 		dnr = -upr
 		dwn = -top
 		dnl = -upl

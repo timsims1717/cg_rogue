@@ -2,8 +2,8 @@ package actions
 
 import (
 	"github.com/faiface/pixel"
+	"github.com/timsims1717/cg_rogue_go/internal/action"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
-	"github.com/timsims1717/cg_rogue_go/internal/manager"
 	"github.com/timsims1717/cg_rogue_go/internal/selector"
 	gween "github.com/timsims1717/cg_rogue_go/pkg/gween64"
 	"github.com/timsims1717/cg_rogue_go/pkg/gween64/ease"
@@ -12,15 +12,15 @@ import (
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
-type PushAction struct{
+type PushAction struct {
+	*action.AbstractAction
 	source *floor.Character
 	target *floor.Character
 	push   int
 	start  bool
-	isDone bool
 }
 
-func NewPushAction(s *floor.Character, t *floor.Character, p int) *PushAction {
+func NewPushAction(s, t *floor.Character, p int) *PushAction {
 	if t == nil {
 		return nil
 	}
@@ -29,7 +29,6 @@ func NewPushAction(s *floor.Character, t *floor.Character, p int) *PushAction {
 		target: t,
 		push:   p,
 		start:  true,
-		isDone: false,
 	}
 }
 
@@ -56,26 +55,26 @@ func (a *PushAction) Update() {
 			}
 		}
 		if len(nPath) < 2 {
-			a.isDone = true
+			a.IsDone = true
 			return
 		}
-		manager.ActionManager.AddToTop(NewMoveAction(a.source, a.target, nPath[len(nPath)-1]))
+		action.ActionManager.AddToTop(NewMoveAction(a.source, a.target, nPath[len(nPath)-1]), nil)
 		a.start = false
-		a.isDone = true
+		a.IsDone = true
 	}
 }
 
-func (a *PushAction) IsDone() bool {
-	return a.isDone
+func (a *PushAction) SetAbstract(abstractAction *action.AbstractAction) {
+	a.AbstractAction = abstractAction
 }
 
-type PushMultiAction struct{
+type PushMultiAction struct {
+	*action.AbstractAction
 	area    []world.Coords
 	values  selector.ActionValues
 	start   bool
 	preDam  bool
 	postDam bool
-	isDone  bool
 	interX  *gween.Tween
 	interY  *gween.Tween
 	targets []*floor.Character
@@ -178,11 +177,11 @@ func (a *PushMultiAction) Update() {
 			a.postDam = true
 		}
 		if done {
-			a.isDone = true
+			a.IsDone = true
 		}
 	}
 }
 
-func (a *PushMultiAction) IsDone() bool {
-	return a.isDone
+func (a *PushMultiAction) SetAbstract(abstractAction *action.AbstractAction) {
+	a.AbstractAction = abstractAction
 }

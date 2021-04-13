@@ -4,7 +4,7 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	uuid "github.com/satori/go.uuid"
-	"github.com/timsims1717/cg_rogue_go/internal/manager"
+	"github.com/timsims1717/cg_rogue_go/internal/action"
 	"github.com/timsims1717/cg_rogue_go/internal/selector"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
@@ -27,7 +27,7 @@ func (p *PlayCard) Update(turn bool) {
 	if p.Card != nil && p.player != nil {
 		if turn {
 			if p.update {
-				p.Card.setXY(pixel.V(camera.WindowWidthF - PlayRightPad, PlayBottomPad))
+				p.Card.setXY(pixel.V(camera.WindowWidthF-PlayRightPad, PlayBottomPad))
 				p.Card.setScalar(PlayCardScale)
 				p.update = false
 			}
@@ -40,7 +40,7 @@ func (p *PlayCard) Update(turn bool) {
 		p.Card.Update(pixel.Rect{})
 		if turn {
 			if p.Card.played {
-				if !manager.ActionManager.IsActing() {
+				if !action.ActionManager.IsActing() {
 					p.player.ActionsThisTurn++
 					if p.Card.Rests > 0 {
 						CardManager.Move(p, p.player.Discard, p.Card)
@@ -89,6 +89,13 @@ func (p *PlayCard) Update(turn bool) {
 						}
 					}
 				}
+				for _, results := range p.Card.Results {
+					if results != nil {
+						for _, result := range results {
+							selector.AddSelectionEffect(result.Effect)
+						}
+					}
+				}
 			}
 		} else {
 			if p.CurrSelector != nil {
@@ -103,6 +110,7 @@ func (p *PlayCard) NextSelector() {
 	if p.Card.actPtr >= len(p.Card.Selectors) {
 		p.CurrSelector = nil
 	} else {
+		p.Card.Results[p.Card.actPtr] = nil
 		p.Card.Selectors[p.Card.actPtr].Reset(p.Card.tempOrig[len(p.Card.tempOrig)-1])
 		p.Card.Selectors[p.Card.actPtr].Selector.SetValues(p.Card.Values)
 		p.CurrSelector = p.Card.Selectors[p.Card.actPtr]
@@ -154,4 +162,3 @@ func (p *PlayCard) RemoveCard(uuid uuid.UUID) *Card {
 	p.Card = nil
 	return card
 }
-

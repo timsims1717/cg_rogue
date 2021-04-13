@@ -69,7 +69,7 @@ func (d *Discard) Draw(win *pixelgl.Window) {
 	// if make it all the way through, draw the discard location as well
 	drawBottom := true
 	index := 0
-	for i := len(d.Group)-1; i >= 0; i-- {
+	for i := len(d.Group) - 1; i >= 0; i-- {
 		card := d.Group[i]
 		if !card.trans {
 			drawBottom = false

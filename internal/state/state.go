@@ -2,7 +2,7 @@ package state
 
 import "github.com/faiface/pixel/pixelgl"
 
-type State interface{
+type State interface {
 	//Load()
 	//IsLoaded() bool
 	Initialize()

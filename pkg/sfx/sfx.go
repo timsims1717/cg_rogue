@@ -38,7 +38,7 @@ func getMasterVolume() float64 {
 	if masterMuted {
 		return -5.
 	} else {
-		return float64(masterVolume) / 20. - 5.
+		return float64(masterVolume)/20. - 5.
 	}
 }
 
@@ -46,7 +46,7 @@ func getMusicVolume() float64 {
 	if musicMuted || masterMuted {
 		return -5.
 	} else {
-		return float64(musicVolume * masterVolume) / 2000. - 5.
+		return float64(musicVolume*masterVolume)/2000. - 5.
 	}
 }
 
@@ -54,7 +54,7 @@ func getSoundVolume() float64 {
 	if soundMuted || masterMuted {
 		return -5.
 	} else {
-		return float64(soundVolume * masterVolume) / 2000. - 5.
+		return float64(soundVolume*masterVolume)/2000. - 5.
 	}
 }
 
@@ -62,7 +62,7 @@ func getSfxVolume(key string) float64 {
 	if sfxMuted[key] || masterMuted {
 		return -5.
 	} else {
-		return float64(sfxVolume[key] * masterVolume) / 2000. - 5.
+		return float64(sfxVolume[key]*masterVolume)/2000. - 5.
 	}
 }
 

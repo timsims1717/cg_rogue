@@ -6,7 +6,7 @@ import (
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
-type MoveEffect struct{
+type MoveEffect struct {
 	*AbstractSelectionEffect
 }
 

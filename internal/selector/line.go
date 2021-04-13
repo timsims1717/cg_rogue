@@ -64,7 +64,7 @@ func (s *LineTargetSelect) Update(input *input.Input) {
 				s.Effect.SetArea(primary)
 				AddSelectionEffect(s.Effect)
 			}
-			if len(secondary) > 0 && s.SecEffect != nil  {
+			if len(secondary) > 0 && s.SecEffect != nil {
 				s.SecEffect.SetArea(secondary)
 				AddSelectionEffect(s.SecEffect)
 			}

@@ -12,7 +12,7 @@ func ReverseList(s []Coords) []Coords {
 
 // RandomizeList shuffles the elements of the Coords array.
 func RandomizeList(s []Coords) []Coords {
-	for i := len(s)-1; i > 0; i-- {
+	for i := len(s) - 1; i > 0; i-- {
 		j := rand.Intn(i)
 		s[i], s[j] = s[j], s[i]
 	}
@@ -44,7 +44,6 @@ func CoordsIn(c Coords, list []Coords) bool {
 	}
 	return false
 }
-
 
 func Combine(a, b []Coords) []Coords {
 	n := a

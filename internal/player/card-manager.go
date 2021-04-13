@@ -7,7 +7,7 @@ import (
 
 func init() {
 	CardManager = cardManager{
-		moves:  []cardMove{},
+		moves: []cardMove{},
 	}
 }
 
@@ -39,7 +39,7 @@ func moveCard(a, b CardGroup, id uuid.UUID) {
 var CardManager cardManager
 
 type cardManager struct {
-	moves  []cardMove
+	moves []cardMove
 }
 
 type cardMove struct {

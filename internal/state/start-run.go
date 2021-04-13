@@ -12,7 +12,7 @@ import (
 	"math/rand"
 )
 
-type StartRun struct {}
+type StartRun struct{}
 
 func (s *StartRun) Initialize() {
 	run.StartRun()

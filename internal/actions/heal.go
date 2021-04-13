@@ -1,17 +1,18 @@
 package actions
 
 import (
+	"github.com/timsims1717/cg_rogue_go/internal/action"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/selector"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
 type HealAction struct {
+	*action.AbstractAction
 	values selector.ActionValues
 	target *floor.Character
 	coords world.Coords
 	start  bool
-	isDone bool
 }
 
 func NewHealAction(area []world.Coords, values selector.ActionValues) *HealAction {
@@ -25,7 +26,6 @@ func NewHealAction(area []world.Coords, values selector.ActionValues) *HealActio
 			target: target,
 			coords: area[0],
 			start:  true,
-			isDone: false,
 		}
 	}
 	return nil
@@ -33,9 +33,9 @@ func NewHealAction(area []world.Coords, values selector.ActionValues) *HealActio
 
 func (a *HealAction) Update() {
 	a.target.Heal(a.values.Heal)
-	a.isDone = true
+	a.IsDone = true
 }
 
-func (a *HealAction) IsDone() bool {
-	return a.isDone
+func (a *HealAction) SetAbstract(abstractAction *action.AbstractAction) {
+	a.AbstractAction = abstractAction
 }

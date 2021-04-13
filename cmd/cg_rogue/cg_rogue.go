@@ -38,7 +38,7 @@ func run() {
 	sfx.MusicPlayer.RegisterMusicTrack("assets/music/test_track.MP3", "test_track")
 	sfx.MusicPlayer.RegisterMusicTrack("assets/music/test_ambience.MP3", "test_ambience")
 	sfx.MusicPlayer.RegisterMusicTrack("assets/music/main_menu.MP3", "main_menu")
-	sfx.SetMusicVolume(0)
+	sfx.SetMusicVolume(65)
 
 	sfx.SoundPlayer.RegisterSound("assets/sounds/punch_hit.wav", "punch_hit")
 	sfx.SoundPlayer.RegisterSound("assets/sounds/punch_miss.wav", "punch_miss")

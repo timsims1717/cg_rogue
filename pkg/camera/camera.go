@@ -38,7 +38,7 @@ func New() *Camera {
 		Mat:  pixel.IM,
 		Pos:  pixel.ZV,
 		Zoom: 1.0,
-		Opt:  CameraOptions{
+		Opt: CameraOptions{
 			ScrollSpeed: 500.0,
 			ZoomSpeed:   1.2,
 		},
@@ -152,7 +152,7 @@ func (c *Camera) ZoomIn(zoom float64) {
 // UITransform returns a pixel.Matrix that can move the center of a pixel.Rect
 // to the bottom left of the screen.
 func (c *Camera) UITransform(pos, scalar pixel.Vec, rot float64) pixel.Matrix {
-	zoom := 1/c.Zoom
+	zoom := 1 / c.Zoom
 	mat := pixel.IM.ScaledXY(pixel.ZV, scalar.Scaled(zoom))
 	mat = mat.Rotated(pixel.ZV, rot)
 	mat = mat.Moved(pixel.V(c.Pos.X, c.Pos.Y))

@@ -3,7 +3,7 @@ package timing
 import "time"
 
 var (
-	DT float64
+	DT   float64
 	last time.Time
 )
 

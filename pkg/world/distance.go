@@ -10,9 +10,9 @@ func DistanceSimple(a, b Coords) int {
 	dist := 0
 	x, y := a.X, a.Y
 	for x != b.X {
-		if x % 2 == 0 && y > b.Y {
+		if x%2 == 0 && y > b.Y {
 			y -= 1
-		} else if x % 2 != 0 && y < b.Y {
+		} else if x%2 != 0 && y < b.Y {
 			y += 1
 		}
 		if x > b.X {
@@ -22,7 +22,7 @@ func DistanceSimple(a, b Coords) int {
 		}
 		dist += 1
 	}
-	return dist + util.Abs(y - b.Y)
+	return dist + util.Abs(y-b.Y)
 }
 
 func Distance(a, b Coords) float64 {
@@ -30,13 +30,13 @@ func Distance(a, b Coords) float64 {
 	bf := MapToWorld(b)
 	x := af.X - bf.X
 	y := af.Y - bf.Y
-	return math.Sqrt(x * x + y * y)
+	return math.Sqrt(x*x + y*y)
 }
 
 func DistanceWorld(a, b pixel.Vec) float64 {
 	x := a.X - b.X
 	y := a.Y - b.Y
-	return math.Sqrt(x * x + y * y)
+	return math.Sqrt(x*x + y*y)
 }
 
 func OrderByDistSimple(orig Coords, ul []Coords) []Coords {

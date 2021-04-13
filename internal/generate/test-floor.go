@@ -31,10 +31,10 @@ func LoadTestFloor(level int) {
 	pX := rand.Intn(4) + 4
 	pY := rand.Intn(4) + 4
 
-	player.Player1.Character.SetCoords(world.Coords{ X: pX, Y: pY })
+	player.Player1.Character.SetCoords(world.Coords{X: pX, Y: pY})
 
 	countBase := 4 + level
-	random := (rand.Intn(countBase) - countBase / 2) / 2
+	random := (rand.Intn(countBase) - countBase/2) / 2
 
 	enemyCount := countBase + random
 
@@ -62,7 +62,7 @@ func LoadTestFloor(level int) {
 				}
 			}
 		}
-		occCoords = append(occCoords, world.Coords{ X: eX, Y: eY })
+		occCoords = append(occCoords, world.Coords{X: eX, Y: eY})
 		enemyLevel := CreateTestCharacter(world.Coords{X: eX, Y: eY}, treesheet)
 		i += enemyLevel
 	}

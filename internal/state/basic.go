@@ -2,7 +2,7 @@ package state
 
 import "github.com/faiface/pixel/pixelgl"
 
-type Exiting struct {}
+type Exiting struct{}
 
 func (s *Exiting) Initialize() {}
 
@@ -26,7 +26,7 @@ func (s *Exiting) String() string {
 	return "Exiting"
 }
 
-type NoState struct {}
+type NoState struct{}
 
 func (s *NoState) Initialize() {}
 

@@ -13,7 +13,7 @@ import (
 
 var CurrentFloor *Floor
 
-type Floor struct{
+type Floor struct {
 	floor    [][]Hex
 	batch    *pixel.Batch
 	update   bool
@@ -50,7 +50,7 @@ func NewFloor(w, h int, spriteSheet *img.SpriteSheet) *Floor {
 		panic(fmt.Errorf("could not create floor with width of %d and height of %d", w, h))
 	}
 	floor := &Floor{
-		batch: pixel.NewBatch(&pixel.TrianglesData{}, spriteSheet.Img),
+		batch:  pixel.NewBatch(&pixel.TrianglesData{}, spriteSheet.Img),
 		update: true,
 	}
 	floor.floor = make([][]Hex, 0)
@@ -68,7 +68,7 @@ func DefaultFloor(w, h int, spriteSheet *img.SpriteSheet) {
 		panic(fmt.Errorf("could not create floor with width of %d and height of %d", w, h))
 	}
 	CurrentFloor = &Floor{
-		batch: pixel.NewBatch(&pixel.TrianglesData{}, spriteSheet.Img),
+		batch:  pixel.NewBatch(&pixel.TrianglesData{}, spriteSheet.Img),
 		update: true,
 	}
 	CurrentFloor.floor = make([][]Hex, 0)
@@ -86,12 +86,12 @@ func (f *Floor) Draw(win *pixelgl.Window) {
 		w, h := f.Dimensions()
 		for y := h - 1; y >= 0; y-- {
 			for x := 1; x < w; x += 2 {
-				hex := f.Get(world.Coords{x,y})
+				hex := f.Get(world.Coords{x, y})
 				mat := pixel.IM.Scaled(pixel.ZV, cfg.Scalar).Moved(world.MapToWorld(hex.GetCoords())).Moved(pixel.V(-4.0, 0.0))
 				hex.Tile.Draw(f.batch, mat)
 			}
 			for x := 0; x < w; x += 2 {
-				hex := f.Get(world.Coords{x,y})
+				hex := f.Get(world.Coords{x, y})
 				mat := pixel.IM.Scaled(pixel.ZV, cfg.Scalar).Moved(world.MapToWorld(hex.GetCoords())).Moved(pixel.V(-4.0, 0.0))
 				hex.Tile.Draw(f.batch, mat)
 			}

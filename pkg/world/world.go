@@ -6,10 +6,10 @@ import (
 )
 
 func MapToWorld(a Coords) pixel.Vec {
-	if a.X % 2 != 0 {
-		return pixel.V((float64(a.X) + 0.5) * ScaledTileSize, (float64(a.Y) + 1.0) * ScaledTileSize)
+	if a.X%2 != 0 {
+		return pixel.V((float64(a.X)+0.5)*ScaledTileSize, (float64(a.Y)+1.0)*ScaledTileSize)
 	} else {
-		return pixel.V((float64(a.X) + 0.5) * ScaledTileSize, (float64(a.Y) + 0.5) * ScaledTileSize)
+		return pixel.V((float64(a.X)+0.5)*ScaledTileSize, (float64(a.Y)+0.5)*ScaledTileSize)
 	}
 }
 
@@ -24,7 +24,7 @@ func WorldToMap(x, y float64) (int, int) {
 	mapYO := math.Floor(mapY - 0.5)
 	mapYE := math.Floor(mapY)
 	mapYf := mapYE
-	odd := int(mapXf) % 2 != 0
+	odd := int(mapXf)%2 != 0
 	if odd {
 		mapYf = mapYO
 	}

@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	imd         *imdraw.IMDraw
+	imd *imdraw.IMDraw
 )
 
 func InitializeLines() {

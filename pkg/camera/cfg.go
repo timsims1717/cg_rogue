@@ -13,4 +13,3 @@ func SetWindowSize(width, height int) {
 	WindowWidthF = float64(width)
 	WindowHeightF = float64(height)
 }
-

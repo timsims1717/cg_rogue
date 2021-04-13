@@ -1,10 +1,13 @@
 package actions
 
-import "github.com/timsims1717/cg_rogue_go/internal/player"
+import (
+	"github.com/timsims1717/cg_rogue_go/internal/action"
+	"github.com/timsims1717/cg_rogue_go/internal/player"
+)
 
-type RestAction struct{
+type RestAction struct {
+	*action.AbstractAction
 	source *player.Player
-	isDone bool
 }
 
 func NewRestAction(source *player.Player) *RestAction {
@@ -17,13 +20,13 @@ func NewRestAction(source *player.Player) *RestAction {
 }
 
 func (a *RestAction) Update() {
-	for i := len(a.source.Discard.Group)-1; i >= 0; i-- {
+	for i := len(a.source.Discard.Group) - 1; i >= 0; i-- {
 		card := a.source.Discard.Group[i]
 		player.CardManager.Move(a.source.Discard, a.source.Hand, card)
 	}
-	a.isDone = true
+	a.IsDone = true
 }
 
-func (a *RestAction) IsDone() bool {
-	return a.isDone
+func (a *RestAction) SetAbstract(abstractAction *action.AbstractAction) {
+	a.AbstractAction = abstractAction
 }

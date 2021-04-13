@@ -1,11 +1,14 @@
 package cards
 
-import "github.com/timsims1717/cg_rogue_go/internal/manager"
+import (
+	"github.com/timsims1717/cg_rogue_go/internal/action"
+	"github.com/timsims1717/cg_rogue_go/internal/selector"
+)
 
-func AddToTop(a manager.Action) {
-	manager.ActionManager.AddToTop(a)
+func AddToTop(a action.Action, effects []*selector.AbstractSelectionEffect) {
+	action.ActionManager.AddToTop(a, effects)
 }
 
-func AddToBot(a manager.Action) {
-	manager.ActionManager.AddToBot(a)
+func AddToBot(a action.Action, effects []*selector.AbstractSelectionEffect) {
+	action.ActionManager.AddToBot(a, effects)
 }

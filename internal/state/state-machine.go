@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	TheMainMenu = &MainMenu{}
-	TheStartRun = &StartRun{}
+	TheMainMenu  = &MainMenu{}
+	TheStartRun  = &StartRun{}
 	TheEncounter = &Encounter{}
 	TheUpgrade   = &Upgrade{}
 )

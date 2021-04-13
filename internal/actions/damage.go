@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"github.com/timsims1717/cg_rogue_go/internal/action"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/selector"
 	"github.com/timsims1717/cg_rogue_go/pkg/sfx"
@@ -8,12 +9,12 @@ import (
 )
 
 type DamageAction struct {
+	*action.AbstractAction
 	values selector.ActionValues
 	target *floor.Character
 	coords world.Coords
 	start  bool
 	preDam bool
-	isDone bool
 }
 
 func NewDamageAction(area []world.Coords, values selector.ActionValues) *DamageAction {
@@ -28,7 +29,6 @@ func NewDamageAction(area []world.Coords, values selector.ActionValues) *DamageA
 			coords: area[0],
 			start:  true,
 			preDam: true,
-			isDone: false,
 		}
 	}
 	return nil
@@ -49,21 +49,21 @@ func (a *DamageAction) Update() {
 			a.target.Damage(a.values.Damage)
 			a.preDam = false
 		} else {
-			a.isDone = true
+			a.IsDone = true
 		}
 	}
 }
 
-func (a *DamageAction) IsDone() bool {
-	return a.isDone
+func (a *DamageAction) SetAbstract(abstractAction *action.AbstractAction) {
+	a.AbstractAction = abstractAction
 }
 
 type DamageHexAction struct {
+	*action.AbstractAction
 	values selector.ActionValues
 	area   []world.Coords
 	start  bool
 	preDam bool
-	isDone bool
 }
 
 func NewDamageHexAction(area []world.Coords, values selector.ActionValues) *DamageHexAction {
@@ -73,7 +73,6 @@ func NewDamageHexAction(area []world.Coords, values selector.ActionValues) *Dama
 			area:   area,
 			start:  true,
 			preDam: true,
-			isDone: false,
 		}
 	}
 	return nil
@@ -105,11 +104,11 @@ func (a *DamageHexAction) Update() {
 			}
 			a.preDam = false
 		} else {
-			a.isDone = true
+			a.IsDone = true
 		}
 	}
 }
 
-func (a *DamageHexAction) IsDone() bool {
-	return a.isDone
+func (a *DamageHexAction) SetAbstract(abstractAction *action.AbstractAction) {
+	a.AbstractAction = abstractAction
 }

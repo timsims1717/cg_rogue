@@ -10,9 +10,9 @@ import (
 )
 
 type ActionText struct {
-	Text   *text.Text
-	Raw    string
-	Align  TextAlign
+	Text  *text.Text
+	Raw   string
+	Align TextAlign
 	// todo: add VAlign
 
 	Transform       *animation.Transform

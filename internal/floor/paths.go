@@ -8,7 +8,6 @@ import (
 	"math/rand"
 )
 
-
 // IsLegal checks if a Hex is a legal candidate according to the current PathCheck
 func (f *Floor) IsLegal(a world.Coords, checks PathChecks) *Hex {
 	hex := f.Get(a)
@@ -65,9 +64,9 @@ func (f *Floor) Line(orig, ref world.Coords, dist int) []world.Coords {
 // AllInSextant
 func (f *Floor) AllInSextant(orig, ref world.Coords, d int, check PathChecks) []world.Coords {
 	f.checks = check
-	sextant := world.GetSextantBias(ref, orig, rand.Intn(2) % 2 == 0)
+	sextant := world.GetSextantBias(ref, orig, rand.Intn(2)%2 == 0)
 	width, height := f.Dimensions()
-	type cont struct{
+	type cont struct {
 		c world.Coords
 		w int
 	}
@@ -75,7 +74,7 @@ func (f *Floor) AllInSextant(orig, ref world.Coords, d int, check PathChecks) []
 	qu := queue.New()
 	marked := make(map[world.Coords]bool)
 	marked[orig] = true
-	qu.PushFront(cont{ c: orig, w: 0 })
+	qu.PushFront(cont{c: orig, w: 0})
 	for qu.Front() != nil {
 		n := qu.PopFront()
 		if c, ok := n.(cont); ok {
@@ -86,7 +85,7 @@ func (f *Floor) AllInSextant(orig, ref world.Coords, d int, check PathChecks) []
 					if !marked[nb] {
 						marked[nb] = true
 						if f.isLegal(nb) != nil && orig.InSextant(nb, sextant) {
-							qu.PushBack(cont{ c: nb, w: c.w+1 })
+							qu.PushBack(cont{c: nb, w: c.w + 1})
 						}
 					}
 				}
@@ -101,7 +100,7 @@ func (f *Floor) AllInSextant(orig, ref world.Coords, d int, check PathChecks) []
 func (f *Floor) AllWithin(orig world.Coords, d int, check PathChecks) []world.Coords {
 	f.checks = check
 	width, height := f.Dimensions()
-	type cont struct{
+	type cont struct {
 		c world.Coords
 		w int
 	}
@@ -109,7 +108,7 @@ func (f *Floor) AllWithin(orig world.Coords, d int, check PathChecks) []world.Co
 	qu := queue.New()
 	marked := make(map[world.Coords]bool)
 	marked[orig] = true
-	qu.PushFront(cont{ c: orig, w: 0 })
+	qu.PushFront(cont{c: orig, w: 0})
 	for qu.Front() != nil {
 		n := qu.PopFront()
 		if c, ok := n.(cont); ok {
@@ -120,7 +119,7 @@ func (f *Floor) AllWithin(orig world.Coords, d int, check PathChecks) []world.Co
 					if !marked[nb] {
 						marked[nb] = true
 						if f.isLegal(nb) != nil {
-							qu.PushBack(cont{ c: nb, w: c.w+1 })
+							qu.PushBack(cont{c: nb, w: c.w + 1})
 						}
 					}
 				}
@@ -136,7 +135,7 @@ func (f *Floor) AllWithinNoPath(orig world.Coords, d int, check PathChecks) []wo
 	f.checks = check
 	defer f.SetDefaultChecks()
 	width, height := f.Dimensions()
-	type cont struct{
+	type cont struct {
 		c world.Coords
 		w int
 	}
@@ -144,7 +143,7 @@ func (f *Floor) AllWithinNoPath(orig world.Coords, d int, check PathChecks) []wo
 	qu := queue.New()
 	marked := make(map[world.Coords]bool)
 	marked[orig] = true
-	qu.PushFront(cont{ c: orig, w: 0 })
+	qu.PushFront(cont{c: orig, w: 0})
 	for qu.Front() != nil {
 		n := qu.PopFront()
 		if c, ok := n.(cont); ok {
@@ -156,7 +155,7 @@ func (f *Floor) AllWithinNoPath(orig world.Coords, d int, check PathChecks) []wo
 				for _, nb := range neighbors {
 					if !marked[nb] {
 						marked[nb] = true
-						qu.PushBack(cont{ c: nb, w: c.w+1 })
+						qu.PushBack(cont{c: nb, w: c.w + 1})
 					}
 				}
 			}
@@ -183,7 +182,7 @@ func (f *Floor) LongestLegalPath(path []world.Coords, max int, check PathChecks)
 			break
 		}
 	}
-	if lastLegal + 1 >= len(path) {
+	if lastLegal+1 >= len(path) {
 		return path
 	}
 	return path[:lastLegal+1]
@@ -273,7 +272,7 @@ func (f *Floor) FindPathWithinOneHex(a, b world.Coords, check PathChecks) ([]*He
 		if a.Eq(n) {
 			return []*Hex{f.Get(a)}, 0, true
 		}
-		if  !f.Exists(n) || (check.EndUnoccupied && f.HasOccupant(n)) {
+		if !f.Exists(n) || (check.EndUnoccupied && f.HasOccupant(n)) {
 			return nil, 0, false
 		}
 		f.SetLine(a, b)
@@ -292,7 +291,7 @@ func (f *Floor) FindPathWithinOneHex(a, b world.Coords, check PathChecks) ([]*He
 
 // FindPath runs astar from a to b, returning a world.Coords array
 func (f *Floor) FindPath(a, b world.Coords, check PathChecks) ([]world.Coords, int, bool) {
-	if  !f.Exists(a) || !f.Exists(b) {
+	if !f.Exists(a) || !f.Exists(b) {
 		return nil, 0, false
 	}
 	if a.Eq(b) {
@@ -321,7 +320,7 @@ func (f *Floor) FindPath(a, b world.Coords, check PathChecks) ([]world.Coords, i
 
 // FindPathHex runs astar from a to b returning a Hex array
 func (f *Floor) FindPathHex(a, b world.Coords, check PathChecks) ([]*Hex, int, bool) {
-	if  !f.Exists(a) || !f.Exists(b) {
+	if !f.Exists(a) || !f.Exists(b) {
 		return nil, 0, false
 	}
 	if a.Eq(b) {

@@ -21,7 +21,7 @@ const (
 	Left = iota
 	Center
 	Right
-	Top = Left
+	Top    = Left
 	Bottom = Right
 )
 
@@ -94,10 +94,10 @@ func (t *Transform) Update(r pixel.Rect) {
 	//if t.Cam != nil {
 	//	t.Mat = t.Cam.UITransform(t.RPos, t.Scalar, t.Rot)
 	//} else {
-		t.Mat = pixel.IM
-		t.Mat = t.Mat.ScaledXY(pixel.ZV, t.Scalar)
-		t.Mat = t.Mat.Rotated(pixel.ZV, t.Rot)
-		t.Mat = t.Mat.Moved(t.RPos)
+	t.Mat = pixel.IM
+	t.Mat = t.Mat.ScaledXY(pixel.ZV, t.Scalar)
+	t.Mat = t.Mat.Rotated(pixel.ZV, t.Rot)
+	t.Mat = t.Mat.Moved(t.RPos)
 	//}
 }
 

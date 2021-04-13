@@ -8,7 +8,7 @@ import (
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
-type SelectionEffect interface{
+type SelectionEffect interface {
 	Update()
 	Draw(pixel.Target)
 	SetAbstract(*AbstractSelectionEffect)
@@ -83,9 +83,15 @@ func (s *selectionSet) SetSpriteSheet(sheet *img.SpriteSheet) {
 	for _, r := range sheet.Sprites {
 		s.sprites = append(s.sprites, pixel.NewSprite(sheet.Img, r))
 	}
-	SelectionSprites = make(map[string]*pixel.Sprite )
+	SelectionSprites = make(map[string]*pixel.Sprite)
 	for k, r := range sheet.SpriteMap {
 		SelectionSprites[k] = pixel.NewSprite(sheet.Img, r)
+	}
+}
+
+func (s *selectionSet) Update() {
+	for _, sel := range s.nset {
+		sel.Update()
 	}
 }
 

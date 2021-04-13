@@ -50,7 +50,7 @@ func CreateFlyChaser(coords world.Coords, spriteSheet *img.SpriteSheet) {
 		coords,
 		floor.Enemy,
 		3,
-		)
+	)
 	floor.CharacterManager.Add(enemy)
 	charAi := ai.NewFlyChaser(enemy)
 	ai.AIManager.AddAI(charAi)

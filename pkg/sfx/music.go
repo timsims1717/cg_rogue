@@ -142,7 +142,7 @@ func (p *musicPlayer) loadTrack(key string) error {
 			beep.Resample(4, format.SampleRate, sampleRate, p.volume),
 			beep.Callback(func() {
 				if len(p.currSet) > 0 {
-					p.PlayTrack(p.currSet[rand.Intn(len(p.currSet) - 1)], 0., 8., 5.)
+					p.PlayTrack(p.currSet[rand.Intn(len(p.currSet)-1)], 0., 8., 5.)
 				}
 			}),
 		))

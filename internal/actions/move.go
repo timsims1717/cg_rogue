@@ -2,6 +2,7 @@ package actions
 
 import (
 	"github.com/faiface/pixel"
+	"github.com/timsims1717/cg_rogue_go/internal/action"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/pkg/gween64"
 	"github.com/timsims1717/cg_rogue_go/pkg/gween64/ease"
@@ -10,12 +11,12 @@ import (
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
-type MoveAction struct{
+type MoveAction struct {
+	*action.AbstractAction
 	source *floor.Character
 	target *floor.Character
 	start  world.Coords
 	end    world.Coords
-	isDone bool
 	interX *gween.Tween
 	interY *gween.Tween
 }
@@ -31,7 +32,6 @@ func NewMoveAction(source *floor.Character, target *floor.Character, end world.C
 		target: target,
 		end:    end,
 		start:  target.GetCoords(),
-		isDone: false,
 		interX: gween.New(p.X, b.X, 0.25, ease.InOutQuad),
 		interY: gween.New(p.Y, b.Y, 0.25, ease.InOutQuad),
 	}
@@ -42,23 +42,23 @@ func (a *MoveAction) Update() {
 	y, finY := a.interY.Update(timing.DT)
 	a.target.SetPos(pixel.V(x, y))
 	if finX && finY {
-		a.isDone = true
+		a.IsDone = true
 		floor.CurrentFloor.MoveOccupant(a.target, a.start, a.end)
 		sfx.SoundPlayer.PlaySound("step1")
 	}
 }
 
-func (a *MoveAction) IsDone() bool {
-	return a.isDone
+func (a *MoveAction) SetAbstract(abstractAction *action.AbstractAction) {
+	a.AbstractAction = abstractAction
 }
 
-type MoveSeriesAction struct{
+type MoveSeriesAction struct {
+	*action.AbstractAction
 	source *floor.Character
 	target *floor.Character
 	series []world.Coords
 	step   int
 	start  world.Coords
-	isDone bool
 	interX *gween.Tween
 	interY *gween.Tween
 }
@@ -76,38 +76,37 @@ func NewMoveSeriesAction(source *floor.Character, target *floor.Character, serie
 			series: series,
 			step:   0,
 			start:  target.GetCoords(),
-			isDone: false,
 			interX: gween.New(p.X, b.X, 0.25, ease.InQuad),
 			interY: gween.New(p.Y, b.Y, 0.25, ease.InQuad),
 		}
 	}
 }
 
-func (m *MoveSeriesAction) Update() {
-	x, finX := m.interX.Update(timing.DT)
-	y, finY := m.interY.Update(timing.DT)
-	m.target.SetPos(pixel.V(x, y))
+func (a *MoveSeriesAction) Update() {
+	x, finX := a.interX.Update(timing.DT)
+	y, finY := a.interY.Update(timing.DT)
+	a.target.SetPos(pixel.V(x, y))
 	if finX && finY {
-		if m.step >= len(m.series) - 1 {
-			next := m.series[m.step]
-			m.isDone = true
-			floor.CurrentFloor.MoveOccupant(m.target, m.start, next)
+		if a.step >= len(a.series)-1 {
+			next := a.series[a.step]
+			a.IsDone = true
+			floor.CurrentFloor.MoveOccupant(a.target, a.start, next)
 		} else {
 			sfx.SoundPlayer.PlaySound("step1")
-			next := m.series[m.step + 1]
+			next := a.series[a.step+1]
 			b := world.MapToWorld(next)
-			if m.step >= len(m.series) - 2 {
-				m.interX = gween.New(x, b.X, 0.25, ease.OutQuad)
-				m.interY = gween.New(y, b.Y, 0.25, ease.OutQuad)
+			if a.step >= len(a.series)-2 {
+				a.interX = gween.New(x, b.X, 0.25, ease.OutQuad)
+				a.interY = gween.New(y, b.Y, 0.25, ease.OutQuad)
 			} else {
-				m.interX = gween.New(x, b.X, 0.15, ease.Linear)
-				m.interY = gween.New(y, b.Y, 0.15, ease.Linear)
+				a.interX = gween.New(x, b.X, 0.15, ease.Linear)
+				a.interY = gween.New(y, b.Y, 0.15, ease.Linear)
 			}
 		}
-		m.step++
+		a.step++
 	}
 }
 
-func (m *MoveSeriesAction) IsDone() bool {
-	return m.isDone
+func (a *MoveSeriesAction) SetAbstract(abstractAction *action.AbstractAction) {
+	a.AbstractAction = abstractAction
 }

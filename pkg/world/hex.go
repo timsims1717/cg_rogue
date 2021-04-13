@@ -14,43 +14,43 @@ type Coords struct {
 
 // Up returns the Coords above
 func (a Coords) Up() Coords {
-	return Coords{ X: a.X, Y: a.Y + 1 }
+	return Coords{X: a.X, Y: a.Y + 1}
 }
 
 // Down returns the Coords below
 func (a Coords) Down() Coords {
-	return Coords{ X: a.X, Y: a.Y - 1 }
+	return Coords{X: a.X, Y: a.Y - 1}
 }
 
 func (a Coords) LeftUp() Coords {
-	if a.X % 2 == 0 {
-		return Coords{ X: a.X - 1, Y: a.Y }
+	if a.X%2 == 0 {
+		return Coords{X: a.X - 1, Y: a.Y}
 	} else {
-		return Coords{ X: a.X - 1, Y: a.Y + 1 }
+		return Coords{X: a.X - 1, Y: a.Y + 1}
 	}
 }
 
 func (a Coords) LeftDown() Coords {
-	if a.X % 2 == 0 {
-		return Coords{ X: a.X - 1, Y: a.Y - 1 }
+	if a.X%2 == 0 {
+		return Coords{X: a.X - 1, Y: a.Y - 1}
 	} else {
-		return Coords{ X: a.X - 1, Y: a.Y }
+		return Coords{X: a.X - 1, Y: a.Y}
 	}
 }
 
 func (a Coords) RightUp() Coords {
-	if a.X % 2 == 0 {
-		return Coords{ X: a.X + 1, Y: a.Y }
+	if a.X%2 == 0 {
+		return Coords{X: a.X + 1, Y: a.Y}
 	} else {
-		return Coords{ X: a.X + 1, Y: a.Y + 1 }
+		return Coords{X: a.X + 1, Y: a.Y + 1}
 	}
 }
 
 func (a Coords) RightDown() Coords {
-	if a.X % 2 == 0 {
-		return Coords{ X: a.X + 1, Y: a.Y - 1 }
+	if a.X%2 == 0 {
+		return Coords{X: a.X + 1, Y: a.Y - 1}
 	} else {
-		return Coords{ X: a.X + 1, Y: a.Y }
+		return Coords{X: a.X + 1, Y: a.Y}
 	}
 }
 
@@ -64,30 +64,30 @@ func (a Coords) Eq(b Coords) bool {
 func (a Coords) Neighbors(w, h int) []Coords {
 	neighbors := make([]Coords, 0)
 	if a.Y > 0 {
-		neighbors = append(neighbors, Coords{a.X, a.Y-1})
+		neighbors = append(neighbors, Coords{a.X, a.Y - 1})
 	}
-	if a.X < w - 1 {
-		neighbors = append(neighbors, Coords{a.X+1, a.Y})
+	if a.X < w-1 {
+		neighbors = append(neighbors, Coords{a.X + 1, a.Y})
 	}
-	if a.Y < h - 1 {
-		neighbors = append(neighbors, Coords{a.X, a.Y+1})
+	if a.Y < h-1 {
+		neighbors = append(neighbors, Coords{a.X, a.Y + 1})
 	}
 	if a.X > 0 {
-		neighbors = append(neighbors, Coords{a.X-1, a.Y})
+		neighbors = append(neighbors, Coords{a.X - 1, a.Y})
 	}
-	if a.X % 2 == 0 {
-		if a.X < w - 1 && a.Y > 0 {
-			neighbors = append(neighbors, Coords{a.X+1, a.Y-1})
+	if a.X%2 == 0 {
+		if a.X < w-1 && a.Y > 0 {
+			neighbors = append(neighbors, Coords{a.X + 1, a.Y - 1})
 		}
 		if a.X > 0 && a.Y > 0 {
-			neighbors = append(neighbors, Coords{a.X-1, a.Y-1})
+			neighbors = append(neighbors, Coords{a.X - 1, a.Y - 1})
 		}
 	} else {
-		if a.X < w - 1 && a.Y < h - 1 {
-			neighbors = append(neighbors, Coords{a.X+1, a.Y+1})
+		if a.X < w-1 && a.Y < h-1 {
+			neighbors = append(neighbors, Coords{a.X + 1, a.Y + 1})
 		}
-		if a.X > 0 && a.Y < h - 1 {
-			neighbors = append(neighbors, Coords{a.X-1, a.Y+1})
+		if a.X > 0 && a.Y < h-1 {
+			neighbors = append(neighbors, Coords{a.X - 1, a.Y + 1})
 		}
 	}
 	return neighbors
@@ -107,13 +107,13 @@ func (a Coords) PathFrom(path []Coords) []Coords {
 	dx := a.X - orig.X
 	dy := a.Y - orig.Y
 	for _, p := range path {
-		if a.X % 2 == 0 && p.X % 2 == 0 && a.X % 2 != orig.X % 2 {
+		if a.X%2 == 0 && p.X%2 == 0 && a.X%2 != orig.X%2 {
 			n := Coords{
 				X: p.X + dx,
 				Y: p.Y + dy - 1,
 			}
 			np = append(np, n)
-		} else if a.X % 2 != 0 && p.X % 2 != 0 && a.X % 2 != orig.X % 2 {
+		} else if a.X%2 != 0 && p.X%2 != 0 && a.X%2 != orig.X%2 {
 			n := Coords{
 				X: p.X + dx,
 				Y: p.Y + dy + 1,
@@ -166,9 +166,9 @@ func NextHexLine(orig, next Coords) Coords {
 		} else {
 			x = next.X - 1
 		}
-		if (orig.X % 2 == 0 && orig.Y > next.Y) || (orig.X % 2 != 0 && orig.Y < next.Y) {
+		if (orig.X%2 == 0 && orig.Y > next.Y) || (orig.X%2 != 0 && orig.Y < next.Y) {
 			y = next.Y
-		} else if orig.X % 2 == 0 {
+		} else if orig.X%2 == 0 {
 			y = next.Y + 1
 		} else {
 			y = next.Y - 1
@@ -185,7 +185,7 @@ func NextHexLine(orig, next Coords) Coords {
 // relative to the pivot otherwise.
 func NextHexRot(orig, pivot Coords, clockwise bool) Coords {
 	sextant := GetSextant(orig, pivot)
-	even := orig.X % 2 == 0
+	even := orig.X%2 == 0
 	x := orig.X
 	y := orig.Y
 	if clockwise {

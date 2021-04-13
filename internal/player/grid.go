@@ -130,7 +130,7 @@ func (g *Grid) isHovered() bool {
 func GridLocation(i int) pixel.Vec {
 	xPos := i % 5
 	yPos := i / 5
-	x := BaseCardWidth * float64(xPos - 2) + camera.WindowWidthF * 0.5
-	y := camera.WindowHeightF - (BaseCardHeight * float64(yPos) + BaseCardHeight * 0.5)
+	x := BaseCardWidth*float64(xPos-2) + camera.WindowWidthF*0.5
+	y := camera.WindowHeightF - (BaseCardHeight*float64(yPos) + BaseCardHeight*0.5)
 	return pixel.V(x, y)
 }

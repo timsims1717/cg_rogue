@@ -12,5 +12,5 @@ const (
 )
 
 var (
-	OffsetVector = pixel.V(0.0, ScaledTileSize * 0.5)
+	OffsetVector = pixel.V(0.0, ScaledTileSize*0.5)
 )

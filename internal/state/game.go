@@ -4,11 +4,11 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	uuid "github.com/satori/go.uuid"
+	"github.com/timsims1717/cg_rogue_go/internal/action"
 	"github.com/timsims1717/cg_rogue_go/internal/actions"
 	"github.com/timsims1717/cg_rogue_go/internal/ai"
 	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/internal/generate"
-	"github.com/timsims1717/cg_rogue_go/internal/manager"
 	"github.com/timsims1717/cg_rogue_go/internal/player"
 	"github.com/timsims1717/cg_rogue_go/internal/run"
 	"github.com/timsims1717/cg_rogue_go/internal/selector"
@@ -85,9 +85,9 @@ func (s *Encounter) Initialize() {
 	rest := ui.NewActionText(restS)
 	rest.Transform.Scalar = pixel.V(2.5, 2.5)
 	rest.TextColor = colornames.Purple
-	restButton := ui.NewActionEl(rest, pixel.R(0., 0., rest.Text.BoundsOf(restS).W() * 2.5, rest.Text.BoundsOf(restS).H() * 2.5), true)
+	restButton := ui.NewActionEl(rest, pixel.R(0., 0., rest.Text.BoundsOf(restS).W()*2.5, rest.Text.BoundsOf(restS).H()*2.5), true)
 	restButton.Show = true
-	restButton.Transform.Pos = pixel.V(camera.WindowWidthF - player.ButtonRightPad, player.RestBottomPad)
+	restButton.Transform.Pos = pixel.V(camera.WindowWidthF-player.ButtonRightPad, player.RestBottomPad)
 	restButton.SetOnHoverFn(func() {
 		restButton.Text.TextColor = colornames.Forestgreen
 		sfx.SoundPlayer.PlaySound("click")
@@ -150,7 +150,7 @@ func (s *Encounter) Update(win *pixelgl.Window) {
 	CenterText.Update(player.Player1.Input)
 
 	player.CardManager.Update()
-	manager.ActionManager.Update()
+	action.ActionManager.Update()
 
 	ai.AIManager.Update()
 	floor.Update()
@@ -159,6 +159,7 @@ func (s *Encounter) Update(win *pixelgl.Window) {
 		s.RestButton.Disabled = !player.Player1.IsTurn
 		s.RestButton.Update(player.Player1.Input)
 	}
+	selector.SelectionSet.Update()
 }
 
 func (s *Encounter) Draw(win *pixelgl.Window) {
@@ -197,7 +198,7 @@ func UpdateEncounterPhase() {
 		CenterText.Text.TransformEffect = transform.Build()
 		CenterText.Text.ColorEffect = animation.FadeIn(CenterText.Text, 2.0)
 		Machine.Phase = GameOver
-		camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.Black,4.)
+		camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.Black, 4.)
 		sfx.MusicPlayer.FadeOut(4.)
 		SwitchState(TheMainMenu)
 	}
@@ -223,12 +224,12 @@ func UpdateEncounterPhase() {
 			CenterText.Text.TransformEffect = transform.Build()
 			CenterText.Text.ColorEffect = animation.FadeIn(CenterText, 2.0)
 			Machine.Phase = EncounterComplete
-			manager.ActionManager.AddToBot(actions.NewHealAction([]world.Coords{player.Player1.Character.Coords}, selector.ActionValues{
-				Source:   player.Player1.Character,
-				Heal:     1,
-			}))
-			manager.ActionManager.AddToBot(actions.NewRestAction(player.Player1))
-			camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.Black,4.)
+			action.ActionManager.AddToBot(actions.NewHealAction([]world.Coords{player.Player1.Character.Coords}, selector.ActionValues{
+				Source: player.Player1.Character,
+				Heal:   1,
+			}), nil)
+			action.ActionManager.AddToBot(actions.NewRestAction(player.Player1), nil)
+			camera.Cam.Effect = animation.FadeTo(camera.Cam, colornames.Black, 4.)
 			SwitchState(TheUpgrade)
 		}
 	}
@@ -239,7 +240,7 @@ func UpdateEncounterPhase() {
 		camera.Cam.MoveTo(player.Player1.Character.Transform.Pos, 0.2, true)
 		Machine.Phase = PlayerTurn
 	case PlayerTurn:
-		if player.Player1.ActionsThisTurn > 0 && player.Player1.PlayCard.Card == nil && !manager.ActionManager.IsActing() {
+		if player.Player1.ActionsThisTurn > 0 && player.Player1.PlayCard.Card == nil && !action.ActionManager.IsActing() {
 			player.Player1.EndTurn()
 			Machine.Phase = EnemyStartTurn
 		}
@@ -248,7 +249,7 @@ func UpdateEncounterPhase() {
 		ai.AIManager.StartAITurn()
 		Machine.Phase = EnemyEndTurn
 	case EnemyEndTurn:
-		if !ai.AIManager.AIActing() && !manager.ActionManager.IsActing() {
+		if !ai.AIManager.AIActing() && !action.ActionManager.IsActing() {
 			ai.AIManager.EndAITurn()
 			Machine.Phase = PlayerStartTurn
 		}
@@ -265,7 +266,7 @@ type Rest struct {
 }
 
 func (r *Rest) DoActions() {
-	manager.ActionManager.AddToBot(actions.NewRestAction(r.player))
+	action.ActionManager.AddToBot(actions.NewRestAction(r.player), nil)
 }
 
 func (r *Rest) SetValues(_ int) {}
@@ -289,7 +290,7 @@ type BasicMove struct {
 }
 
 func (m *BasicMove) DoActions() {
-	manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(m.Values.Source, m.Values.Source, m.Results[0][0].Area))
+	action.ActionManager.AddToBot(actions.NewMoveSeriesAction(m.Values.Source, m.Values.Source, m.Results[0][0].Area), nil)
 }
 
 func (m *BasicMove) SetValues(_ int) {
@@ -325,7 +326,7 @@ func CreateBasicMove() *player.Card {
 }
 
 func (m *BasicMove) DoAction(path []world.Coords) {
-	manager.ActionManager.AddToBot(actions.NewMoveSeriesAction(m.Values.Source, m.Values.Source, path))
+	action.ActionManager.AddToBot(actions.NewMoveSeriesAction(m.Values.Source, m.Values.Source, path), nil)
 }
 
 type CheatAttack struct {
@@ -333,7 +334,7 @@ type CheatAttack struct {
 }
 
 func (a *CheatAttack) DoActions() {
-	manager.ActionManager.AddToBot(actions.NewDamageHexAction(a.Results[0][0].Area, a.Values))
+	action.ActionManager.AddToBot(actions.NewDamageHexAction(a.Results[0][0].Area, a.Values), nil)
 }
 
 func (a *CheatAttack) SetValues(_ int) {
