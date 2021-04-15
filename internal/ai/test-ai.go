@@ -16,6 +16,9 @@ func NewRandomWalker(character *floor.Character) *AbstractAI {
 	newAI := &AbstractAI{
 		Character: character,
 		decision: -1,
+		currValues: selector.ActionValues{
+			Source: character,
+		},
 	}
 	walker := &RandomWalker{
 		newAI,
@@ -67,17 +70,15 @@ func (ai *RandomWalker) Decide() {
 	}
 	atkCheck.Orig = mov
 
-	ai.currValues = selector.ActionValues{
-		Damage: 1,
-		Move:   1,
-	}
+	ai.currValues.Damage = 1
+	ai.currValues.Move = 1
 	ai.Actions = []*AIAction{
 		{
 			Path:        path,
 			PathCheck:   movCheck,
 			TargetArea:  nil,
 			TargetCheck: floor.PathChecks{},
-			Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+			Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
 			IsMove:      true,
 		},
 		{
@@ -85,7 +86,7 @@ func (ai *RandomWalker) Decide() {
 			PathCheck:   floor.PathChecks{},
 			TargetArea:  []world.Coords{world.Origin},
 			TargetCheck: atkCheck,
-			Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}),
+			Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}, ai.currValues),
 		},
 	}
 }
@@ -115,6 +116,9 @@ func NewFlyChaser(character *floor.Character) *AbstractAI {
 	newAI := &AbstractAI{
 		Character: character,
 		decision: -1,
+		currValues: selector.ActionValues{
+			Source: character,
+		},
 	}
 	flyChaser := &FlyChaser{
 		newAI,
@@ -159,23 +163,21 @@ func (ai *FlyChaser) Decide() {
 								PathCheck:   movCheck,
 								TargetArea:  nil,
 								TargetCheck: floor.PathChecks{},
-								Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+								Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
 								IsMove:      true,
 							},
 						}
 						return
 					}
 				} else {
-					ai.currValues = selector.ActionValues{
-						Damage: 1,
-					}
+					ai.currValues.Damage = 1
 					ai.Actions = []*AIAction{
 						{
 							Path:        path,
 							PathCheck:   movCheck,
 							TargetArea:  nil,
 							TargetCheck: floor.PathChecks{},
-							Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+							Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
 							IsMove:      true,
 						},
 						{
@@ -183,7 +185,7 @@ func (ai *FlyChaser) Decide() {
 							PathCheck:   floor.NoCheck,
 							TargetArea:  []world.Coords{world.Origin},
 							TargetCheck: atkCheck,
-							Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}),
+							Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}, ai.currValues),
 						},
 					}
 					ai.atkCnt++
@@ -205,7 +207,7 @@ func (ai *FlyChaser) Decide() {
 							PathCheck:   movCheck,
 							TargetArea:  nil,
 							TargetCheck: floor.PathChecks{},
-							Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+							Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
 							IsMove:      true,
 						},
 					}
@@ -241,6 +243,9 @@ func NewSkirmisher(character *floor.Character) *AbstractAI {
 	newAI := &AbstractAI{
 		Character: character,
 		decision: -1,
+		currValues: selector.ActionValues{
+			Source: character,
+		},
 	}
 	skirm := &Skirmisher{
 		newAI,
@@ -267,9 +272,7 @@ func (ai *Skirmisher) Decide() {
 		EndUnoccupied: false,
 		Orig:          orig,
 	}
-	ai.currValues = selector.ActionValues{
-		Damage: 1,
-	}
+	ai.currValues.Damage = 1
 	if len(ai.patrol) == 0 {
 		patrolCand, _ := world.Remove(orig, floor.CurrentFloor.AllWithin(orig, 6, movCheck))
 		ordered := world.ReverseList(world.OrderByDistSimple(orig, patrolCand))
@@ -296,7 +299,7 @@ func (ai *Skirmisher) Decide() {
 				PathCheck:   floor.NoCheck,
 				TargetArea:  []world.Coords{world.Origin},
 				TargetCheck: atkCheck,
-				Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}),
+				Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}, ai.currValues),
 			},
 		}
 		ai.decision++
@@ -313,7 +316,7 @@ func (ai *Skirmisher) Decide() {
 					PathCheck:   movCheck,
 					TargetArea:  nil,
 					TargetCheck: floor.PathChecks{},
-					Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+					Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
 					IsMove:      true,
 				},
 			}
@@ -335,7 +338,7 @@ func (ai *Skirmisher) Decide() {
 					PathCheck:   movCheck,
 					TargetArea:  nil,
 					TargetCheck: floor.PathChecks{},
-					Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+					Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
 					IsMove:      true,
 				},
 			}
@@ -347,7 +350,7 @@ func (ai *Skirmisher) Decide() {
 					PathCheck:   atkCheck,
 					TargetArea:  []world.Coords{world.Origin},
 					TargetCheck: atkCheck,
-					Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}),
+					Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}, ai.currValues),
 				})
 			}
 		}
@@ -366,7 +369,7 @@ func (ai *Skirmisher) Decide() {
 						PathCheck:   movCheck,
 						TargetArea:  nil,
 						TargetCheck: floor.PathChecks{},
-						Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+						Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
 						IsMove:      true,
 					},
 				}
@@ -385,7 +388,7 @@ func (ai *Skirmisher) Decide() {
 						PathCheck:   movCheck,
 						TargetArea:  nil,
 						TargetCheck: floor.PathChecks{},
-						Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+						Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
 						IsMove:      true,
 					},
 				}
@@ -435,6 +438,9 @@ func NewGrenadier(character *floor.Character) *AbstractAI {
 	newAI := &AbstractAI{
 		Character: character,
 		decision: -1,
+		currValues: selector.ActionValues{
+			Source: character,
+		},
 	}
 	gren := &Grenadier{
 		newAI,
@@ -464,9 +470,7 @@ func (ai *Grenadier) Decide() {
 		EndUnoccupied: false,
 		Orig:          orig,
 	}
-	ai.currValues = selector.ActionValues{
-		Damage: 0,
-	}
+	ai.currValues.Damage = 0
 	targets := floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 3)
 	if len(targets) > 0 {
 		ai.decision = 2
@@ -483,7 +487,7 @@ func (ai *Grenadier) Decide() {
 				PathCheck:   atkCheck,
 				TargetArea:  area,
 				TargetCheck: atkCheck,
-				Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}),
+				Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}, ai.currValues),
 			})
 			ai.atkCnt += 2
 		}
@@ -540,7 +544,7 @@ func (ai *Grenadier) Decide() {
 						PathCheck:   atkCheck,
 						TargetArea:  append([]world.Coords{targets[choice]}, best...),
 						TargetCheck: atkCheck,
-						Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}),
+						Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}, ai.currValues),
 					})
 					ai.atkCnt += 1
 				}
@@ -563,7 +567,7 @@ func (ai *Grenadier) Decide() {
 					PathCheck:   atkCheck,
 					TargetArea:  append([]world.Coords{targets[choice]}, hits...),
 					TargetCheck: atkCheck,
-					Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}),
+					Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}, ai.currValues),
 				})
 				ai.atkCnt += 1
 			}
@@ -575,7 +579,7 @@ func (ai *Grenadier) Decide() {
 				PathCheck:   movCheck,
 				TargetArea:  nil,
 				TargetCheck: floor.PathChecks{},
-				Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+				Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
 				IsMove:      true,
 			})
 		}
@@ -606,6 +610,9 @@ func NewBruiser(character *floor.Character) *AbstractAI {
 	newAI := &AbstractAI{
 		Character: character,
 		decision: -1,
+		currValues: selector.ActionValues{
+			Source: character,
+		},
 	}
 	bruiser := &Bruiser{
 		newAI,
@@ -655,7 +662,7 @@ func (ai *Bruiser) Decide() {
 				PathCheck:   atkCheck,
 				TargetArea:  area,
 				TargetCheck: atkCheck,
-				Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}),
+				Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}, ai.currValues),
 			})
 			ai.atkCnt++
 		}
@@ -676,7 +683,7 @@ func (ai *Bruiser) Decide() {
 						PathCheck:   movCheck,
 						TargetArea:  nil,
 						TargetCheck: floor.PathChecks{},
-						Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+						Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
 						IsMove:      true,
 					},
 				}
@@ -688,7 +695,7 @@ func (ai *Bruiser) Decide() {
 					PathCheck:   floor.NoCheck,
 					TargetArea:  []world.Coords{tOrig, targets[choice], next},
 					TargetCheck: atkCheck,
-					Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}),
+					Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}, ai.currValues),
 				})
 				ai.atkCnt++
 				return
@@ -709,7 +716,7 @@ func (ai *Bruiser) Decide() {
 				PathCheck:   movCheck,
 				TargetArea:  nil,
 				TargetCheck: floor.PathChecks{},
-				Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}),
+				Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
 				IsMove:      true,
 			})
 		}
@@ -745,6 +752,9 @@ type Stationary struct {
 func NewStationary(character *floor.Character) *AbstractAI {
 	newAI := &AbstractAI{
 		Character: character,
+		currValues: selector.ActionValues{
+			Source: character,
+		},
 	}
 	stat := &Stationary{
 		newAI,
@@ -772,7 +782,7 @@ func (ai *Stationary) Decide() {
 				PathCheck:   floor.NoCheck,
 				TargetArea:  area,
 				TargetCheck: atkCheck,
-				Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}),
+				Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}, ai.currValues),
 			},
 		}
 		ai.decision = 1

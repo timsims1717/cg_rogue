@@ -18,6 +18,8 @@ func (s *ArcSelect) SetValues(values ActionValues) {
 	s.count = values.Targets
 	s.maxRange = values.Range
 	s.PathChecks.Orig = s.origin
+	s.Effect.SetValues(values)
+	s.Effect.SetOrig(s.origin)
 }
 
 func (s *ArcSelect) Update(input *input.Input) {

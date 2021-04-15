@@ -310,7 +310,7 @@ func (m *BasicMove) InitSelectors() {
 				EndUnoccupied: true,
 				Orig:          world.Coords{},
 			},
-			Effect: selector.NewSelectionEffect(&selector.MoveEffect{}),
+			Effect: selector.NewSelectionEffect(&selector.MoveEffect{}, m.Values),
 		}, true),
 	}
 }
@@ -356,7 +356,7 @@ func (a *CheatAttack) InitSelectors() {
 				EndUnoccupied: false,
 				Orig:          world.Coords{},
 			},
-			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}),
+			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}, a.Values),
 		}, false),
 	}
 }

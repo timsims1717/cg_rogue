@@ -30,7 +30,7 @@ func (c *Thrust) SetValues(level int) {
 func (c *Thrust) InitSelectors() {
 	c.Selectors = []*selector.AbstractSelector{
 		selector.NewSelector(&selector.TargetSelect{
-			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}),
+			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}, c.Values),
 		}, false),
 	}
 }
@@ -53,7 +53,7 @@ func (c *Dash) DoActions() {
 
 func (c *Dash) SetValues(level int) {
 	values := selector.ActionValues{
-		Move: 4 + level,
+		Move: 5 + level,
 	}
 	c.Values = values
 	c.RawDesc = fmt.Sprintf("Move %d.", values.Move)
@@ -68,7 +68,7 @@ func (c *Dash) InitSelectors() {
 				NonEmpty:      true,
 				EndUnoccupied: true,
 			},
-			Effect: selector.NewSelectionEffect(&selector.MoveEffect{}),
+			Effect: selector.NewSelectionEffect(&selector.MoveEffect{}, c.Values),
 		}, true),
 	}
 }
@@ -127,10 +127,10 @@ func (c *QuickStrike) InitSelectors() {
 				NonEmpty:      true,
 				EndUnoccupied: true,
 			},
-			Effect: selector.NewSelectionEffect(&selector.MoveEffect{}),
+			Effect: selector.NewSelectionEffect(&selector.MoveEffect{}, c.Values),
 		}, true),
 		selector.NewSelector(&selector.TargetSelect{
-			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}),
+			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}, c.Values),
 		}, false),
 	}
 }
@@ -186,7 +186,7 @@ func (c *Sweep) InitSelectors() {
 				NonEmpty:      false,
 				EndUnoccupied: false,
 			},
-			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}),
+			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}, c.Values),
 		}, false),
 	}
 }
@@ -247,7 +247,7 @@ func (c *Vault) InitSelectors() {
 				NonEmpty:      true,
 				EndUnoccupied: true,
 			},
-			Effect: selector.NewSelectionEffect(&selector.MoveEffect{}),
+			Effect: selector.NewSelectionEffect(&selector.MoveEffect{}, c.Values),
 		}, true),
 		selector.NewSelector(&selector.HexSelect{
 			PathChecks: floor.PathChecks{
@@ -256,7 +256,7 @@ func (c *Vault) InitSelectors() {
 				NonEmpty:      false,
 				EndUnoccupied: false,
 			},
-			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}),
+			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}, c.Values),
 		}, false),
 	}
 }
@@ -312,8 +312,8 @@ func (c *DaggerThrow) InitSelectors() {
 				NonEmpty:      false,
 				EndUnoccupied: false,
 			},
-			Effect:    selector.NewSelectionEffect(&selector.AttackEffect{}),
-			SecEffect: selector.NewSelectionEffect(&selector.HighlightEffect{}),
+			Effect:    selector.NewSelectionEffect(&selector.AttackEffect{}, c.Values),
+			SecEffect: selector.NewSelectionEffect(&selector.HighlightEffect{}, c.Values),
 		}, false),
 	}
 }
@@ -371,7 +371,7 @@ func (c *Disengage) InitSelectors() {
 				NonEmpty:      false,
 				EndUnoccupied: false,
 			},
-			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}),
+			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}, c.Values),
 		}, false),
 		selector.NewSelector(&selector.PathSelect{
 			PathChecks: floor.PathChecks{
@@ -380,7 +380,7 @@ func (c *Disengage) InitSelectors() {
 				NonEmpty:      true,
 				EndUnoccupied: true,
 			},
-			Effect: selector.NewSelectionEffect(&selector.MoveEffect{}),
+			Effect: selector.NewSelectionEffect(&selector.MoveEffect{}, c.Values),
 		}, true),
 	}
 }
@@ -446,8 +446,8 @@ func (c *Slam) InitSelectors() {
 				NonEmpty:      false,
 				EndUnoccupied: false,
 			},
-			Effect:    selector.NewSelectionEffect(&selector.MoveEffect{}),
-			SecEffect: selector.NewSelectionEffect(&selector.AttackEffect{}),
+			Effect:    selector.NewSelectionEffect(&selector.MoveEffect{}, c.Values),
+			SecEffect: selector.NewSelectionEffect(&selector.AttackEffect{}, c.Values),
 		}, true),
 	}
 }

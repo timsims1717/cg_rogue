@@ -16,6 +16,8 @@ type TargetSelect struct {
 func (s *TargetSelect) SetValues(values ActionValues) {
 	s.count = values.Targets
 	s.maxRange = values.Range
+	s.Effect.SetValues(values)
+	s.Effect.SetOrig(s.origin)
 }
 
 func (s *TargetSelect) Update(input *input.Input) {
@@ -39,7 +41,7 @@ func (s *TargetSelect) Update(input *input.Input) {
 				s.Effect.SetArea(append(s.area, input.Coords))
 			} else {
 				s.Effect.SetArea(s.area)
-				eff := NewSelectionEffect(&HighlightEffect{})
+				eff := NewSelectionEffect(&HighlightEffect{}, s.Effect.values)
 				eff.SetArea([]world.Coords{input.Coords})
 				AddSelectionEffect(eff)
 			}

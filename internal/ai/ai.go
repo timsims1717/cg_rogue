@@ -69,14 +69,13 @@ func (ai *AbstractAI) Update() {
 				Area:   tArea,
 				Effect: act.Effect,
 			}
+			if len(tArea) > 0 && act.Effect != nil {
+				act.Effect.SetOrig(ai.TempCoords)
+				act.Effect.SetArea(tArea)
+				selector.AddSelectionEffect(act.Effect)
+			}
 			if act.IsMove && len(tPath) > 0 {
 				ai.TempCoords = tPath[len(tPath)-1]
-			}
-		}
-		for _, act := range ai.TempActions {
-			if act.Area != nil && len(act.Area) > 0 && act.Effect != nil {
-				act.Effect.SetArea(act.Area)
-				selector.AddSelectionEffect(act.Effect)
 			}
 		}
 	}
