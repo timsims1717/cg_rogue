@@ -1,0 +1,74 @@
+{ "frames": {
+   "selection_effects.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 840, "h": 32 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 840, "h": 32 },
+    "sourceSize": { "w": 840, "h": 32 },
+    "duration": 100
+   }
+ },
+ "img": "selection_effects.png",
+ "height": 32,
+ "width": 40,
+ "singleRow": true,
+ "sprites": [
+  {
+   "key": "move_ul_dr"
+  },
+  {
+   "key": "move_u_d"
+  },
+  {
+   "key": "move_ul_u"
+  },
+  {
+   "key": "move_ul_ur"
+  },
+  {
+   "key": "move_ul_d"
+  },
+  {
+   "key": "move_ul_dl"
+  },
+  {
+   "key": "move_end_ul"
+  },
+  {
+   "key": "move_end_u"
+  },
+  {
+   "key": "move_end_alone"
+  },
+  {
+   "key": "move_start_ul"
+  },
+  {
+   "key": "move_start_u"
+  },
+  {
+   "key": "move_single"
+  },
+  {
+   "key": "attack_single"
+  },
+  {
+   "key": "attack_u"
+  },
+  {
+   "key": "attack_ul"
+  },
+  {
+   "key": "attack_ul_u"
+  },
+  {
+   "key": "attack_ul_u_ur"
+  },
+  {
+   "key": "attack_bg"
+  },
+  {
+   "key": "default"
+  }
+ ]
+}

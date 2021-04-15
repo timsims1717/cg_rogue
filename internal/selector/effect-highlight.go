@@ -2,7 +2,6 @@ package selector
 
 import (
 	"github.com/faiface/pixel"
-	"github.com/timsims1717/cg_rogue_go/internal/cfg"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
 
@@ -16,7 +15,7 @@ func (e *HighlightEffect) Update() {
 
 func (e *HighlightEffect) Draw(target pixel.Target) {
 	for _, c := range e.area {
-		mat := pixel.IM.Scaled(pixel.ZV, cfg.Scalar).Moved(world.MapToWorld(c))
+		mat := pixel.IM.Moved(world.MapToWorld(c))
 		SelectionSprites["default"].Draw(target, mat)
 	}
 }

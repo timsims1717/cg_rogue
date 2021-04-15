@@ -56,11 +56,11 @@ type Encounter struct {
 }
 
 func (s *Encounter) Initialize() {
-	uisheet, err := img.LoadSpriteSheet("assets/img/ui/selectors.json")
+	selectionEffectSheet, err := img.LoadSpriteSheet("assets/img/selection_effects.json")
 	if err != nil {
 		panic(err)
 	}
-	selector.SelectionSet.SetSpriteSheet(uisheet)
+	selector.SelectionSet.SetSpriteSheet(selectionEffectSheet)
 
 	InitializeCenterText()
 

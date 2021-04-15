@@ -78,7 +78,7 @@ func (ai *RandomWalker) Decide() {
 			PathCheck:   movCheck,
 			TargetArea:  nil,
 			TargetCheck: floor.PathChecks{},
-			Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
+			Effect:      selector.NewSelectionEffect(&selector.MoveSeriesEffect{}, ai.currValues),
 			IsMove:      true,
 		},
 		{
@@ -163,7 +163,7 @@ func (ai *FlyChaser) Decide() {
 								PathCheck:   movCheck,
 								TargetArea:  nil,
 								TargetCheck: floor.PathChecks{},
-								Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
+								Effect:      selector.NewSelectionEffect(&selector.MoveSeriesEffect{}, ai.currValues),
 								IsMove:      true,
 							},
 						}
@@ -177,7 +177,7 @@ func (ai *FlyChaser) Decide() {
 							PathCheck:   movCheck,
 							TargetArea:  nil,
 							TargetCheck: floor.PathChecks{},
-							Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
+							Effect:      selector.NewSelectionEffect(&selector.MoveSeriesEffect{}, ai.currValues),
 							IsMove:      true,
 						},
 						{
@@ -207,7 +207,7 @@ func (ai *FlyChaser) Decide() {
 							PathCheck:   movCheck,
 							TargetArea:  nil,
 							TargetCheck: floor.PathChecks{},
-							Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
+							Effect:      selector.NewSelectionEffect(&selector.MoveSeriesEffect{}, ai.currValues),
 							IsMove:      true,
 						},
 					}
@@ -316,7 +316,7 @@ func (ai *Skirmisher) Decide() {
 					PathCheck:   movCheck,
 					TargetArea:  nil,
 					TargetCheck: floor.PathChecks{},
-					Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
+					Effect:      selector.NewSelectionEffect(&selector.MoveSeriesEffect{}, ai.currValues),
 					IsMove:      true,
 				},
 			}
@@ -338,7 +338,7 @@ func (ai *Skirmisher) Decide() {
 					PathCheck:   movCheck,
 					TargetArea:  nil,
 					TargetCheck: floor.PathChecks{},
-					Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
+					Effect:      selector.NewSelectionEffect(&selector.MoveSeriesEffect{}, ai.currValues),
 					IsMove:      true,
 				},
 			}
@@ -369,7 +369,7 @@ func (ai *Skirmisher) Decide() {
 						PathCheck:   movCheck,
 						TargetArea:  nil,
 						TargetCheck: floor.PathChecks{},
-						Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
+						Effect:      selector.NewSelectionEffect(&selector.MoveSeriesEffect{}, ai.currValues),
 						IsMove:      true,
 					},
 				}
@@ -388,7 +388,7 @@ func (ai *Skirmisher) Decide() {
 						PathCheck:   movCheck,
 						TargetArea:  nil,
 						TargetCheck: floor.PathChecks{},
-						Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
+						Effect:      selector.NewSelectionEffect(&selector.MoveSeriesEffect{}, ai.currValues),
 						IsMove:      true,
 					},
 				}
@@ -579,7 +579,7 @@ func (ai *Grenadier) Decide() {
 				PathCheck:   movCheck,
 				TargetArea:  nil,
 				TargetCheck: floor.PathChecks{},
-				Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
+				Effect:      selector.NewSelectionEffect(&selector.MoveSeriesEffect{}, ai.currValues),
 				IsMove:      true,
 			})
 		}
@@ -683,7 +683,7 @@ func (ai *Bruiser) Decide() {
 						PathCheck:   movCheck,
 						TargetArea:  nil,
 						TargetCheck: floor.PathChecks{},
-						Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
+						Effect:      selector.NewSelectionEffect(&selector.MoveSeriesEffect{}, ai.currValues),
 						IsMove:      true,
 					},
 				}
@@ -716,7 +716,7 @@ func (ai *Bruiser) Decide() {
 				PathCheck:   movCheck,
 				TargetArea:  nil,
 				TargetCheck: floor.PathChecks{},
-				Effect:      selector.NewSelectionEffect(&selector.MoveEffect{}, ai.currValues),
+				Effect:      selector.NewSelectionEffect(&selector.MoveSeriesEffect{}, ai.currValues),
 				IsMove:      true,
 			})
 		}

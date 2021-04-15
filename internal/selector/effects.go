@@ -51,16 +51,6 @@ type selectionSet struct {
 	nset    []SelectionEffect
 }
 
-type SelectionType int
-
-const (
-	Default SelectionType = iota
-	Move
-	MoveSolid
-	Attack
-	Blank
-)
-
 func AddSelectionEffect(effect *AbstractSelectionEffect) {
 	if effect != nil {
 		SelectionSet.nset = append(SelectionSet.nset, effect.Effect)

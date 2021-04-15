@@ -7,10 +7,8 @@ const (
 
 	// Tile Constants
 	TileSize       = 32.0
-	Scalar         = 2.0
-	ScaledTileSize = TileSize * Scalar
 )
 
 var (
-	OffsetVector = pixel.V(0.0, ScaledTileSize*0.5)
+	OffsetVector = pixel.V(0.0, TileSize * 0.5)
 )

@@ -3,7 +3,6 @@ package selector
 import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
-	"github.com/timsims1717/cg_rogue_go/internal/cfg"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"image/color"
 )
@@ -27,14 +26,15 @@ func (e *AttackEffect) Update() {
 	e.imd.EndShape = imdraw.SharpEndShape
 	for _, c := range e.area {
 		e.imd.Push(world.MapToWorld(e.orig), world.MapToWorld(c))
-		e.imd.Line(12)
+		e.imd.Line(4)
 	}
 }
 
 func (e *AttackEffect) Draw(target pixel.Target) {
 	for _, c := range e.area {
-		mat := pixel.IM.Scaled(pixel.ZV, cfg.Scalar).Moved(world.MapToWorld(c))
-		SelectionSprites["attack"].Draw(target, mat)
+		mat := pixel.IM.Moved(world.MapToWorld(c))
+		SelectionSprites["attack_bg"].Draw(target, mat)
+		SelectionSprites["attack_single"].Draw(target, mat)
 	}
 	e.imd.Draw(target)
 }

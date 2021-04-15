@@ -21,7 +21,7 @@ func run() {
 	seed := time.Now().UnixNano()
 	rand.Seed(seed)
 	fmt.Println("Seed:", seed)
-	world.ScaledTileSize = cfg.ScaledTileSize
+	world.TileSize = cfg.TileSize
 	camera.SetWindowSize(1600, 900)
 	config := pixelgl.WindowConfig{
 		Title:  cfg.Title,
@@ -34,6 +34,7 @@ func run() {
 	}
 
 	camera.Cam = camera.New()
+	camera.Cam.Zoom = 2.0
 
 	sfx.MusicPlayer.RegisterMusicTrack("assets/music/test_track.MP3", "test_track")
 	sfx.MusicPlayer.RegisterMusicTrack("assets/music/test_ambience.MP3", "test_ambience")

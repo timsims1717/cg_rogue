@@ -1,6 +1,6 @@
 package world
 
-var ScaledTileSize float64
+var TileSize float64
 var Origin = Coords{
 	X: 0,
 	Y: 0,
@@ -10,6 +10,10 @@ var Origin = Coords{
 type Coords struct {
 	X int
 	Y int
+}
+
+func (a Coords) Direction(b Coords) Sextant {
+	return GetSextant(b, a)
 }
 
 // Up returns the Coords above

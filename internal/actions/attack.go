@@ -14,7 +14,7 @@ import (
 func SetAttackTransformSingle(source *floor.Character, target world.Coords) {
 	p := source.GetPos()
 	b := world.MapToWorld(target).Sub(p)
-	r := util.Normalize(b).Scaled(0.4 * cfg.ScaledTileSize)
+	r := util.Normalize(b).Scaled(0.4 * cfg.TileSize)
 	e := p.Add(r)
 	transform := animation.TransformBuilder{
 		Transform: source.GetTransform(),
@@ -40,7 +40,7 @@ func SetAttackTransform(source *floor.Character, targets []world.Coords) {
 		a.Y += 1.0
 	}
 	b := a.Sub(p)
-	r := util.Normalize(b).Scaled(0.4 * cfg.ScaledTileSize)
+	r := util.Normalize(b).Scaled(0.4 * cfg.TileSize)
 	e := p.Add(r)
 	transform := animation.TransformBuilder{
 		Transform: source.GetTransform(),

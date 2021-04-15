@@ -68,7 +68,7 @@ func (c *Dash) InitSelectors() {
 				NonEmpty:      true,
 				EndUnoccupied: true,
 			},
-			Effect: selector.NewSelectionEffect(&selector.MoveEffect{}, c.Values),
+			Effect: selector.NewSelectionEffect(&selector.MoveSeriesEffect{}, c.Values),
 		}, true),
 	}
 }
@@ -127,7 +127,7 @@ func (c *QuickStrike) InitSelectors() {
 				NonEmpty:      true,
 				EndUnoccupied: true,
 			},
-			Effect: selector.NewSelectionEffect(&selector.MoveEffect{}, c.Values),
+			Effect: selector.NewSelectionEffect(&selector.MoveSeriesEffect{}, c.Values),
 		}, true),
 		selector.NewSelector(&selector.TargetSelect{
 			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}, c.Values),
@@ -380,7 +380,7 @@ func (c *Disengage) InitSelectors() {
 				NonEmpty:      true,
 				EndUnoccupied: true,
 			},
-			Effect: selector.NewSelectionEffect(&selector.MoveEffect{}, c.Values),
+			Effect: selector.NewSelectionEffect(&selector.MoveSeriesEffect{}, c.Values),
 		}, true),
 	}
 }

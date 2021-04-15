@@ -33,7 +33,6 @@ type Character struct {
 func NewCharacter(sprite *pixel.Sprite, coords world.Coords, diplomacy Diplomacy, maxHP int) *Character {
 	transform := animation.NewTransform(true)
 	transform.Pos = world.MapToWorld(coords)
-	transform.Scalar = pixel.V(cfg.Scalar, cfg.Scalar)
 	transform.Offset = cfg.OffsetVector
 	c := &Character{
 		Coords:    coords,
@@ -69,7 +68,8 @@ func (c *Character) Update() {
 			c.effect = nil
 		}
 	}
-	c.Health.pos = pixel.V(c.Transform.Pos.X, c.Transform.Pos.Y+50.)
+	c.Health.pos = pixel.V(c.Transform.Pos.X, c.Transform.Pos.Y+29.)
+	//c.Health.pos = pixel.V(c.Transform.Pos.X, c.Transform.Pos.Y+c.Spr.Frame().H())
 	c.Health.Update()
 }
 

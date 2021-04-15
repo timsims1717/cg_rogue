@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
-	"github.com/timsims1717/cg_rogue_go/internal/cfg"
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
 	"github.com/timsims1717/cg_rogue_go/pkg/util"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
@@ -87,12 +86,12 @@ func (f *Floor) Draw(win *pixelgl.Window) {
 		for y := h - 1; y >= 0; y-- {
 			for x := 1; x < w; x += 2 {
 				hex := f.Get(world.Coords{x, y})
-				mat := pixel.IM.Scaled(pixel.ZV, cfg.Scalar).Moved(world.MapToWorld(hex.GetCoords())).Moved(pixel.V(-4.0, 0.0))
+				mat := pixel.IM.Moved(world.MapToWorld(hex.GetCoords()))
 				hex.Tile.Draw(f.batch, mat)
 			}
 			for x := 0; x < w; x += 2 {
 				hex := f.Get(world.Coords{x, y})
-				mat := pixel.IM.Scaled(pixel.ZV, cfg.Scalar).Moved(world.MapToWorld(hex.GetCoords())).Moved(pixel.V(-4.0, 0.0))
+				mat := pixel.IM.Moved(world.MapToWorld(hex.GetCoords()))
 				hex.Tile.Draw(f.batch, mat)
 			}
 		}

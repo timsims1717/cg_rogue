@@ -7,20 +7,20 @@ import (
 
 func MapToWorld(a Coords) pixel.Vec {
 	if a.X%2 != 0 {
-		return pixel.V((float64(a.X)+0.5)*ScaledTileSize, (float64(a.Y)+1.0)*ScaledTileSize)
+		return pixel.V((float64(a.X)+0.5)*TileSize, (float64(a.Y)+1.0)*TileSize)
 	} else {
-		return pixel.V((float64(a.X)+0.5)*ScaledTileSize, (float64(a.Y)+0.5)*ScaledTileSize)
+		return pixel.V((float64(a.X)+0.5)*TileSize, (float64(a.Y)+0.5)*TileSize)
 	}
 }
 
 func WorldToMap(x, y float64) (int, int) {
-	mapX := x / ScaledTileSize
+	mapX := x / TileSize
 	mapXf := math.Floor(mapX)
 	x1 := mapXf - 0.125
 	x2 := mapXf + 0.125
 	x3 := mapXf + 0.875
 	x4 := mapXf + 1.125
-	mapY := y / ScaledTileSize
+	mapY := y / TileSize
 	mapYO := math.Floor(mapY - 0.5)
 	mapYE := math.Floor(mapY)
 	mapYf := mapYE
