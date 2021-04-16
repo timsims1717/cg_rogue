@@ -88,11 +88,11 @@ func (p *PlayCard) Update(turn bool) {
 							p.NextSelector()
 						}
 					}
-				}
-				for _, results := range p.Card.Results {
-					if results != nil {
-						for _, result := range results {
-							selector.AddSelectionEffect(result.Effect)
+					for _, results := range p.Card.Results {
+						if results != nil {
+							for _, result := range results {
+								selector.AddSelectionEffect(result.Effect)
+							}
 						}
 					}
 				}

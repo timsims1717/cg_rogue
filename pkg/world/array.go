@@ -61,3 +61,60 @@ func Combine(a, b []Coords) []Coords {
 	}
 	return n
 }
+
+
+func Intersection(a, b []Coords) []Coords {
+	var n []Coords
+	for _, c := range a {
+		for _, d := range b {
+			if c == d && !CoordsIn(c, n) {
+				n = append(n, c)
+			}
+		}
+	}
+	return n
+}
+
+// NotIn returns the Coords that are in a but not in b
+func NotIn(a, b []Coords) []Coords {
+	var n []Coords
+	for _, c := range a {
+		found := false
+		for _, d := range b {
+			if c == d {
+				found = true
+			}
+		}
+		if !found && !CoordsIn(c, n) {
+			n = append(n, c)
+		}
+	}
+	return n
+}
+
+// Contiguous separates all the Coords in a into groups of Coords
+// that are touching.
+func Contiguous(a []Coords, w, h int) [][]Coords {
+	count := 0
+	belongs := make([]int, 0)
+	for range a {
+		belongs = append(belongs, -1)
+	}
+	for i, c := range a {
+		if belongs[i] == -1 {
+			belongs[i] = count
+			count++
+		}
+		n := c.Neighbors(w, h)
+		for j := i + 1; j < len(a); j++ {
+			if CoordsIn(a[j], n) {
+				belongs[j] = belongs[i]
+			}
+		}
+	}
+	groups := make([][]Coords, count)
+	for i, g := range belongs {
+		groups[g] = append(groups[g], a[i])
+	}
+	return groups
+}

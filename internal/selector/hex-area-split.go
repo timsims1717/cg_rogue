@@ -76,6 +76,7 @@ func (s *HexAreaSplitSelect) Update(input *input.Input) {
 			} else {
 				s.SecEffect.SetArea(secArea)
 			}
+			s.SecEffect.SetOrig(input.Coords)
 			AddSelectionEffect(s.SecEffect)
 		}
 		if input.Cancel.JustPressed() {

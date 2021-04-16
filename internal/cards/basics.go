@@ -30,7 +30,7 @@ func (c *Thrust) SetValues(level int) {
 func (c *Thrust) InitSelectors() {
 	c.Selectors = []*selector.AbstractSelector{
 		selector.NewSelector(&selector.TargetSelect{
-			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}, c.Values),
+			Effect: selector.NewSelectionEffect(&selector.AttackTriangleEffect{}, c.Values),
 		}, false),
 	}
 }
@@ -130,7 +130,7 @@ func (c *QuickStrike) InitSelectors() {
 			Effect: selector.NewSelectionEffect(&selector.MoveSeriesEffect{}, c.Values),
 		}, true),
 		selector.NewSelector(&selector.TargetSelect{
-			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}, c.Values),
+			Effect: selector.NewSelectionEffect(&selector.AttackTriangleEffect{}, c.Values),
 		}, false),
 	}
 }
@@ -186,7 +186,7 @@ func (c *Sweep) InitSelectors() {
 				NonEmpty:      false,
 				EndUnoccupied: false,
 			},
-			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}, c.Values),
+			Effect: selector.NewSelectionEffect(&selector.AttackTriangleEffect{}, c.Values),
 		}, false),
 	}
 }
@@ -256,7 +256,7 @@ func (c *Vault) InitSelectors() {
 				NonEmpty:      false,
 				EndUnoccupied: false,
 			},
-			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}, c.Values),
+			Effect: selector.NewSelectionEffect(&selector.AttackTriangleEffect{}, c.Values),
 		}, false),
 	}
 }
@@ -312,7 +312,7 @@ func (c *DaggerThrow) InitSelectors() {
 				NonEmpty:      false,
 				EndUnoccupied: false,
 			},
-			Effect:    selector.NewSelectionEffect(&selector.AttackEffect{}, c.Values),
+			Effect:    selector.NewSelectionEffect(&selector.AttackTargetEffect{}, c.Values),
 			SecEffect: selector.NewSelectionEffect(&selector.HighlightEffect{}, c.Values),
 		}, false),
 	}
@@ -371,7 +371,7 @@ func (c *Disengage) InitSelectors() {
 				NonEmpty:      false,
 				EndUnoccupied: false,
 			},
-			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}, c.Values),
+			Effect: selector.NewSelectionEffect(&selector.AttackTriangleEffect{}, c.Values),
 		}, false),
 		selector.NewSelector(&selector.PathSelect{
 			PathChecks: floor.PathChecks{
@@ -447,7 +447,7 @@ func (c *Slam) InitSelectors() {
 				EndUnoccupied: false,
 			},
 			Effect:    selector.NewSelectionEffect(&selector.MoveEffect{}, c.Values),
-			SecEffect: selector.NewSelectionEffect(&selector.AttackEffect{}, c.Values),
+			SecEffect: selector.NewSelectionEffect(&selector.AttackTriangleEffect{}, c.Values),
 		}, true),
 	}
 }

@@ -356,7 +356,7 @@ func (a *CheatAttack) InitSelectors() {
 				EndUnoccupied: false,
 				Orig:          world.Coords{},
 			},
-			Effect: selector.NewSelectionEffect(&selector.AttackEffect{}, a.Values),
+			Effect: selector.NewSelectionEffect(&selector.AttackTargetEffect{}, a.Values),
 		}, false),
 	}
 }

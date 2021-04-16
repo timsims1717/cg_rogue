@@ -3,6 +3,7 @@ package selector
 import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
+	"github.com/timsims1717/cg_rogue_go/internal/floor"
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 )
@@ -82,4 +83,99 @@ func (s *selectionSet) Draw(win *pixelgl.Window) {
 	}
 	s.batch.Draw(win)
 	s.nset = []SelectionEffect{}
+}
+
+func attackAreas(area []world.Coords) ([][]pixel.Matrix, [][]*pixel.Sprite) {
+	var areaMatrices [][]pixel.Matrix
+	var areaSprites [][]*pixel.Sprite
+	for i, c := range area {
+		areaMatrices = append(areaMatrices, []pixel.Matrix{})
+		areaSprites = append(areaSprites, []*pixel.Sprite{})
+		mat := pixel.IM
+		flip := pixel.IM.ScaledXY(pixel.ZV, pixel.V(-1., 1.))
+		flop := pixel.IM.ScaledXY(pixel.ZV, pixel.V(1., -1.))
+		flipflop := pixel.IM.ScaledXY(pixel.ZV, pixel.V(-1., -1.))
+		nbors := world.Intersection(c.Neighbors(floor.CurrentFloor.Dimensions()), area)
+		if len(nbors) == 0 {
+			areaMatrices[i] = append(areaMatrices[i], mat)
+			areaSprites[i] = append(areaSprites[i], SelectionSprites["attack_single"])
+		} else {
+			top := map[int]bool{
+				0: false,
+				1: false,
+				2: false,
+			}
+			bot := map[int]bool{
+				0: false,
+				1: false,
+				2: false,
+			}
+			for _, n := range nbors {
+				dir := c.Direction(n)
+				switch dir {
+				case world.LineUpLeft:
+					top[0] = true
+				case world.LineUp:
+					top[1] = true
+				case world.LineUpRight:
+					top[2] = true
+				case world.LineDownLeft:
+					bot[0] = true
+				case world.LineDown:
+					bot[1] = true
+				case world.LineDownRight:
+					bot[2] = true
+				}
+			}
+			if top[1] {
+				if !top[0] {
+					areaMatrices[i] = append(areaMatrices[i], mat)
+					areaSprites[i] = append(areaSprites[i], SelectionSprites["attack_ul"])
+				}
+				if !top[2] {
+					areaMatrices[i] = append(areaMatrices[i], flip)
+					areaSprites[i] = append(areaSprites[i], SelectionSprites["attack_ul"])
+				}
+			} else {
+				if !top[0] && !top[2] {
+					areaMatrices[i] = append(areaMatrices[i], mat)
+					areaSprites[i] = append(areaSprites[i], SelectionSprites["attack_ul_u_ur"])
+				} else if !top[0] && top[2] {
+					areaMatrices[i] = append(areaMatrices[i], mat)
+					areaSprites[i] = append(areaSprites[i], SelectionSprites["attack_ul_u"])
+				} else if top[0] && !top[2] {
+					areaMatrices[i] = append(areaMatrices[i], flip)
+					areaSprites[i] = append(areaSprites[i], SelectionSprites["attack_ul_u"])
+				} else {
+					areaMatrices[i] = append(areaMatrices[i], mat)
+					areaSprites[i] = append(areaSprites[i], SelectionSprites["attack_u"])
+				}
+			}
+			if bot[1] {
+				if !bot[0] {
+					areaMatrices[i] = append(areaMatrices[i], flop)
+					areaSprites[i] = append(areaSprites[i], SelectionSprites["attack_ul"])
+				}
+				if !bot[2] {
+					areaMatrices[i] = append(areaMatrices[i], flipflop)
+					areaSprites[i] = append(areaSprites[i], SelectionSprites["attack_ul"])
+				}
+			} else {
+				if !bot[0] && !bot[2] {
+					areaMatrices[i] = append(areaMatrices[i], flop)
+					areaSprites[i] = append(areaSprites[i], SelectionSprites["attack_ul_u_ur"])
+				} else if !bot[0] && bot[2] {
+					areaMatrices[i] = append(areaMatrices[i], flop)
+					areaSprites[i] = append(areaSprites[i], SelectionSprites["attack_ul_u"])
+				} else if bot[0] && !bot[2] {
+					areaMatrices[i] = append(areaMatrices[i], flipflop)
+					areaSprites[i] = append(areaSprites[i], SelectionSprites["attack_ul_u"])
+				} else {
+					areaMatrices[i] = append(areaMatrices[i], flop)
+					areaSprites[i] = append(areaSprites[i], SelectionSprites["attack_u"])
+				}
+			}
+		}
+	}
+	return areaMatrices, areaSprites
 }

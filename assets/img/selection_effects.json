@@ -14,6 +14,9 @@
  "singleRow": true,
  "sprites": [
   {
+   "key": "default"
+  },
+  {
    "key": "move_ul_dr"
   },
   {
@@ -68,7 +71,19 @@
    "key": "attack_bg"
   },
   {
-   "key": "default"
+   "key": "attack_arrow_ul"
+  },
+  {
+   "key": "attack_arrow_u"
+  },
+  {
+   "key": "attack_target"
+  },
+  {
+   "key": "attack_target_mid"
+  },
+  {
+   "key": "attack_target_start"
   }
  ]
 }

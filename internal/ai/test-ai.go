@@ -86,7 +86,7 @@ func (ai *RandomWalker) Decide() {
 			PathCheck:   floor.PathChecks{},
 			TargetArea:  []world.Coords{world.Origin},
 			TargetCheck: atkCheck,
-			Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}, ai.currValues),
+			Effect:      selector.NewSelectionEffect(&selector.AttackTriangleEffect{}, ai.currValues),
 		},
 	}
 }
@@ -185,7 +185,7 @@ func (ai *FlyChaser) Decide() {
 							PathCheck:   floor.NoCheck,
 							TargetArea:  []world.Coords{world.Origin},
 							TargetCheck: atkCheck,
-							Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}, ai.currValues),
+							Effect:      selector.NewSelectionEffect(&selector.AttackTriangleEffect{}, ai.currValues),
 						},
 					}
 					ai.atkCnt++
@@ -299,7 +299,7 @@ func (ai *Skirmisher) Decide() {
 				PathCheck:   floor.NoCheck,
 				TargetArea:  []world.Coords{world.Origin},
 				TargetCheck: atkCheck,
-				Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}, ai.currValues),
+				Effect:      selector.NewSelectionEffect(&selector.AttackTriangleEffect{}, ai.currValues),
 			},
 		}
 		ai.decision++
@@ -350,7 +350,7 @@ func (ai *Skirmisher) Decide() {
 					PathCheck:   atkCheck,
 					TargetArea:  []world.Coords{world.Origin},
 					TargetCheck: atkCheck,
-					Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}, ai.currValues),
+					Effect:      selector.NewSelectionEffect(&selector.AttackTargetEffect{}, ai.currValues),
 				})
 			}
 		}
@@ -487,7 +487,7 @@ func (ai *Grenadier) Decide() {
 				PathCheck:   atkCheck,
 				TargetArea:  area,
 				TargetCheck: atkCheck,
-				Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}, ai.currValues),
+				Effect:      selector.NewSelectionEffect(&selector.AttackTriangleEffect{}, ai.currValues),
 			})
 			ai.atkCnt += 2
 		}
@@ -544,7 +544,9 @@ func (ai *Grenadier) Decide() {
 						PathCheck:   atkCheck,
 						TargetArea:  append([]world.Coords{targets[choice]}, best...),
 						TargetCheck: atkCheck,
-						Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}, ai.currValues),
+						Effect:      selector.NewSelectionEffect(&selector.AttackTargetEffect{
+							Center: true,
+						}, ai.currValues),
 					})
 					ai.atkCnt += 1
 				}
@@ -567,7 +569,7 @@ func (ai *Grenadier) Decide() {
 					PathCheck:   atkCheck,
 					TargetArea:  append([]world.Coords{targets[choice]}, hits...),
 					TargetCheck: atkCheck,
-					Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}, ai.currValues),
+					Effect:      selector.NewSelectionEffect(&selector.AttackTargetEffect{}, ai.currValues),
 				})
 				ai.atkCnt += 1
 			}
@@ -662,7 +664,7 @@ func (ai *Bruiser) Decide() {
 				PathCheck:   atkCheck,
 				TargetArea:  area,
 				TargetCheck: atkCheck,
-				Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}, ai.currValues),
+				Effect:      selector.NewSelectionEffect(&selector.AttackTriangleEffect{}, ai.currValues),
 			})
 			ai.atkCnt++
 		}
@@ -695,7 +697,7 @@ func (ai *Bruiser) Decide() {
 					PathCheck:   floor.NoCheck,
 					TargetArea:  []world.Coords{tOrig, targets[choice], next},
 					TargetCheck: atkCheck,
-					Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}, ai.currValues),
+					Effect:      selector.NewSelectionEffect(&selector.AttackTriangleEffect{}, ai.currValues),
 				})
 				ai.atkCnt++
 				return
@@ -782,7 +784,7 @@ func (ai *Stationary) Decide() {
 				PathCheck:   floor.NoCheck,
 				TargetArea:  area,
 				TargetCheck: atkCheck,
-				Effect:      selector.NewSelectionEffect(&selector.AttackEffect{}, ai.currValues),
+				Effect:      selector.NewSelectionEffect(&selector.AttackTriangleEffect{}, ai.currValues),
 			},
 		}
 		ai.decision = 1
