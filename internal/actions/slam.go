@@ -45,7 +45,7 @@ func (a *SlamAction) Update() {
 	}
 	if !a.values.Source.IsMoving() {
 		a.IsDone = true
-		floor.CurrentFloor.MoveOccupant(a.values.Source, a.values.Source.Coords, a.landing)
+		floor.CurrentFloor.PutOccupant(a.values.Source, a.landing)
 		first := true
 		for _, h := range a.area {
 			// todo: add an effect

@@ -31,7 +31,8 @@ func LoadTestFloor(level int) {
 	pX := rand.Intn(4) + 4
 	pY := rand.Intn(4) + 4
 
-	player.Player1.Character.SetCoords(world.Coords{X: pX, Y: pY})
+	c := world.Coords{X: pX, Y: pY}
+	floor.CurrentFloor.PutOccupant(player.Player1.Character, c)
 
 	countBase := 4 + level
 	random := (rand.Intn(countBase) - countBase/2) / 2

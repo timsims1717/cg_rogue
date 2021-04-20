@@ -11,10 +11,10 @@ import (
 // IsLegal checks if a Hex is a legal candidate according to the current PathCheck
 func (f *Floor) IsLegal(a world.Coords, checks PathChecks) *Hex {
 	hex := f.Get(a)
-	if hex != nil {
-		if (a.X == checks.Orig.X && a.Y == checks.Orig.Y) || ((!checks.Unoccupied || hex.Occupant == nil) && (!checks.NonEmpty || !hex.Empty)) {
-			return hex
-		}
+	if hex != nil && ((a.X == checks.Orig.X && a.Y == checks.Orig.Y) ||
+		((!checks.Unoccupied || (!f.IsOccupied(a) && (!checks.HonorClaim || !f.IsClaimed(a)))) &&
+		(!checks.NonEmpty || !hex.Empty))) {
+		return hex
 	}
 	return nil
 }
@@ -22,10 +22,10 @@ func (f *Floor) IsLegal(a world.Coords, checks PathChecks) *Hex {
 // isLegal checks if a Hex is a legal candidate according to the current PathCheck
 func (f *Floor) isLegal(a world.Coords) *Hex {
 	hex := f.Get(a)
-	if hex != nil {
-		if (a.X == f.checks.Orig.X && a.Y == f.checks.Orig.Y) || ((!f.checks.Unoccupied || hex.Occupant == nil) && (!f.checks.NonEmpty || !hex.Empty)) {
-			return hex
-		}
+	if hex != nil && ((a.X == f.checks.Orig.X && a.Y == f.checks.Orig.Y) ||
+		((!f.checks.Unoccupied || (!f.IsOccupied(a) && (!f.checks.HonorClaim || !f.IsClaimed(a)))) &&
+		(!f.checks.NonEmpty || !hex.Empty))) {
+		return hex
 	}
 	return nil
 }
@@ -172,7 +172,7 @@ func (f *Floor) LongestLegalPath(path []world.Coords, max int, check PathChecks)
 	defer f.SetDefaultChecks()
 	lastLegal := 0
 	for i, c := range path {
-		if !check.EndUnoccupied || !f.HasOccupant(c) {
+		if (!check.EndUnoccupied || !f.IsOccupied(c)) && (!check.HonorClaim || !f.IsClaimed(c)) {
 			lastLegal = i
 		}
 		if h := f.isLegal(c); h == nil {
@@ -237,7 +237,7 @@ func (f *Floor) FindPathWithinOne(a, b world.Coords, check PathChecks) ([]world.
 		if a.Eq(n) {
 			return []world.Coords{a}, 0, true
 		}
-		if !f.Exists(n) || (check.EndUnoccupied && f.HasOccupant(n)) {
+		if !f.Exists(n) || (check.EndUnoccupied && f.IsOccupied(n)) || (check.HonorClaim && f.IsClaimed(n)) {
 			continue
 		}
 		f.SetLine(a, b)
@@ -272,7 +272,7 @@ func (f *Floor) FindPathWithinOneHex(a, b world.Coords, check PathChecks) ([]*He
 		if a.Eq(n) {
 			return []*Hex{f.Get(a)}, 0, true
 		}
-		if !f.Exists(n) || (check.EndUnoccupied && f.HasOccupant(n)) {
+		if !f.Exists(n) || (check.EndUnoccupied && f.IsOccupied(n)) || (check.HonorClaim && f.IsClaimed(n)) {
 			return nil, 0, false
 		}
 		f.SetLine(a, b)
@@ -297,7 +297,7 @@ func (f *Floor) FindPath(a, b world.Coords, check PathChecks) ([]world.Coords, i
 	if a.Eq(b) {
 		return []world.Coords{a}, 0, true
 	}
-	if check.EndUnoccupied && f.HasOccupant(b) {
+	if (check.EndUnoccupied && f.IsOccupied(b)) || (check.HonorClaim && f.IsClaimed(b)) {
 		return nil, 0, false
 	}
 	f.checks = check
@@ -326,7 +326,7 @@ func (f *Floor) FindPathHex(a, b world.Coords, check PathChecks) ([]*Hex, int, b
 	if a.Eq(b) {
 		return []*Hex{f.Get(a)}, 0, true
 	}
-	if check.EndUnoccupied && f.HasOccupant(b) {
+	if (check.EndUnoccupied && f.IsOccupied(b)) || (check.HonorClaim && f.IsClaimed(b)) {
 		return nil, 0, false
 	}
 	f.checks = check

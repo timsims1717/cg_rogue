@@ -21,7 +21,7 @@ func (s *StartRun) Initialize() {
 	if err != nil {
 		panic(err)
 	}
-	character := floor.NewCharacter(pixel.NewSprite(charsheet.Img, charsheet.Sprites[rand.Intn(len(charsheet.Sprites))]), world.Coords{X: 0, Y: 0}, floor.Ally, 10)
+	character := floor.NewCharacter(pixel.NewSprite(charsheet.Img, charsheet.Sprites[rand.Intn(len(charsheet.Sprites))]), nil, world.Coords{X: 0, Y: 0}, floor.Ally, 10)
 	player.Player1 = player.NewPlayer(character)
 
 	player.InitializeCards()

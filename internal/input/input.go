@@ -16,6 +16,7 @@ type Input struct {
 	Scroll  float64
 	HotKeys map[pixelgl.Button]toggle
 	HotFunc map[pixelgl.Button]func()
+	Debug   bool
 }
 
 func NewInput() *Input {
@@ -31,6 +32,7 @@ func (i *Input) Update(win *pixelgl.Window) {
 	i.Coords.X, i.Coords.Y = world.WorldToMap(i.World.X, i.World.Y)
 	i.Select.Set(win, pixelgl.MouseButtonLeft)
 	i.Cancel.Set(win, pixelgl.MouseButtonRight)
+	i.Debug = win.JustPressed(pixelgl.KeyP)
 
 	if win.Pressed(pixelgl.KeyEscape) {
 		win.SetClosed(true)

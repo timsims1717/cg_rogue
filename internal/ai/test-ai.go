@@ -34,6 +34,7 @@ func (ai *RandomWalker) Decide() {
 		Unoccupied:    true,
 		NonEmpty:      true,
 		EndUnoccupied: true,
+		HonorClaim:    true,
 		Orig:          orig,
 	}
 	atkCheck := floor.PathChecks{
@@ -138,8 +139,9 @@ func (ai *FlyChaser) Decide() {
 	movCheck := floor.PathChecks{
 		NotFilled:     true,
 		Unoccupied:    false,
-		NonEmpty:      false,
+		NonEmpty:      true,
 		EndUnoccupied: true,
+		HonorClaim:    true,
 		Orig:          orig,
 	}
 	atkCheck := floor.PathChecks{
@@ -163,7 +165,9 @@ func (ai *FlyChaser) Decide() {
 								PathCheck:   movCheck,
 								TargetArea:  nil,
 								TargetCheck: floor.PathChecks{},
-								Effect:      selector.NewSelectionEffect(&selector.MoveSeriesEffect{}, ai.currValues),
+								Effect:      selector.NewSelectionEffect(&selector.MoveEffect{
+									End: true,
+								}, ai.currValues),
 								IsMove:      true,
 							},
 						}
@@ -177,7 +181,9 @@ func (ai *FlyChaser) Decide() {
 							PathCheck:   movCheck,
 							TargetArea:  nil,
 							TargetCheck: floor.PathChecks{},
-							Effect:      selector.NewSelectionEffect(&selector.MoveSeriesEffect{}, ai.currValues),
+							Effect:      selector.NewSelectionEffect(&selector.MoveEffect{
+								End: true,
+							}, ai.currValues),
 							IsMove:      true,
 						},
 						{
@@ -207,7 +213,9 @@ func (ai *FlyChaser) Decide() {
 							PathCheck:   movCheck,
 							TargetArea:  nil,
 							TargetCheck: floor.PathChecks{},
-							Effect:      selector.NewSelectionEffect(&selector.MoveSeriesEffect{}, ai.currValues),
+							Effect:      selector.NewSelectionEffect(&selector.MoveEffect{
+								End: true,
+							}, ai.currValues),
 							IsMove:      true,
 						},
 					}
@@ -263,6 +271,7 @@ func (ai *Skirmisher) Decide() {
 		Unoccupied:    true,
 		NonEmpty:      true,
 		EndUnoccupied: true,
+		HonorClaim:    true,
 		Orig:          orig,
 	}
 	atkCheck := floor.PathChecks{
@@ -461,6 +470,7 @@ func (ai *Grenadier) Decide() {
 		Unoccupied:    true,
 		NonEmpty:      true,
 		EndUnoccupied: true,
+		HonorClaim:    true,
 		Orig:          orig,
 	}
 	atkCheck := floor.PathChecks{
@@ -636,6 +646,7 @@ func (ai *Bruiser) Decide() {
 		Unoccupied:    true,
 		NonEmpty:      true,
 		EndUnoccupied: true,
+		HonorClaim:    true,
 		Orig:          orig,
 	}
 	atkCheck := floor.PathChecks{

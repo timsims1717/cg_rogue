@@ -47,6 +47,7 @@ func (ai *AbstractAI) Update() {
 		ai.currValues.Source = ai.Character
 		ai.TempActions = make([]*TempAIAction, len(ai.Actions))
 		ai.TempCoords = ai.Character.GetCoords()
+		ai.Character.RemoveClaim()
 		for i, act := range ai.Actions {
 			// check the path
 			var tArea []world.Coords
@@ -76,6 +77,7 @@ func (ai *AbstractAI) Update() {
 			}
 			if act.IsMove && len(tPath) > 0 {
 				ai.TempCoords = tPath[len(tPath)-1]
+				ai.Character.MakeClaim(ai.TempCoords)
 			}
 		}
 	}

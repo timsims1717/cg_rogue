@@ -14,6 +14,7 @@ type Hex struct {
 	f        *Floor
 	Tile     *pixel.Sprite
 	Occupant *Character
+	Claimant *Character
 	Empty    bool
 }
 

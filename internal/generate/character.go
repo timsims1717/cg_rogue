@@ -35,6 +35,7 @@ func CreateTestCharacter(coords world.Coords, spriteSheet *img.SpriteSheet) int 
 func CreateRandomWalker(coords world.Coords, spriteSheet *img.SpriteSheet) {
 	enemy := floor.NewCharacter(
 		pixel.NewSprite(spriteSheet.Img, spriteSheet.Sprites[8]),
+		floor.CurrentFloor,
 		coords,
 		floor.Enemy,
 		1,
@@ -47,6 +48,7 @@ func CreateRandomWalker(coords world.Coords, spriteSheet *img.SpriteSheet) {
 func CreateFlyChaser(coords world.Coords, spriteSheet *img.SpriteSheet) {
 	enemy := floor.NewCharacter(
 		pixel.NewSprite(spriteSheet.Img, spriteSheet.Sprites[5]),
+		floor.CurrentFloor,
 		coords,
 		floor.Enemy,
 		3,
@@ -59,6 +61,7 @@ func CreateFlyChaser(coords world.Coords, spriteSheet *img.SpriteSheet) {
 func CreateSkirmisher(coords world.Coords, spriteSheet *img.SpriteSheet) {
 	enemy := floor.NewCharacter(
 		pixel.NewSprite(spriteSheet.Img, spriteSheet.Sprites[0]),
+		floor.CurrentFloor,
 		coords,
 		floor.Enemy,
 		4,
@@ -71,6 +74,7 @@ func CreateSkirmisher(coords world.Coords, spriteSheet *img.SpriteSheet) {
 func CreateGrenadier(coords world.Coords, spriteSheet *img.SpriteSheet) {
 	enemy := floor.NewCharacter(
 		pixel.NewSprite(spriteSheet.Img, spriteSheet.Sprites[6]),
+		floor.CurrentFloor,
 		coords,
 		floor.Enemy,
 		5,
@@ -83,6 +87,7 @@ func CreateGrenadier(coords world.Coords, spriteSheet *img.SpriteSheet) {
 func CreateBruiser(coords world.Coords, spriteSheet *img.SpriteSheet) {
 	enemy := floor.NewCharacter(
 		pixel.NewSprite(spriteSheet.Img, spriteSheet.Sprites[4]),
+		floor.CurrentFloor,
 		coords,
 		floor.Enemy,
 		8,
@@ -95,6 +100,7 @@ func CreateBruiser(coords world.Coords, spriteSheet *img.SpriteSheet) {
 func CreateStationary(coords world.Coords, spriteSheet *img.SpriteSheet) {
 	enemy := floor.NewCharacter(
 		pixel.NewSprite(spriteSheet.Img, spriteSheet.Sprites[7]),
+		floor.CurrentFloor,
 		coords,
 		floor.Neutral,
 		6,

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
+	uuid "github.com/satori/go.uuid"
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
 	"github.com/timsims1717/cg_rogue_go/pkg/util"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
@@ -18,6 +19,7 @@ type Floor struct {
 	update   bool
 	checks   PathChecks
 	PathLine pixel.Line
+	id       uuid.UUID
 }
 
 type PathChecks struct {
@@ -25,6 +27,7 @@ type PathChecks struct {
 	Unoccupied    bool // true: must be unoccupied, false: can have an occupant
 	NonEmpty      bool // true: must not be empty, false: can be an empty tile (a pit, or something)
 	EndUnoccupied bool // true: last tile must be unoccupied, false: last tile can have an occupant
+	HonorClaim    bool // true: can't select claimed tiles, false: doesn't care about claimed tiles
 	Orig          world.Coords
 }
 
@@ -51,6 +54,7 @@ func NewFloor(w, h int, spriteSheet *img.SpriteSheet) *Floor {
 	floor := &Floor{
 		batch:  pixel.NewBatch(&pixel.TrianglesData{}, spriteSheet.Img),
 		update: true,
+		id:     uuid.NewV4(),
 	}
 	floor.floor = make([][]Hex, 0)
 	for x := 0; x < w; x++ {
@@ -122,6 +126,38 @@ func (f *Floor) Exists(a world.Coords) bool {
 	return a.X >= 0 && a.Y >= 0 && a.X < w && a.Y < h
 }
 
+func (f *Floor) IsClaimed(a world.Coords) bool {
+	hex := f.Get(a)
+	return hex == nil || !util.IsNil(hex.Claimant) || !util.IsNil(hex.Occupant)
+}
+
+func (f *Floor) GetClaimant(a world.Coords) *Character {
+	hex := f.Get(a)
+	if hex != nil && !util.IsNil(hex.Claimant) {
+		return hex.Claimant
+	}
+	return nil
+}
+
+func (f *Floor) RemoveClaim(a world.Coords) {
+	hex := f.Get(a)
+	if hex != nil && !util.IsNil(hex.Claimant) {
+		hex.Claimant = nil
+	}
+}
+
+func (f *Floor) Claim(c *Character, a world.Coords) {
+	if !f.Exists(a) {
+		return
+	}
+	hex := f.Get(a)
+	if hex.Claimant != nil {
+		hex.Claimant.RemoveClaim()
+	}
+	hex.Claimant = c
+	c.Claim = a
+}
+
 func (f *Floor) IsOccupied(a world.Coords) bool {
 	hex := f.Get(a)
 	return hex == nil || !util.IsNil(hex.Occupant)
@@ -135,36 +171,29 @@ func (f *Floor) GetOccupant(a world.Coords) *Character {
 	return nil
 }
 
-func (f *Floor) HasOccupant(a world.Coords) bool {
-	hex := f.Get(a)
-	return hex != nil && !util.IsNil(hex.Occupant)
-}
-
-func (f *Floor) PutOccupant(c *Character, a world.Coords) bool {
-	hex := f.Get(a)
-	if hex != nil && util.IsNil(hex.Occupant) {
-		hex.Occupant = c
-		return true
-	}
-	return false
-}
-
-func (f *Floor) RemoveOccupant(a world.Coords) bool {
+func (f *Floor) RemoveOccupant(a world.Coords) *Character {
 	hex := f.Get(a)
 	if hex != nil && !util.IsNil(hex.Occupant) {
+		former := hex.Occupant
 		hex.Occupant = nil
-		return true
+		return former
 	}
-	return false
+	return nil
 }
 
-func (f *Floor) MoveOccupant(c *Character, a, b world.Coords) bool {
-	if !f.Exists(a) || !f.Exists(b) {
-		return false
+func (f *Floor) PutOccupant(c *Character, e world.Coords) {
+	if !f.Exists(e) {
+		return
 	}
-	success := f.RemoveOccupant(a)
-	if success {
-		c.SetCoords(b)
+	if c.Floor != nil && c.Floor.id == f.id	{
+		f.RemoveOccupant(c.GetCoords())
+	} else {
+		c.Floor = f
 	}
-	return success
+	hex := f.Get(e)
+	hex.Claimant = nil
+	hex.Occupant = c
+	c.Coords = e
+	c.SetPos(world.MapToWorld(e))
+	c.OnMap = true
 }

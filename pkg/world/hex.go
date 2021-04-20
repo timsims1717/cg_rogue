@@ -5,6 +5,10 @@ var Origin = Coords{
 	X: 0,
 	Y: 0,
 }
+var Nil = Coords{
+	X: -1000,
+	Y: -1000,
+}
 
 // Coords is a convenience struct for passing tile coordinates
 type Coords struct {

@@ -13,12 +13,11 @@ import (
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"golang.org/x/image/colornames"
 	"math/rand"
-	"time"
 )
 
 func run() {
-	//seed := int64(1618338917942045051)
-	seed := time.Now().UnixNano()
+	seed := int64(1618940116566201148)
+	//seed := time.Now().UnixNano()
 	rand.Seed(seed)
 	fmt.Println("Seed:", seed)
 	world.TileSize = cfg.TileSize

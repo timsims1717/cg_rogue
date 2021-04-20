@@ -162,7 +162,7 @@ func (a *PushMultiAction) Update() {
 				y, finY := a.interYP[i].Update(timing.DT)
 				target.SetPos(pixel.V(x, y))
 				if finX && finY {
-					floor.CurrentFloor.MoveOccupant(target, target.GetCoords(), a.ends[i])
+					floor.CurrentFloor.PutOccupant(target, a.ends[i])
 					a.interXP[i] = nil
 					a.interYP[i] = nil
 				} else {

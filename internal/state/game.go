@@ -152,9 +152,9 @@ func (s *Encounter) Update(win *pixelgl.Window) {
 	player.CardManager.Update()
 	action.ActionManager.Update()
 
+	player.Player1.Update()
 	ai.AIManager.Update()
 	floor.Update()
-	player.Player1.Update()
 	if s.RestButton != nil {
 		s.RestButton.Disabled = !player.Player1.IsTurn
 		s.RestButton.Update(player.Player1.Input)

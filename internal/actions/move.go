@@ -43,7 +43,7 @@ func (a *MoveAction) Update() {
 	a.target.SetPos(pixel.V(x, y))
 	if finX && finY {
 		a.IsDone = true
-		floor.CurrentFloor.MoveOccupant(a.target, a.start, a.end)
+		floor.CurrentFloor.PutOccupant(a.target, a.end)
 		sfx.SoundPlayer.PlaySound("step1")
 	}
 }
@@ -90,7 +90,7 @@ func (a *MoveSeriesAction) Update() {
 		if a.step >= len(a.series)-1 {
 			next := a.series[a.step]
 			a.IsDone = true
-			floor.CurrentFloor.MoveOccupant(a.target, a.start, next)
+			floor.CurrentFloor.PutOccupant(a.target, next)
 		} else {
 			sfx.SoundPlayer.PlaySound("step1")
 			next := a.series[a.step+1]

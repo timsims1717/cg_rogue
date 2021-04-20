@@ -15,10 +15,12 @@ import (
 
 type Character struct {
 	Coords      world.Coords
+	Claim       world.Coords
 	Transform   *animation.Transform
 	transEffect *animation.TransformEffect
 	Spr         *pixel.Sprite
 	OnMap       bool
+	Floor       *Floor
 
 	Health    Health
 	Diplomacy Diplomacy
@@ -30,14 +32,17 @@ type Character struct {
 	effect *animation.ColorEffect
 }
 
-func NewCharacter(sprite *pixel.Sprite, coords world.Coords, diplomacy Diplomacy, maxHP int) *Character {
+// NewCharacter will override any character on the world.Coords supplied in the arguments.
+func NewCharacter(sprite *pixel.Sprite, floor *Floor, coords world.Coords, diplomacy Diplomacy, maxHP int) *Character {
 	transform := animation.NewTransform(true)
 	transform.Pos = world.MapToWorld(coords)
 	transform.Offset = cfg.OffsetVector
 	c := &Character{
 		Coords:    coords,
+		Claim:     world.Nil,
 		Transform: transform,
 		Spr:       sprite,
+		Floor:     floor,
 		Health: Health{
 			CurrHP:  maxHP,
 			MaxHP:   maxHP,
@@ -50,7 +55,9 @@ func NewCharacter(sprite *pixel.Sprite, coords world.Coords, diplomacy Diplomacy
 		id:        uuid.NewV4(),
 		mask:      colornames.White,
 	}
-	c.SetCoords(coords)
+	if c.Floor != nil {
+		c.Floor.PutOccupant(c, coords)
+	}
 	return c
 }
 
@@ -122,6 +129,27 @@ func (c *Character) ID() uuid.UUID {
 	return c.id
 }
 
+func (c *Character) RemoveClaim() {
+	if c.Floor != nil {
+		if c.Floor.IsClaimed(c.Claim) {
+			c.Floor.RemoveClaim(c.Claim)
+			c.Claim = world.Nil
+		}
+	}
+}
+
+func (c *Character) MakeClaim(a world.Coords) {
+	if c.Floor != nil {
+		if a == c.Claim {
+			return
+		}
+		if c.Floor.IsClaimed(c.Claim) {
+			c.Floor.RemoveClaim(c.Claim)
+		}
+		c.Floor.Claim(c, a)
+	}
+}
+
 func (c *Character) GetPos() pixel.Vec {
 	return c.Transform.Pos
 }
@@ -132,18 +160,6 @@ func (c *Character) SetPos(v pixel.Vec) {
 
 func (c *Character) GetCoords() world.Coords {
 	return c.Coords
-}
-
-func (c *Character) SetCoords(a world.Coords) {
-	if CurrentFloor != nil {
-		if CurrentFloor.IsOccupied(a) {
-			return
-		}
-		CurrentFloor.PutOccupant(c, a)
-		c.Coords = a
-		c.SetPos(world.MapToWorld(a))
-		c.OnMap = true
-	}
 }
 
 func (c *Character) GetTransform() *animation.Transform {

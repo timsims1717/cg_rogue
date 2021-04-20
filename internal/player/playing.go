@@ -111,6 +111,7 @@ func (p *PlayCard) NextSelector() {
 		p.CurrSelector = nil
 	} else {
 		p.Card.Results[p.Card.actPtr] = nil
+		p.Card.Selectors[p.Card.actPtr].SetSource(p.player.Character)
 		p.Card.Selectors[p.Card.actPtr].Reset(p.Card.tempOrig[len(p.Card.tempOrig)-1])
 		p.Card.Selectors[p.Card.actPtr].Selector.SetValues(p.Card.Values)
 		p.CurrSelector = p.Card.Selectors[p.Card.actPtr]

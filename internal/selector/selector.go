@@ -30,8 +30,13 @@ type AbstractSelector struct {
 	results  []*Result
 	area     []world.Coords
 	origin   world.Coords
+	source   *floor.Character
 	isDone   bool
 	cancel   bool
+}
+
+func (s *AbstractSelector) SetSource(character *floor.Character) {
+	s.source = character
 }
 
 func (s *AbstractSelector) Reset(origin world.Coords) {

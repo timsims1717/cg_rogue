@@ -79,7 +79,6 @@ func (e *MoveSeriesEffect) Update() {
 							e.matrices = append(e.matrices, pixel.IM)
 						}
 					}
-					e.matrices = append(e.matrices, pixel.IM)
 				} else if diff == 4 || diff == 8 {
 					if dirN == world.LineUp || dirN == world.LineDown || dirP == world.LineUp || dirP == world.LineDown {
 						e.sprites = append(e.sprites, SelectionSprites["move_ul_d"])
