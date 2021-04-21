@@ -35,6 +35,9 @@ func (s *LineTargetSelect) SetValues(values ActionValues) {
 
 func (s *LineTargetSelect) Update(input *input.Input) {
 	if !s.isDone {
+		if s.IsMove {
+			s.source.RemoveClaim()
+		}
 		s.PathChecks.Orig = s.origin
 		path := floor.CurrentFloor.LongestLegalPath(floor.CurrentFloor.Line(s.origin, input.Coords, s.MaxRange), 0, s.PathChecks)
 		targets := make([]world.Coords, 0)
@@ -48,7 +51,7 @@ func (s *LineTargetSelect) Update(input *input.Input) {
 				if len(targets) >= s.Count {
 					break
 				}
-				if occ := floor.CurrentFloor.GetOccupant(p); occ != nil {
+				if occ := floor.CurrentFloor.Get(p).GetOccupant(); occ != nil {
 					targets = append(targets, p)
 				}
 			}
@@ -67,6 +70,9 @@ func (s *LineTargetSelect) Update(input *input.Input) {
 					}
 				}
 				secondary = append(secondary, p)
+			}
+			if s.IsMove {
+				s.source.MakeClaim(input.Coords)
 			}
 			if len(primary) > 0 && s.Effect != nil {
 				s.Effect.SetArea(primary)

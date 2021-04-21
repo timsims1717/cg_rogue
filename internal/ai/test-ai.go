@@ -151,7 +151,7 @@ func (ai *FlyChaser) Decide() {
 		EndUnoccupied: false,
 		Orig:          orig,
 	}
-	targets := floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 6)
+	targets := floor.CurrentFloor.GetDiplomatic(floor.Ally, orig, 6)
 	if len(targets) > 0 {
 		for i := 0; i < 3; i++ {
 			choice := targets[rand.Intn(len(targets))]
@@ -296,7 +296,7 @@ func (ai *Skirmisher) Decide() {
 		}
 		ai.patrolling = 1
 	}
-	targets := floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 1)
+	targets := floor.CurrentFloor.GetDiplomatic(floor.Ally, orig, 1)
 	if len(targets) > 0 {
 		choice := 0
 		if len(targets) > 1 {
@@ -314,7 +314,7 @@ func (ai *Skirmisher) Decide() {
 		ai.decision++
 		return
 	}
-	targets = floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 3)
+	targets = floor.CurrentFloor.GetDiplomatic(floor.Ally, orig, 3)
 	if len(targets) > 0 {
 		dist := world.OrderByDistSimple(orig, targets)
 		path, _, legal := floor.CurrentFloor.FindPathAwayFrom(orig, dist[0], 3, movCheck)
@@ -333,7 +333,7 @@ func (ai *Skirmisher) Decide() {
 			return
 		}
 	}
-	targets = floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 7)
+	targets = floor.CurrentFloor.GetDiplomatic(floor.Ally, orig, 7)
 	if len(targets) > 0 {
 		choice := 0
 		if len(targets) > 1 {
@@ -366,7 +366,7 @@ func (ai *Skirmisher) Decide() {
 		ai.decision = 2
 		return
 	}
-	targets = floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 10)
+	targets = floor.CurrentFloor.GetDiplomatic(floor.Ally, orig, 10)
 	if len(targets) > 0 {
 		choice := targets[rand.Intn(len(targets))]
 		if path, _, legal := floor.CurrentFloor.FindPathWithinOne(orig, choice, movCheck); legal {
@@ -481,7 +481,7 @@ func (ai *Grenadier) Decide() {
 		Orig:          orig,
 	}
 	ai.currValues.Damage = 0
-	targets := floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 3)
+	targets := floor.CurrentFloor.GetDiplomatic(floor.Ally, orig, 3)
 	if len(targets) > 0 {
 		ai.decision = 2
 		choice := 0
@@ -503,7 +503,7 @@ func (ai *Grenadier) Decide() {
 		}
 		return
 	}
-	targets = floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 10)
+	targets = floor.CurrentFloor.GetDiplomatic(floor.Ally, orig, 10)
 	if len(targets) > 0 {
 		dec := 0
 		if ai.decision == 0 {
@@ -528,7 +528,7 @@ func (ai *Grenadier) Decide() {
 				if len(n) > 1 {
 					for _, c := range n {
 						tpts := 0
-						if cha := floor.CurrentFloor.GetOccupant(c); cha != nil {
+						if cha := floor.CurrentFloor.Get(c).GetOccupant(); cha != nil {
 							if cha.Diplomacy == floor.Ally {
 								tpts += 1
 							} else {
@@ -536,7 +536,7 @@ func (ai *Grenadier) Decide() {
 							}
 						}
 						next := world.NextHexRot(c, targets[choice], true)
-						if cha := floor.CurrentFloor.GetOccupant(next); cha != nil {
+						if cha := floor.CurrentFloor.Get(next).GetOccupant(); cha != nil {
 							if cha.Diplomacy == floor.Ally {
 								tpts += 1
 							} else {
@@ -656,7 +656,7 @@ func (ai *Bruiser) Decide() {
 		EndUnoccupied: false,
 		Orig:          orig,
 	}
-	targets := floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 1)
+	targets := floor.CurrentFloor.GetDiplomatic(floor.Ally, orig, 1)
 	if len(targets) > 0 {
 		ai.decision = 1
 		choice := 0
@@ -681,7 +681,7 @@ func (ai *Bruiser) Decide() {
 		}
 		return
 	}
-	targets = floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 3)
+	targets = floor.CurrentFloor.GetDiplomatic(floor.Ally, orig, 3)
 	if len(targets) > 0 {
 		ai.decision = 2
 		choice := 0
@@ -715,7 +715,7 @@ func (ai *Bruiser) Decide() {
 			}
 		}
 	}
-	targets = floor.CharacterManager.GetDiplomatic(floor.Ally, orig, 10)
+	targets = floor.CurrentFloor.GetDiplomatic(floor.Ally, orig, 10)
 	if len(targets) > 0 {
 		ai.decision = 0
 		choice := 0

@@ -41,6 +41,9 @@ func (s *HexAreaSplitSelect) SetValues(values ActionValues) {
 
 func (s *HexAreaSplitSelect) Update(input *input.Input) {
 	if !s.isDone {
+		if s.IsMove {
+			s.source.RemoveClaim()
+		}
 		hex := floor.CurrentFloor.IsLegal(input.Coords, s.PathChecks)
 		legal := hex != nil && world.DistanceSimple(s.origin, input.Coords) <= s.maxRange
 		if legal {
@@ -56,6 +59,9 @@ func (s *HexAreaSplitSelect) Update(input *input.Input) {
 				} else {
 					s.secArea = append(s.secArea[:removed], s.secArea[removed+1:]...)
 				}
+			}
+			if s.IsMove {
+				s.source.MakeClaim(input.Coords)
 			}
 		}
 		var secArea []world.Coords

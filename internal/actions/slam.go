@@ -51,7 +51,7 @@ func (a *SlamAction) Update() {
 			// todo: add an effect
 
 			// todo: this is where the damage modification happens
-			if cha := floor.CurrentFloor.GetOccupant(h); cha != nil {
+			if cha := floor.CurrentFloor.Get(h).GetOccupant(); cha != nil {
 				if first {
 					sfx.SoundPlayer.PlaySound("punch_hit")
 					first = false

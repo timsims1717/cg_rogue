@@ -21,7 +21,7 @@ func NewDamageAction(area []world.Coords, values selector.ActionValues) *DamageA
 	if len(area) < 1 {
 		return nil
 	}
-	target := floor.CurrentFloor.GetOccupant(area[0])
+	target := floor.CurrentFloor.Get(area[0]).GetOccupant()
 	if target != nil {
 		return &DamageAction{
 			values: values,
@@ -91,7 +91,7 @@ func (a *DamageHexAction) Update() {
 				// todo: add an effect
 
 				// todo: this is where the damage modification happens
-				if cha := floor.CurrentFloor.GetOccupant(h); cha != nil {
+				if cha := floor.CurrentFloor.Get(h).GetOccupant(); cha != nil {
 					if first {
 						sfx.SoundPlayer.PlaySound("punch_hit")
 						first = false

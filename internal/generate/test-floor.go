@@ -24,7 +24,6 @@ func LoadTestFloor(level int) {
 	if player.Player1 == nil || player.Player1.Character == nil {
 		panic(errors.New("player or player character was nil"))
 	}
-	floor.CharacterManager.Add(player.Player1.Character)
 
 	floor.CurrentFloor = floor.NewFloor(12, 12, spritesheet)
 

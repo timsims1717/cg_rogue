@@ -12,7 +12,7 @@ import (
 func (f *Floor) IsLegal(a world.Coords, checks PathChecks) *Hex {
 	hex := f.Get(a)
 	if hex != nil && ((a.X == checks.Orig.X && a.Y == checks.Orig.Y) ||
-		((!checks.Unoccupied || (!f.IsOccupied(a) && (!checks.HonorClaim || !f.IsClaimed(a)))) &&
+		((!checks.Unoccupied || (!hex.IsOccupied() && (!checks.HonorClaim || !hex.IsClaimed()))) &&
 		(!checks.NonEmpty || !hex.Empty))) {
 		return hex
 	}
@@ -23,7 +23,7 @@ func (f *Floor) IsLegal(a world.Coords, checks PathChecks) *Hex {
 func (f *Floor) isLegal(a world.Coords) *Hex {
 	hex := f.Get(a)
 	if hex != nil && ((a.X == f.checks.Orig.X && a.Y == f.checks.Orig.Y) ||
-		((!f.checks.Unoccupied || (!f.IsOccupied(a) && (!f.checks.HonorClaim || !f.IsClaimed(a)))) &&
+		((!f.checks.Unoccupied || (!hex.IsOccupied() && (!f.checks.HonorClaim || !hex.IsClaimed()))) &&
 		(!f.checks.NonEmpty || !hex.Empty))) {
 		return hex
 	}
@@ -172,7 +172,8 @@ func (f *Floor) LongestLegalPath(path []world.Coords, max int, check PathChecks)
 	defer f.SetDefaultChecks()
 	lastLegal := 0
 	for i, c := range path {
-		if (!check.EndUnoccupied || !f.IsOccupied(c)) && (!check.HonorClaim || !f.IsClaimed(c)) {
+		hex := f.Get(c)
+		if (!check.EndUnoccupied || !hex.IsOccupied()) && (!check.HonorClaim || !hex.IsClaimed()) {
 			lastLegal = i
 		}
 		if h := f.isLegal(c); h == nil {
@@ -237,11 +238,12 @@ func (f *Floor) FindPathWithinOne(a, b world.Coords, check PathChecks) ([]world.
 		if a.Eq(n) {
 			return []world.Coords{a}, 0, true
 		}
-		if !f.Exists(n) || (check.EndUnoccupied && f.IsOccupied(n)) || (check.HonorClaim && f.IsClaimed(n)) {
+		hexN := f.Get(n)
+		if !f.Exists(n) || (check.EndUnoccupied && hexN.IsOccupied()) || (check.HonorClaim && hexN.IsClaimed()) {
 			continue
 		}
 		f.SetLine(a, b)
-		pathA, distance, found := astar.Path(f.Get(n), f.Get(a))
+		pathA, distance, found := astar.Path(hexN, f.Get(a))
 		if !found {
 			continue
 		}
@@ -272,11 +274,12 @@ func (f *Floor) FindPathWithinOneHex(a, b world.Coords, check PathChecks) ([]*He
 		if a.Eq(n) {
 			return []*Hex{f.Get(a)}, 0, true
 		}
-		if !f.Exists(n) || (check.EndUnoccupied && f.IsOccupied(n)) || (check.HonorClaim && f.IsClaimed(n)) {
+		hexN := f.Get(n)
+		if !f.Exists(n) || (check.EndUnoccupied && hexN.IsOccupied()) || (check.HonorClaim && hexN.IsClaimed()) {
 			return nil, 0, false
 		}
 		f.SetLine(a, b)
-		pathA, distance, found := astar.Path(f.Get(n), f.Get(a))
+		pathA, distance, found := astar.Path(hexN, f.Get(a))
 		if !found {
 			continue
 		}
@@ -297,13 +300,14 @@ func (f *Floor) FindPath(a, b world.Coords, check PathChecks) ([]world.Coords, i
 	if a.Eq(b) {
 		return []world.Coords{a}, 0, true
 	}
-	if (check.EndUnoccupied && f.IsOccupied(b)) || (check.HonorClaim && f.IsClaimed(b)) {
+	hexB := f.Get(b)
+	if (check.EndUnoccupied && hexB.IsOccupied()) || (check.HonorClaim && hexB.IsClaimed()) {
 		return nil, 0, false
 	}
 	f.checks = check
 	defer f.SetDefaultChecks()
 	f.SetLine(a, b)
-	pathA, distance, found := astar.Path(f.Get(b), f.Get(a))
+	pathA, distance, found := astar.Path(hexB, f.Get(a))
 	var path []*Hex
 	for _, h := range pathA {
 		path = append(path, h.(*Hex))
@@ -326,7 +330,8 @@ func (f *Floor) FindPathHex(a, b world.Coords, check PathChecks) ([]*Hex, int, b
 	if a.Eq(b) {
 		return []*Hex{f.Get(a)}, 0, true
 	}
-	if (check.EndUnoccupied && f.IsOccupied(b)) || (check.HonorClaim && f.IsClaimed(b)) {
+	hexB := f.Get(b)
+	if (check.EndUnoccupied && hexB.IsOccupied()) || (check.HonorClaim && hexB.IsClaimed()) {
 		return nil, 0, false
 	}
 	f.checks = check

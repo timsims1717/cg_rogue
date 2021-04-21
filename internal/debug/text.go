@@ -77,7 +77,7 @@ func UpdateText() {
 	dispHP = false
 	health.Clear()
 	if state.Machine.State.String() == "Encounter" {
-		if cha := floor.CurrentFloor.GetOccupant(mapPtr); cha != nil {
+		if cha := floor.CurrentFloor.Get(mapPtr).GetOccupant(); cha != nil {
 			fmt.Fprintf(health, "Health: %d/%d HP", cha.Health.CurrHP, cha.Health.MaxHP)
 			dispHP = true
 		}

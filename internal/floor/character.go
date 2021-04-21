@@ -119,8 +119,7 @@ func (c *Character) Damage(dmg int) {
 		c.effect = animation.FadeOut(c, 0.5)
 		c.Health.Alive = false
 		c.Health.CurrHP = 0
-		CurrentFloor.RemoveOccupant(c.Coords)
-		c.OnMap = false
+		c.Floor.Store(c)
 	} else {
 		c.effect = animation.FadeFrom(c, colornames.Red, 0.5)
 	}
@@ -135,9 +134,9 @@ func (c *Character) ID() uuid.UUID {
 }
 
 func (c *Character) RemoveClaim() {
-	if c.Floor != nil {
-		if c.Floor.IsClaimed(c.Claim) {
-			c.Floor.RemoveClaim(c.Claim)
+	if c != nil && c.Floor != nil {
+		if c.Floor.Get(c.Claim).IsClaimed() {
+			c.Floor.Get(c.Claim).RemoveClaim()
 			c.Claim = world.Nil
 		}
 	}
@@ -148,10 +147,10 @@ func (c *Character) MakeClaim(a world.Coords) {
 		if a == c.Claim {
 			return
 		}
-		if c.Floor.IsClaimed(c.Claim) {
-			c.Floor.RemoveClaim(c.Claim)
+		if c.Floor.Get(c.Claim).IsClaimed() {
+			c.Floor.Get(c.Claim).RemoveClaim()
 		}
-		c.Floor.Claim(c, a)
+		c.Floor.Get(a).Claim(c)
 	}
 }
 

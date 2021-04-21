@@ -6,7 +6,6 @@ import (
 	"github.com/faiface/pixel/pixelgl"
 	uuid "github.com/satori/go.uuid"
 	"github.com/timsims1717/cg_rogue_go/pkg/img"
-	"github.com/timsims1717/cg_rogue_go/pkg/util"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"math/rand"
 )
@@ -15,6 +14,7 @@ var CurrentFloor *Floor
 
 type Floor struct {
 	floor    [][]Hex
+	storage  []*Character
 	batch    *pixel.Batch
 	update   bool
 	checks   PathChecks
@@ -31,21 +31,12 @@ type PathChecks struct {
 	Orig          world.Coords
 }
 
-var DefaultCheck = PathChecks{
-	NotFilled:     true,
-	Unoccupied:    false,
-	NonEmpty:      false,
-	EndUnoccupied: false,
-	Orig:          world.Coords{},
-}
-
-var NoCheck = PathChecks{
-	NotFilled:     false,
-	Unoccupied:    false,
-	NonEmpty:      false,
-	EndUnoccupied: false,
-	Orig:          world.Coords{},
-}
+var (
+	DefaultCheck = PathChecks{
+		NotFilled:     true,
+	}
+	NoCheck = PathChecks{}
+)
 
 func NewFloor(w, h int, spriteSheet *img.SpriteSheet) *Floor {
 	if w <= 0 || h <= 0 {
@@ -66,20 +57,16 @@ func NewFloor(w, h int, spriteSheet *img.SpriteSheet) *Floor {
 	return floor
 }
 
-func DefaultFloor(w, h int, spriteSheet *img.SpriteSheet) {
-	if w <= 0 || h <= 0 {
-		panic(fmt.Errorf("could not create floor with width of %d and height of %d", w, h))
-	}
-	CurrentFloor = &Floor{
-		batch:  pixel.NewBatch(&pixel.TrianglesData{}, spriteSheet.Img),
-		update: true,
-	}
-	CurrentFloor.floor = make([][]Hex, 0)
-	for x := 0; x < w; x++ {
-		CurrentFloor.floor = append(CurrentFloor.floor, make([]Hex, 0))
-		for y := 0; y < h; y++ {
-			CurrentFloor.floor[x] = append(CurrentFloor.floor[x], NewHex(CurrentFloor, x, y, pixel.NewSprite(spriteSheet.Img, spriteSheet.Sprites[rand.Intn(len(spriteSheet.Sprites))])))
+func (f *Floor) Update() {
+	for _, row := range f.floor {
+		for _, h := range row {
+			if h.IsOccupied() {
+				h.Occupant.Update()
+			}
 		}
+	}
+	for _, c := range f.storage {
+		c.Update()
 	}
 }
 
@@ -89,12 +76,12 @@ func (f *Floor) Draw(win *pixelgl.Window) {
 		w, h := f.Dimensions()
 		for y := h - 1; y >= 0; y-- {
 			for x := 1; x < w; x += 2 {
-				hex := f.Get(world.Coords{x, y})
+				hex := f.Get(world.Coords{X: x, Y: y})
 				mat := pixel.IM.Moved(world.MapToWorld(hex.GetCoords()))
 				hex.Tile.Draw(f.batch, mat)
 			}
 			for x := 0; x < w; x += 2 {
-				hex := f.Get(world.Coords{x, y})
+				hex := f.Get(world.Coords{X: x, Y: y})
 				mat := pixel.IM.Moved(world.MapToWorld(hex.GetCoords()))
 				hex.Tile.Draw(f.batch, mat)
 			}
@@ -102,6 +89,16 @@ func (f *Floor) Draw(win *pixelgl.Window) {
 		f.update = false
 	}
 	f.batch.Draw(win)
+	for _, row := range f.floor {
+		for _, h := range row {
+			if h.IsOccupied() {
+				h.Occupant.Draw(win)
+			}
+		}
+	}
+	for _, c := range f.storage {
+		c.Draw(win)
+	}
 }
 
 func (f *Floor) Dimensions() (int, int) {
@@ -114,86 +111,75 @@ func (f *Floor) SetDefaultChecks() {
 	f.checks = DefaultCheck
 }
 
+func (f *Floor) GetDiplomatic(d Diplomacy, orig world.Coords, r int) []world.Coords {
+	var set []world.Coords
+	within := f.AllWithin(orig, r, NoCheck)
+	for _, c := range within {
+		ch := f.Get(c).Occupant
+		if ch != nil && ch.Diplomacy == d && !ch.IsDestroyed() {
+			set = append(set, ch.Coords)
+		}
+	}
+	return set
+}
+
 func (f *Floor) Get(a world.Coords) *Hex {
-	if f.Exists(a) {
+	if f != nil && f.Exists(a) {
 		return &(f.floor[a.X][a.Y])
 	}
 	return nil
 }
 
 func (f *Floor) Exists(a world.Coords) bool {
+	if f == nil {
+		return false
+	}
 	w, h := f.Dimensions()
 	return a.X >= 0 && a.Y >= 0 && a.X < w && a.Y < h
-}
-
-func (f *Floor) IsClaimed(a world.Coords) bool {
-	hex := f.Get(a)
-	return hex == nil || !util.IsNil(hex.Claimant) || !util.IsNil(hex.Occupant)
-}
-
-func (f *Floor) GetClaimant(a world.Coords) *Character {
-	hex := f.Get(a)
-	if hex != nil && !util.IsNil(hex.Claimant) {
-		return hex.Claimant
-	}
-	return nil
-}
-
-func (f *Floor) RemoveClaim(a world.Coords) {
-	hex := f.Get(a)
-	if hex != nil && !util.IsNil(hex.Claimant) {
-		hex.Claimant = nil
-	}
-}
-
-func (f *Floor) Claim(c *Character, a world.Coords) {
-	if !f.Exists(a) {
-		return
-	}
-	hex := f.Get(a)
-	if hex.Claimant != nil {
-		hex.Claimant.RemoveClaim()
-	}
-	hex.Claimant = c
-	c.Claim = a
-}
-
-func (f *Floor) IsOccupied(a world.Coords) bool {
-	hex := f.Get(a)
-	return hex == nil || !util.IsNil(hex.Occupant)
-}
-
-func (f *Floor) GetOccupant(a world.Coords) *Character {
-	hex := f.Get(a)
-	if hex != nil && !util.IsNil(hex.Occupant) {
-		return hex.Occupant
-	}
-	return nil
-}
-
-func (f *Floor) RemoveOccupant(a world.Coords) *Character {
-	hex := f.Get(a)
-	if hex != nil && !util.IsNil(hex.Occupant) {
-		former := hex.Occupant
-		hex.Occupant = nil
-		return former
-	}
-	return nil
 }
 
 func (f *Floor) PutOccupant(c *Character, e world.Coords) {
 	if !f.Exists(e) {
 		return
 	}
-	if c.Floor != nil && c.Floor.id == f.id	{
-		f.RemoveOccupant(c.GetCoords())
-	} else {
-		c.Floor = f
+	if c.Floor != nil {
+		c.Floor.Get(c.GetCoords()).RemoveOccupant()
+		c.Floor.UnStore(c)
 	}
+	c.Floor = f
 	hex := f.Get(e)
 	hex.Claimant = nil
 	hex.Occupant = c
 	c.Coords = e
 	c.SetPos(world.MapToWorld(e))
 	c.OnMap = true
+}
+
+func (f *Floor) Store(c *Character) {
+	if c.Floor != nil {
+		c.Floor.Get(c.GetCoords()).RemoveOccupant()
+		c.Floor.UnStore(c)
+	}
+	c.Floor = f
+	f.storage = append(f.storage, c)
+	c.OnMap = false
+}
+
+func (f *Floor) UnStore(c *Character) {
+	for i, s := range f.storage {
+		if s.ID() == c.ID() {
+			f.storage = append(f.storage[:i], f.storage[i+1:]...)
+			break
+		}
+	}
+}
+
+func (f *Floor) Clear() {
+	f.storage = []*Character{}
+	for _, row := range f.floor {
+		for _, h := range row {
+			h.RemoveOccupant()
+			h.RemoveClaim()
+		}
+	}
 }

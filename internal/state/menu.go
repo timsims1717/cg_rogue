@@ -56,7 +56,7 @@ func (s *MainMenu) Initialize() {
 	if err != nil {
 		panic(err)
 	}
-	floor.DefaultFloor(100, 100, spritesheet)
+	floor.CurrentFloor = floor.NewFloor(100, 100, spritesheet)
 	player.Player1.Hand = nil
 	player.Player1.PlayCard = nil
 	player.Player1.Discard = nil

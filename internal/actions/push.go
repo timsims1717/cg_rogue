@@ -104,7 +104,7 @@ func (a *PushMultiAction) Update() {
 		if a.preDam {
 			orig := a.values.Source.GetCoords()
 			for _, n := range a.area {
-				if target := floor.CurrentFloor.GetOccupant(n); target != nil {
+				if target := floor.CurrentFloor.Get(n).GetOccupant(); target != nil {
 					checks := floor.PathChecks{
 						NotFilled:     true,
 						Unoccupied:    true,

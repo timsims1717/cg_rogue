@@ -25,7 +25,9 @@ func (s *PathSelect) SetValues(values ActionValues) {
 
 func (s *PathSelect) Update(input *input.Input) {
 	if !s.isDone {
-		s.source.RemoveClaim()
+		if s.IsMove {
+			s.source.RemoveClaim()
+		}
 		if !s.selecting {
 			//x, y := input.Coords.X, input.Coords.Y
 			s.area = []world.Coords{}

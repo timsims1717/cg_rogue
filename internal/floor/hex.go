@@ -37,6 +37,53 @@ func (h *Hex) GetCoords() world.Coords {
 	}
 }
 
+func (h *Hex) IsClaimed() bool {
+	return h == nil || h.Claimant != nil || h.Occupant != nil
+}
+
+func (h *Hex) GetClaimant() *Character {
+	if h == nil {
+		return nil
+	}
+	return h.Claimant
+}
+
+func (h *Hex) RemoveClaim() {
+	if h != nil {
+		h.Claimant = nil
+	}
+}
+
+func (h *Hex) Claim(c *Character) {
+	if h != nil {
+		if h.Claimant != nil {
+			h.Claimant.RemoveClaim()
+		}
+		h.Claimant = c
+		c.Claim = h.GetCoords()
+	}
+}
+
+func (h *Hex) IsOccupied() bool {
+	return h == nil || h.Occupant != nil
+}
+
+func (h *Hex) GetOccupant() *Character {
+	if h == nil {
+		return nil
+	}
+	return h.Occupant
+}
+
+func (h *Hex) RemoveOccupant() *Character {
+	if h != nil && h.Occupant != nil {
+		former := h.Occupant
+		h.Occupant = nil
+		return former
+	}
+	return nil
+}
+
 // PathNeighbors is part of the astar implementation and returns
 // legal moves to the Hex' neighbors.
 func (h *Hex) PathNeighbors() []astar.Pather {

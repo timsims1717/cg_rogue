@@ -35,9 +35,6 @@ func (m *aiManager) AIActing() bool {
 
 func (m *aiManager) Update() {
 	if m.takeTurn && !action.ActionManager.IsActing() {
-		//if m.turnIndex > -1 && m.turnIndex < len(m.set) {
-		//	m.set[m.turnIndex].Actions = []*AIAction{}
-		//}
 		m.turnIndex += 1
 	}
 	if m.takeTurn && !action.ActionManager.IsActing() && m.turnIndex == len(m.set) {

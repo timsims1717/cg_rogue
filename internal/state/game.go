@@ -136,10 +136,10 @@ func (s *Encounter) TransitionOut() bool {
 }
 
 func (s *Encounter) Uninitialize() {
+	floor.CurrentFloor.Clear()
 	floor.CurrentFloor = nil
 	InitializeCenterText()
 	ai.AIManager.Clear()
-	floor.CharacterManager.Clear()
 	player.Player1.Input.RemoveHotKeys()
 }
 
@@ -154,7 +154,7 @@ func (s *Encounter) Update(win *pixelgl.Window) {
 
 	player.Player1.Update()
 	ai.AIManager.Update()
-	floor.Update()
+	floor.CurrentFloor.Update()
 	if s.RestButton != nil {
 		s.RestButton.Disabled = !player.Player1.IsTurn
 		s.RestButton.Update(player.Player1.Input)
@@ -164,7 +164,6 @@ func (s *Encounter) Update(win *pixelgl.Window) {
 
 func (s *Encounter) Draw(win *pixelgl.Window) {
 	floor.CurrentFloor.Draw(win)
-	floor.Draw(win)
 	selector.SelectionSet.Draw(win)
 	win.SetSmooth(true)
 	player.Player1.Hand.Draw(win)
@@ -204,8 +203,8 @@ func UpdateEncounterPhase() {
 	}
 	if Machine.Phase != EncounterComplete && Machine.Phase != GameOver {
 		allDead := true
-		for _, c := range floor.CharacterManager.GetDiplomatic(floor.Enemy, player.Player1.Character.GetCoords(), 50) {
-			if cha := floor.CurrentFloor.GetOccupant(c); cha != nil {
+		for _, c := range floor.CurrentFloor.GetDiplomatic(floor.Enemy, player.Player1.Character.GetCoords(), 50) {
+			if cha := floor.CurrentFloor.Get(c).GetOccupant(); cha != nil {
 				if !cha.IsDestroyed() {
 					allDead = false
 				}

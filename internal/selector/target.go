@@ -25,7 +25,7 @@ func (s *TargetSelect) SetValues(values ActionValues) {
 func (s *TargetSelect) Update(input *input.Input) {
 	if !s.isDone {
 		inRange := world.DistanceSimple(s.origin, input.Coords) <= s.maxRange && input.Coords != s.origin
-		occ := floor.CurrentFloor.GetOccupant(input.Coords)
+		occ := floor.CurrentFloor.Get(input.Coords).GetOccupant()
 		if occ != nil && inRange {
 			if input.Select.JustPressed() {
 				input.Select.Consume()

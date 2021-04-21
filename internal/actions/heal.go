@@ -19,7 +19,7 @@ func NewHealAction(area []world.Coords, values selector.ActionValues) *HealActio
 	if len(area) < 1 {
 		return nil
 	}
-	target := floor.CurrentFloor.GetOccupant(area[0])
+	target := floor.CurrentFloor.Get(area[0]).GetOccupant()
 	if target != nil {
 		return &HealAction{
 			values: values,
