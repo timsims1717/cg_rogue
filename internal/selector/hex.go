@@ -21,8 +21,10 @@ func (s *HexSelect) SetValues(values ActionValues) {
 	} else {
 		s.maxRange = values.Range
 	}
-	s.Effect.SetValues(values)
-	s.Effect.SetOrig(s.origin)
+	if s.Effect != nil {
+		s.Effect.SetValues(values)
+		s.Effect.SetOrig(s.origin)
+	}
 }
 
 func (s *HexSelect) Update(input *input.Input) {

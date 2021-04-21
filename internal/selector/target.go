@@ -16,8 +16,10 @@ type TargetSelect struct {
 func (s *TargetSelect) SetValues(values ActionValues) {
 	s.count = values.Targets
 	s.maxRange = values.Range
-	s.Effect.SetValues(values)
-	s.Effect.SetOrig(s.origin)
+	if s.Effect != nil {
+		s.Effect.SetValues(values)
+		s.Effect.SetOrig(s.origin)
+	}
 }
 
 func (s *TargetSelect) Update(input *input.Input) {

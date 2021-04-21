@@ -17,8 +17,10 @@ type PathSelect struct {
 func (s *PathSelect) SetValues(values ActionValues) {
 	s.MaxRange = values.Move
 	s.PathChecks.Orig = s.origin
-	s.Effect.SetValues(values)
-	s.Effect.SetOrig(s.origin)
+	if s.Effect != nil {
+		s.Effect.SetValues(values)
+		s.Effect.SetOrig(s.origin)
+	}
 }
 
 func (s *PathSelect) Update(input *input.Input) {

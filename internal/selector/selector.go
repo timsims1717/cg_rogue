@@ -95,5 +95,6 @@ type ActionValues struct {
 	Targets  int
 	Strength int
 	Heal     int
+	Defense  int
 	Area     []world.Coords
 }

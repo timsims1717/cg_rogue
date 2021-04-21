@@ -331,8 +331,9 @@ type Disengage struct {
 }
 
 func (c *Disengage) DoActions() {
-	AddToBot(actions.NewDamageHexAction(c.Results[0][0].Area, c.Values), c.Results[0][0].Effect)
-	AddToBot(actions.NewMoveSeriesAction(c.Values.Source, c.Values.Source, c.Results[1][0].Area), c.Results[1][0].Effect)
+	AddToBot(actions.NewDefenseAction(c.Values.Source, c.Values))
+	AddToBot(actions.NewDamageHexAction(c.Results[1][0].Area, c.Values), c.Results[1][0].Effect)
+	AddToBot(actions.NewMoveSeriesAction(c.Values.Source, c.Values.Source, c.Results[2][0].Area), c.Results[1][0].Effect)
 }
 
 func (c *Disengage) SetValues(level int) {
@@ -341,29 +342,35 @@ func (c *Disengage) SetValues(level int) {
 		Damage:  1,
 		Targets: 1,
 		Range:   1,
+		Defense: 1,
 	}
 	if level >= 1 {
 		values.Move += 1
+		values.Defense += 1
 	}
 	if level >= 2 {
-		values.Damage += 1
+		values.Damage += 2
 	}
 	if level >= 3 {
 		values.Targets += 1
+		values.Damage += 1
 	}
 	if level >= 4 {
-		values.Damage += 1
+		values.Move += 1
+		values.Defense += 1
 	}
 	if level >= 5 {
 		values.Targets += 1
-		values.Move += 1
 	}
 	c.Values = values
-	c.RawDesc = fmt.Sprintf("Deal %d damage. Move %d.", values.Damage, values.Move)
+	c.RawDesc = fmt.Sprintf("Gain %d defense. Deal %d damage. Move %d.", values.Defense, values.Damage, values.Move)
 }
 
 func (c *Disengage) InitSelectors() {
 	c.Selectors = []*selector.AbstractSelector{
+		selector.NewSelector(&selector.SelfSelect{
+			Effect: selector.NewSelectionEffect(&selector.DefenseEffect{}, c.Values),
+		}, false),
 		selector.NewSelector(&selector.ArcSelect{
 			PathChecks: floor.PathChecks{
 				NotFilled:     true,

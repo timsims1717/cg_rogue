@@ -135,5 +135,5 @@ func DrawText(win *pixelgl.Window) {
 		//misc.Draw(canvasText, pixel.IM.Scaled(pixel.ZV, 2.).Moved(pixel.V(20., height)))
 	}
 
-	canvasText.Draw(win, pixel.IM.Scaled(pixel.ZV, 1/camera.Cam.Zoom).Moved(pixel.V(camera.Cam.Pos.X, camera.Cam.Pos.Y)))
+	canvasText.Draw(win, camera.Cam.UITransform(pixel.V(camera.WindowWidthF * 0.5, camera.WindowHeightF * 0.5), pixel.V(1., 1.), 0.))
 }

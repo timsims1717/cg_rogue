@@ -84,6 +84,9 @@
   },
   {
    "key": "attack_target_start"
+  },
+  {
+   "key": "defense"
   }
  ]
 }

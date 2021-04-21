@@ -13,11 +13,12 @@ import (
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"golang.org/x/image/colornames"
 	"math/rand"
+	"time"
 )
 
 func run() {
-	seed := int64(1618940116566201148)
-	//seed := time.Now().UnixNano()
+	//seed := int64(1618940116566201148)
+	seed := time.Now().UnixNano()
 	rand.Seed(seed)
 	fmt.Println("Seed:", seed)
 	world.TileSize = cfg.TileSize
@@ -33,7 +34,7 @@ func run() {
 	}
 
 	camera.Cam = camera.New()
-	camera.Cam.Zoom = 2.0
+	camera.Cam.SetZoom(2.0)
 
 	sfx.MusicPlayer.RegisterMusicTrack("assets/music/test_track.MP3", "test_track")
 	sfx.MusicPlayer.RegisterMusicTrack("assets/music/test_ambience.MP3", "test_ambience")

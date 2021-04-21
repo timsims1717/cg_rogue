@@ -23,10 +23,14 @@ func (s *LineTargetSelect) SetValues(values ActionValues) {
 		s.MaxRange = values.Range
 	}
 	s.PathChecks.Orig = s.origin
-	s.Effect.SetValues(values)
-	s.Effect.SetOrig(s.origin)
-	s.SecEffect.SetValues(values)
-	s.SecEffect.SetOrig(s.origin)
+	if s.Effect != nil {
+		s.Effect.SetValues(values)
+		s.Effect.SetOrig(s.origin)
+	}
+	if s.SecEffect != nil {
+		s.SecEffect.SetValues(values)
+		s.SecEffect.SetOrig(s.origin)
+	}
 }
 
 func (s *LineTargetSelect) Update(input *input.Input) {

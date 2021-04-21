@@ -17,8 +17,9 @@ var Cam *Camera
 type Camera struct {
 	Mat    pixel.Matrix
 	Pos    pixel.Vec
-	Zoom   float64
-	Opt    CameraOptions
+	zoom   float64
+	zStep  float64
+	Opt    Options
 	Mask   color.RGBA
 	Effect *animation.ColorEffect
 
@@ -28,19 +29,22 @@ type Camera struct {
 	lock   bool
 }
 
-type CameraOptions struct {
+type Options struct {
 	ScrollSpeed float64
+	ZoomStep    float64
 	ZoomSpeed   float64
 }
 
 func New() *Camera {
 	return &Camera{
-		Mat:  pixel.IM,
-		Pos:  pixel.ZV,
-		Zoom: 1.0,
-		Opt: CameraOptions{
+		Mat:   pixel.IM,
+		Pos:   pixel.ZV,
+		zoom:  1.0,
+		zStep: 1.0,
+		Opt: Options{
 			ScrollSpeed: 500.0,
-			ZoomSpeed:   1.2,
+			ZoomStep:    1.2,
+			ZoomSpeed:   0.2,
 		},
 		Mask: colornames.Black,
 	}
@@ -72,7 +76,7 @@ func (c *Camera) Update(win *pixelgl.Window) {
 	}
 	if c.interZ != nil {
 		z, finZ := c.interZ.Update(timing.DT)
-		c.Zoom = z
+		c.zoom = z
 		if finZ {
 			c.interZ = nil
 		} else {
@@ -88,7 +92,7 @@ func (c *Camera) Update(win *pixelgl.Window) {
 			c.Effect = nil
 		}
 	}
-	c.Mat = pixel.IM.Scaled(c.Pos, c.Zoom).Moved(win.Bounds().Center().Sub(c.Pos))
+	c.Mat = pixel.IM.Scaled(c.Pos, c.zoom).Moved(win.Bounds().Center().Sub(c.Pos))
 	win.SetMatrix(c.Mat)
 	win.SetColorMask(c.Mask)
 }
@@ -143,16 +147,22 @@ func (c *Camera) Up() {
 	}
 }
 
+func (c *Camera) SetZoom(zoom float64) {
+	c.zoom = zoom
+	c.zStep = zoom
+}
+
 func (c *Camera) ZoomIn(zoom float64) {
 	if !c.lock {
-		c.Zoom *= math.Pow(c.Opt.ZoomSpeed, zoom)
+		c.zStep *= math.Pow(c.Opt.ZoomStep, zoom)
+		c.interZ = gween.New(c.zoom, c.zStep, c.Opt.ZoomSpeed, ease.OutQuad)
 	}
 }
 
 // UITransform returns a pixel.Matrix that can move the center of a pixel.Rect
 // to the bottom left of the screen.
 func (c *Camera) UITransform(pos, scalar pixel.Vec, rot float64) pixel.Matrix {
-	zoom := 1 / c.Zoom
+	zoom := 1 / c.zoom
 	mat := pixel.IM.ScaledXY(pixel.ZV, scalar.Scaled(zoom))
 	mat = mat.Rotated(pixel.ZV, rot)
 	mat = mat.Moved(pixel.V(c.Pos.X, c.Pos.Y))

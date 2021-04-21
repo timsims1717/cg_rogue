@@ -29,10 +29,14 @@ func (s *HexAreaSplitSelect) SetValues(values ActionValues) {
 		s.maxRange = values.Range
 	}
 	s.targetArea = values.Area
-	s.Effect.SetValues(values)
-	s.Effect.SetOrig(s.origin)
-	s.SecEffect.SetValues(values)
-	s.SecEffect.SetOrig(s.origin)
+	if s.Effect != nil {
+		s.Effect.SetValues(values)
+		s.Effect.SetOrig(s.origin)
+	}
+	if s.SecEffect != nil {
+		s.SecEffect.SetValues(values)
+		s.SecEffect.SetOrig(s.origin)
+	}
 }
 
 func (s *HexAreaSplitSelect) Update(input *input.Input) {

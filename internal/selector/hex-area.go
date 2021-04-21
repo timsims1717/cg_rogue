@@ -25,8 +25,10 @@ func (s *HexAreaSelect) SetValues(values ActionValues) {
 		s.maxRange = values.Range
 	}
 	s.targetArea = values.Area
-	s.Effect.SetValues(values)
-	s.Effect.SetOrig(s.origin)
+	if s.Effect != nil {
+		s.Effect.SetValues(values)
+		s.Effect.SetOrig(s.origin)
+	}
 }
 
 func (s *HexAreaSelect) Update(input *input.Input) {

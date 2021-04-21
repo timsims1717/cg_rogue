@@ -4,6 +4,7 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
+	"github.com/timsims1717/cg_rogue_go/pkg/util"
 	"golang.org/x/image/colornames"
 )
 
@@ -12,13 +13,28 @@ type Health struct {
 	MaxHP   int
 	LastDmg int
 	Alive   bool
+	Display bool
+	Hovered bool
 
 	imd *imdraw.IMDraw
 	pos pixel.Vec
 }
 
+func (h *Health) Damage(amt int) int {
+	amount := amt
+	if amount < 0 {
+		amount = 0
+	}
+	if amount > 0 {
+		h.LastDmg = util.Min(amount, h.CurrHP)
+		h.CurrHP -= h.LastDmg
+		return amount - h.LastDmg
+	}
+	return 0
+}
+
 func (h *Health) Update() {
-	if h.Alive {
+	if h.Alive && h.Display && (h.Hovered || h.CurrHP < h.MaxHP) {
 		h.imd.Clear()
 		h.imd.Color = colornames.Darkgray
 		h.imd.EndShape = imdraw.NoEndShape
@@ -46,7 +62,7 @@ func (h *Health) Update() {
 }
 
 func (h *Health) Draw(win *pixelgl.Window) {
-	if h.Alive {
+	if h.Alive && h.Display && (h.Hovered || h.CurrHP < h.MaxHP) {
 		h.imd.Draw(win)
 	}
 }

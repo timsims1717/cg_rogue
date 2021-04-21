@@ -166,7 +166,6 @@ func (s *Encounter) Draw(win *pixelgl.Window) {
 	floor.CurrentFloor.Draw(win)
 	floor.Draw(win)
 	selector.SelectionSet.Draw(win)
-	player.Player1.Draw(win)
 	win.SetSmooth(true)
 	player.Player1.Hand.Draw(win)
 	player.Player1.PlayCard.Draw(win)
@@ -179,6 +178,7 @@ func (s *Encounter) Draw(win *pixelgl.Window) {
 		s.RestButton.Draw(win)
 	}
 	CenterText.Draw(win)
+	player.Player1.Draw(win)
 }
 
 func UpdateEncounterPhase() {

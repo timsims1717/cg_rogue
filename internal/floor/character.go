@@ -7,7 +7,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/timsims1717/cg_rogue_go/internal/cfg"
 	"github.com/timsims1717/cg_rogue_go/pkg/animation"
-	"github.com/timsims1717/cg_rogue_go/pkg/util"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"golang.org/x/image/colornames"
 	"image/color"
@@ -23,6 +22,7 @@ type Character struct {
 	Floor       *Floor
 
 	Health    Health
+	Defense   Defense
 	Diplomacy Diplomacy
 
 	id    uuid.UUID
@@ -46,10 +46,15 @@ func NewCharacter(sprite *pixel.Sprite, floor *Floor, coords world.Coords, diplo
 		Health: Health{
 			CurrHP:  maxHP,
 			MaxHP:   maxHP,
-			LastDmg: 0,
 			Alive:   true,
+			Display: true,
 			imd:     imdraw.New(nil),
-			pos:     pixel.ZV,
+		},
+		Defense: Defense{
+			MaxDef:  6,
+			Alive:   true,
+			Display: true,
+			imd:     imdraw.New(nil),
 		},
 		Diplomacy: diplomacy,
 		id:        uuid.NewV4(),
@@ -76,13 +81,19 @@ func (c *Character) Update() {
 		}
 	}
 	c.Health.pos = pixel.V(c.Transform.Pos.X, c.Transform.Pos.Y+29.)
-	//c.Health.pos = pixel.V(c.Transform.Pos.X, c.Transform.Pos.Y+c.Spr.Frame().H())
+	c.Defense.pos = pixel.V(c.Transform.Pos.X, c.Transform.Pos.Y+32.)
 	c.Health.Update()
+	c.Defense.Update()
 }
 
 func (c *Character) Draw(win *pixelgl.Window) {
 	c.Spr.DrawColorMask(win, c.Transform.Mat, c.mask)
 	c.Health.Draw(win)
+	c.Defense.Draw(win)
+}
+
+func (c *Character) StartTurn() {
+	c.Defense.RemoveAll()
 }
 
 func (c *Character) Heal(amt int) {
@@ -94,30 +105,24 @@ func (c *Character) Heal(amt int) {
 		c.Health.CurrHP += thisAmt
 		if c.Health.CurrHP > c.Health.MaxHP {
 			c.Health.CurrHP = c.Health.MaxHP
-			c.effect = animation.FadeFrom(c, colornames.Lightgoldenrodyellow, 0.5)
 		}
+		c.effect = animation.FadeFrom(c, colornames.Lightgoldenrodyellow, 0.5)
 	}
 }
 
 func (c *Character) Damage(dmg int) {
-	thisDmg := dmg
-	if thisDmg < 0 {
-		thisDmg = 0
-	}
-	if thisDmg > 0 {
-		c.Health.LastDmg = util.Min(thisDmg, c.Health.CurrHP)
-		c.Health.CurrHP -= c.Health.LastDmg
-		if c.Health.CurrHP < 1 {
-			col := colornames.Black
-			col.A = 0
-			c.effect = animation.FadeOut(c, 0.5)
-			c.Health.Alive = false
-			c.Health.CurrHP = 0
-			CurrentFloor.RemoveOccupant(c.Coords)
-			c.OnMap = false
-		} else {
-			c.effect = animation.FadeFrom(c, colornames.Red, 0.5)
-		}
+	defDmg := c.Defense.Damage(dmg)
+	c.Health.Damage(defDmg)
+	if c.Health.CurrHP < 1 {
+		col := colornames.Black
+		col.A = 0
+		c.effect = animation.FadeOut(c, 0.5)
+		c.Health.Alive = false
+		c.Health.CurrHP = 0
+		CurrentFloor.RemoveOccupant(c.Coords)
+		c.OnMap = false
+	} else {
+		c.effect = animation.FadeFrom(c, colornames.Red, 0.5)
 	}
 }
 

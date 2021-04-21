@@ -52,6 +52,7 @@ func (m *aiManager) Update() {
 			ai.Update()
 			if m.takeTurn {
 				if m.turnIndex == i && !action.ActionManager.IsActing() {
+					ai.Character.StartTurn()
 					ai.AI.TakeTurn()
 					ai.Actions = []*AIAction{}
 				}
