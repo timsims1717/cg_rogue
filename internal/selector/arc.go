@@ -29,9 +29,9 @@ func (s *ArcSelect) Update(input *input.Input) {
 		var neighbors []world.Coords
 		dist := world.DistanceSimple(input.Coords, s.origin)
 		if dist < 2 || dist%2 == 0 {
-			neighbors = world.OrderByDistWorld(input.World, s.origin.Neighbors(floor.CurrentFloor.Dimensions()))
+			neighbors = world.OrderByDistWorld(input.World, s.origin.Neighbors())
 		} else {
-			neighbors = world.OrderByDist(input.Coords, s.origin.Neighbors(floor.CurrentFloor.Dimensions()))
+			neighbors = world.OrderByDist(input.Coords, s.origin.Neighbors())
 		}
 		var closest []world.Coords
 		for i, n := range neighbors {

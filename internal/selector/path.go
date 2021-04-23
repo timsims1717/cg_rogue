@@ -82,7 +82,7 @@ func (s *PathSelect) Update(input *input.Input) {
 		if s.IsMove && len(s.area) > 0 {
 			s.source.MakeClaim(s.area[len(s.area)-1])
 		}
-		if s.Effect != nil {
+		if s.Effect != nil && !input.Cancel.Pressed() {
 			s.Effect.SetArea(s.area)
 			AddSelectionEffect(s.Effect)
 		}

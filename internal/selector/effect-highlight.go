@@ -2,7 +2,9 @@ package selector
 
 import (
 	"github.com/faiface/pixel"
-	"github.com/timsims1717/cg_rogue_go/pkg/world"
+	"github.com/timsims1717/cg_rogue_go/internal/floor"
+	"github.com/timsims1717/cg_rogue_go/internal/selector/gfx"
+	"github.com/timsims1717/cg_rogue_go/pkg/img"
 )
 
 type HighlightEffect struct {
@@ -15,8 +17,11 @@ func (e *HighlightEffect) Update() {
 
 func (e *HighlightEffect) Draw(target pixel.Target) {
 	for _, c := range e.area {
-		mat := pixel.IM.Moved(world.MapToWorld(c))
-		SelectionSprites["default"].Draw(target, mat)
+		hex := floor.CurrentFloor.Get(c)
+		hex.AddEffect([]img.Sprite{{
+			S: gfx.SelectionSprites["default"],
+			M: img.IM,
+		}}, 6)
 	}
 }
 

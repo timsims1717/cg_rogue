@@ -94,7 +94,7 @@ func NotIn(a, b []Coords) []Coords {
 
 // Contiguous separates all the Coords in a into groups of Coords
 // that are touching.
-func Contiguous(a []Coords, w, h int) [][]Coords {
+func Contiguous(a []Coords) [][]Coords {
 	count := 0
 	belongs := make([]int, 0)
 	for range a {
@@ -105,7 +105,7 @@ func Contiguous(a []Coords, w, h int) [][]Coords {
 			belongs[i] = count
 			count++
 		}
-		n := c.Neighbors(w, h)
+		n := c.Neighbors()
 		for j := i + 1; j < len(a); j++ {
 			if CoordsIn(a[j], n) {
 				belongs[j] = belongs[i]

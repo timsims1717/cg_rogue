@@ -65,7 +65,6 @@ func (f *Floor) Line(orig, ref world.Coords, dist int) []world.Coords {
 func (f *Floor) AllInSextant(orig, ref world.Coords, d int, check PathChecks) []world.Coords {
 	f.checks = check
 	sextant := world.GetSextantBias(ref, orig, rand.Intn(2)%2 == 0)
-	width, height := f.Dimensions()
 	type cont struct {
 		c world.Coords
 		w int
@@ -80,7 +79,7 @@ func (f *Floor) AllInSextant(orig, ref world.Coords, d int, check PathChecks) []
 		if c, ok := n.(cont); ok {
 			all = append(all, c.c)
 			if c.w < d {
-				neighbors := c.c.Neighbors(width, height)
+				neighbors := c.c.Neighbors()
 				for _, nb := range neighbors {
 					if !marked[nb] {
 						marked[nb] = true
@@ -99,7 +98,6 @@ func (f *Floor) AllInSextant(orig, ref world.Coords, d int, check PathChecks) []
 // AllWithin returns all legal coordinates within d tiles from o that can be reached
 func (f *Floor) AllWithin(orig world.Coords, d int, check PathChecks) []world.Coords {
 	f.checks = check
-	width, height := f.Dimensions()
 	type cont struct {
 		c world.Coords
 		w int
@@ -114,7 +112,7 @@ func (f *Floor) AllWithin(orig world.Coords, d int, check PathChecks) []world.Co
 		if c, ok := n.(cont); ok {
 			all = append(all, c.c)
 			if c.w < d {
-				neighbors := c.c.Neighbors(width, height)
+				neighbors := c.c.Neighbors()
 				for _, nb := range neighbors {
 					if !marked[nb] {
 						marked[nb] = true
@@ -134,7 +132,6 @@ func (f *Floor) AllWithin(orig world.Coords, d int, check PathChecks) []world.Co
 func (f *Floor) AllWithinNoPath(orig world.Coords, d int, check PathChecks) []world.Coords {
 	f.checks = check
 	defer f.SetDefaultChecks()
-	width, height := f.Dimensions()
 	type cont struct {
 		c world.Coords
 		w int
@@ -151,7 +148,7 @@ func (f *Floor) AllWithinNoPath(orig world.Coords, d int, check PathChecks) []wo
 				all = append(all, c.c)
 			}
 			if c.w < d {
-				neighbors := c.c.Neighbors(width, height)
+				neighbors := c.c.Neighbors()
 				for _, nb := range neighbors {
 					if !marked[nb] {
 						marked[nb] = true
@@ -234,7 +231,7 @@ func (f *Floor) FindPathWithinOne(a, b world.Coords, check PathChecks) ([]world.
 	if !f.Exists(a) {
 		return nil, 0, false
 	}
-	for _, n := range world.OrderByDist(a, b.Neighbors(f.Dimensions())) {
+	for _, n := range world.OrderByDist(a, b.Neighbors()) {
 		if a.Eq(n) {
 			return []world.Coords{a}, 0, true
 		}
@@ -270,7 +267,7 @@ func (f *Floor) FindPathWithinOneHex(a, b world.Coords, check PathChecks) ([]*He
 	if !f.Exists(a) {
 		return nil, 0, false
 	}
-	for _, n := range world.OrderByDist(a, b.Neighbors(f.Dimensions())) {
+	for _, n := range world.OrderByDist(a, b.Neighbors()) {
 		if a.Eq(n) {
 			return []*Hex{f.Get(a)}, 0, true
 		}
@@ -350,9 +347,8 @@ func (f *Floor) Neighbors(hex *Hex) []*Hex {
 	if hex == nil {
 		return []*Hex{}
 	}
-	width, height := f.Dimensions()
 	co := world.Coords{X: hex.X, Y: hex.Y}
-	cNeighbors := co.Neighbors(width, height)
+	cNeighbors := co.Neighbors()
 	neighbors := make([]*Hex, 0)
 	for _, c := range cNeighbors {
 		if n := f.isLegal(c); n != nil {

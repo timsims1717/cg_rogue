@@ -26,6 +26,7 @@ func LoadTestFloor(level int) {
 	}
 
 	floor.CurrentFloor = floor.NewFloor(12, 12, spritesheet)
+	floor.CurrentFloor.SetWorldDimensions()
 
 	pX := rand.Intn(4) + 4
 	pY := rand.Intn(4) + 4

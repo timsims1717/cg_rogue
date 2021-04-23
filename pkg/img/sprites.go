@@ -9,6 +9,18 @@ import (
 	"path/filepath"
 )
 
+var (
+	IM       = pixel.IM
+	Flip     = pixel.IM.ScaledXY(pixel.ZV, pixel.V(-1., 1.))
+	Flop     = pixel.IM.ScaledXY(pixel.ZV, pixel.V(1., -1.))
+	FlipFlop = pixel.IM.ScaledXY(pixel.ZV, pixel.V(-1., -1.))
+)
+
+type Sprite struct {
+	S *pixel.Sprite
+	M pixel.Matrix
+}
+
 type SpriteSheet struct {
 	Img       pixel.Picture
 	Sprites   []pixel.Rect

@@ -119,7 +119,7 @@ func (c *Character) Damage(dmg int) {
 		c.effect = animation.FadeOut(c, 0.5)
 		c.Health.Alive = false
 		c.Health.CurrHP = 0
-		c.Floor.Store(c)
+		c.Floor.Get(c.Coords).Store(c)
 	} else {
 		c.effect = animation.FadeFrom(c, colornames.Red, 0.5)
 	}

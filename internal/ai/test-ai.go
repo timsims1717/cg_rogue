@@ -44,7 +44,7 @@ func (ai *RandomWalker) Decide() {
 		Orig:       orig,
 	}
 	var choice int
-	neighbors := orig.Neighbors(floor.CurrentFloor.Dimensions())
+	neighbors := orig.Neighbors()
 	indexList := make([]int, 0)
 	for i, n := range neighbors {
 		if m := floor.CurrentFloor.IsLegal(n, movCheck); m != nil {
@@ -524,7 +524,7 @@ func (ai *Grenadier) Decide() {
 				// bombard
 				var best []world.Coords
 				pts := -3
-				n := world.RandomizeList(targets[choice].Neighbors(floor.CurrentFloor.Dimensions()))
+				n := world.RandomizeList(targets[choice].Neighbors())
 				if len(n) > 1 {
 					for _, c := range n {
 						tpts := 0
@@ -665,8 +665,8 @@ func (ai *Bruiser) Decide() {
 		}
 		ai.Actions = []*AIAction{}
 		area := []world.Coords{orig}
-		n1, _ := world.Remove(world.NextHexLine(targets[choice], orig), world.OrderByDist(targets[choice], orig.Neighbors(floor.CurrentFloor.Dimensions())))
-		n2 := targets[choice].Neighbors(floor.CurrentFloor.Dimensions())
+		n1, _ := world.Remove(world.NextHexLine(targets[choice], orig), world.OrderByDist(targets[choice], orig.Neighbors()))
+		n2 := targets[choice].Neighbors()
 		area = world.Combine(area, world.Combine(n1, n2))
 		if world.CoordsIn(targets[choice], area) {
 			ai.currValues.Damage = 4
@@ -788,7 +788,7 @@ func (ai *Stationary) Decide() {
 			Orig:          orig,
 		}
 		ai.currValues.Damage = 2
-		area := append([]world.Coords{orig}, orig.Neighbors(floor.CurrentFloor.Dimensions())...)
+		area := append([]world.Coords{orig}, orig.Neighbors()...)
 		ai.Actions = []*AIAction{
 			{
 				Path:        []world.Coords{orig},

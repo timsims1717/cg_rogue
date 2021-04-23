@@ -3,6 +3,8 @@ package selector
 import (
 	"github.com/faiface/pixel"
 	"github.com/timsims1717/cg_rogue_go/internal/cfg"
+	"github.com/timsims1717/cg_rogue_go/internal/floor"
+	"github.com/timsims1717/cg_rogue_go/internal/selector/gfx"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"math"
 )
@@ -11,14 +13,10 @@ type AttackTargetEffect struct {
 	*AbstractSelectionEffect
 	Center         bool
 	targetMatrices [3]pixel.Matrix
-	areaMatrices   [][]pixel.Matrix
-	areaSprites    [][]*pixel.Sprite
 }
 
 func (e *AttackTargetEffect) Update() {
 	e.targetMatrices = [3]pixel.Matrix{}
-	e.areaMatrices = [][]pixel.Matrix{}
-	e.areaSprites = [][]*pixel.Sprite{}
 	if len(e.area) > 0 {
 		var v pixel.Vec
 		if e.Center {
@@ -45,21 +43,19 @@ func (e *AttackTargetEffect) Update() {
 			pixel.IM.ScaledXY(pixel.ZV, pixel.V(1., dist / cfg.TileSize)).Rotated(pixel.ZV, angle).Moved(pixel.V(midX, midY)),
 			pixel.IM.Moved(v),
 		}
-		e.areaMatrices, e.areaSprites = attackAreas(e.area)
+		sprites := attackAreas(e.area)
+		for i, c := range e.area {
+			hex := floor.CurrentFloor.Get(c)
+			hex.AddEffect(sprites[i], 10)
+		}
 	}
 }
 
 func (e *AttackTargetEffect) Draw(target pixel.Target) {
 	if len(e.area) > 0 {
-		for i, c := range e.area {
-			SelectionSprites["attack_bg"].Draw(target, pixel.IM.Moved(world.MapToWorld(c)))
-			for j, m := range e.areaMatrices[i] {
-				e.areaSprites[i][j].Draw(target, m.Moved(world.MapToWorld(c)))
-			}
-		}
-		SelectionSprites["attack_target_mid"].Draw(target, e.targetMatrices[1])
-		SelectionSprites["attack_target_start"].Draw(target, e.targetMatrices[0])
-		SelectionSprites["attack_target"].Draw(target, e.targetMatrices[2])
+		gfx.SelectionSprites["attack_target_mid"].Draw(target, e.targetMatrices[1])
+		gfx.SelectionSprites["attack_target_start"].Draw(target, e.targetMatrices[0])
+		gfx.SelectionSprites["attack_target"].Draw(target, e.targetMatrices[2])
 	}
 }
 

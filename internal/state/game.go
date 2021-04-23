@@ -17,7 +17,6 @@ import (
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
 	gween "github.com/timsims1717/cg_rogue_go/pkg/gween64"
 	"github.com/timsims1717/cg_rogue_go/pkg/gween64/ease"
-	"github.com/timsims1717/cg_rogue_go/pkg/img"
 	"github.com/timsims1717/cg_rogue_go/pkg/sfx"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"golang.org/x/image/colornames"
@@ -56,12 +55,6 @@ type Encounter struct {
 }
 
 func (s *Encounter) Initialize() {
-	selectionEffectSheet, err := img.LoadSpriteSheet("assets/img/selection_effects.json")
-	if err != nil {
-		panic(err)
-	}
-	selector.SelectionSet.SetSpriteSheet(selectionEffectSheet)
-
 	InitializeCenterText()
 
 	generate.LoadTestFloor(run.CurrentRun.Level)

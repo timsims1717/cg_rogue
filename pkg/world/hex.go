@@ -1,14 +1,18 @@
 package world
 
-var TileSize float64
-var Origin = Coords{
-	X: 0,
-	Y: 0,
-}
-var Nil = Coords{
-	X: -1000,
-	Y: -1000,
-}
+var (
+	TileSize float64
+	Origin = Coords{
+		X: 0,
+		Y: 0,
+	}
+	Nil = Coords{
+		X: -1000,
+		Y: -1000,
+	}
+	Width int
+	Height int
+)
 
 // Coords is a convenience struct for passing tile coordinates
 type Coords struct {
@@ -69,32 +73,32 @@ func (a Coords) Eq(b Coords) bool {
 
 // Neighbors returns the six tiles surrounding the Coords, minus any
 // outside the width and height provided.
-func (a Coords) Neighbors(w, h int) []Coords {
+func (a Coords) Neighbors() []Coords {
 	neighbors := make([]Coords, 0)
 	if a.Y > 0 {
 		neighbors = append(neighbors, Coords{a.X, a.Y - 1})
 	}
-	if a.X < w-1 {
+	if a.X < Width-1 {
 		neighbors = append(neighbors, Coords{a.X + 1, a.Y})
 	}
-	if a.Y < h-1 {
+	if a.Y < Height-1 {
 		neighbors = append(neighbors, Coords{a.X, a.Y + 1})
 	}
 	if a.X > 0 {
 		neighbors = append(neighbors, Coords{a.X - 1, a.Y})
 	}
 	if a.X%2 == 0 {
-		if a.X < w-1 && a.Y > 0 {
+		if a.X < Width-1 && a.Y > 0 {
 			neighbors = append(neighbors, Coords{a.X + 1, a.Y - 1})
 		}
 		if a.X > 0 && a.Y > 0 {
 			neighbors = append(neighbors, Coords{a.X - 1, a.Y - 1})
 		}
 	} else {
-		if a.X < w-1 && a.Y < h-1 {
+		if a.X < Width-1 && a.Y < Height-1 {
 			neighbors = append(neighbors, Coords{a.X + 1, a.Y + 1})
 		}
-		if a.X > 0 && a.Y < h-1 {
+		if a.X > 0 && a.Y < Height-1 {
 			neighbors = append(neighbors, Coords{a.X - 1, a.Y + 1})
 		}
 	}

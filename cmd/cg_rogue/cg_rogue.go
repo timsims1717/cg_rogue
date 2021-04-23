@@ -6,19 +6,20 @@ import (
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/timsims1717/cg_rogue_go/internal/cfg"
 	"github.com/timsims1717/cg_rogue_go/internal/debug"
+	"github.com/timsims1717/cg_rogue_go/internal/selector/gfx"
 	"github.com/timsims1717/cg_rogue_go/internal/state"
 	"github.com/timsims1717/cg_rogue_go/pkg/camera"
+	"github.com/timsims1717/cg_rogue_go/pkg/img"
 	"github.com/timsims1717/cg_rogue_go/pkg/sfx"
 	"github.com/timsims1717/cg_rogue_go/pkg/timing"
 	"github.com/timsims1717/cg_rogue_go/pkg/world"
 	"golang.org/x/image/colornames"
 	"math/rand"
-	"time"
 )
 
 func run() {
-	//seed := int64(1619030837400903598)
-	seed := time.Now().UnixNano()
+	seed := int64(1619198680886791815)
+	//seed := time.Now().UnixNano()
 	rand.Seed(seed)
 	fmt.Println("Seed:", seed)
 	world.TileSize = cfg.TileSize
@@ -47,6 +48,12 @@ func run() {
 	sfx.SoundPlayer.RegisterSound("assets/sounds/step1.wav", "step1")
 
 	debug.Initialize()
+
+	selectionEffectSheet, err := img.LoadSpriteSheet("assets/img/selection_effects.json")
+	if err != nil {
+		panic(err)
+	}
+	gfx.SetSpriteSheet(selectionEffectSheet)
 
 	timing.Reset()
 	for !win.Closed() {
