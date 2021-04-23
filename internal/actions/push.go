@@ -81,6 +81,7 @@ type PushMultiAction struct {
 	ends    []world.Coords
 	interXP []*gween.Tween
 	interYP []*gween.Tween
+	put     []bool
 }
 
 func NewPushMultiAction(area []world.Coords, values selector.ActionValues) *PushMultiAction {
@@ -125,6 +126,7 @@ func (a *PushMultiAction) Update() {
 						}
 					}
 					a.targets = append(a.targets, target)
+					a.put = append(a.put, false)
 					if len(nPath) < 2 {
 						a.ends = append(a.ends, target.GetCoords())
 						a.interXP = append(a.interXP, nil)
@@ -151,6 +153,10 @@ func (a *PushMultiAction) Update() {
 		done := !a.values.Source.IsMoving() && a.postDam
 		for i, target := range a.targets {
 			if !a.postDam {
+				if target.Coords.Above(a.ends[i]) && !a.put[i] {
+					floor.CurrentFloor.PutOccupant(target, a.ends[i])
+					a.put[i] = true
+				}
 				if first {
 					sfx.SoundPlayer.PlaySound("punch_hit")
 					first = false
@@ -162,7 +168,9 @@ func (a *PushMultiAction) Update() {
 				y, finY := a.interYP[i].Update(timing.DT)
 				target.SetPos(pixel.V(x, y))
 				if finX && finY {
-					floor.CurrentFloor.PutOccupant(target, a.ends[i])
+					if !a.put[i] {
+						floor.CurrentFloor.PutOccupant(target, a.ends[i])
+					}
 					a.interXP[i] = nil
 					a.interYP[i] = nil
 				} else {

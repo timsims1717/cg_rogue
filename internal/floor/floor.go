@@ -146,6 +146,17 @@ func (f *Floor) drawRow(win *pixelgl.Window, i, w, y int) {
 	if eff {
 		gfx.Draw(win)
 	}
+	for x := (i + 1) % 2; x < w; x += 2 {
+		hex := f.Get(world.Coords{X: x, Y: y})
+		if hex.IsOccupied() {
+			hex.Occupant.Health.Draw(win)
+			hex.Occupant.Defense.Draw(win)
+		}
+		for _, c := range hex.storage {
+			c.Health.Draw(win)
+			c.Defense.Draw(win)
+		}
+	}
 }
 
 func (f *Floor) Dimensions() (int, int) {
@@ -209,7 +220,6 @@ func (f *Floor) PutOccupant(c *Character, e world.Coords) {
 		hex.Occupant = c
 	}
 	c.Coords = e
-	c.SetPos(world.MapToWorld(e))
 	c.OnMap = true
 }
 

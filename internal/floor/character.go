@@ -88,8 +88,6 @@ func (c *Character) Update() {
 
 func (c *Character) Draw(win *pixelgl.Window) {
 	c.Spr.DrawColorMask(win, c.Transform.Mat, c.mask)
-	c.Health.Draw(win)
-	c.Defense.Draw(win)
 }
 
 func (c *Character) StartTurn() {

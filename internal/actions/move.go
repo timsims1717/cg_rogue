@@ -19,6 +19,7 @@ type MoveAction struct {
 	end    world.Coords
 	interX *gween.Tween
 	interY *gween.Tween
+	put    bool
 }
 
 func NewMoveAction(source *floor.Character, target *floor.Character, end world.Coords) *MoveAction {
@@ -38,13 +39,19 @@ func NewMoveAction(source *floor.Character, target *floor.Character, end world.C
 }
 
 func (a *MoveAction) Update() {
+	if a.target.Coords.Above(a.end) && !a.put {
+		floor.CurrentFloor.PutOccupant(a.target, a.end)
+		a.put = true
+	}
 	x, finX := a.interX.Update(timing.DT)
 	y, finY := a.interY.Update(timing.DT)
 	a.target.SetPos(pixel.V(x, y))
 	if finX && finY {
-		a.IsDone = true
-		floor.CurrentFloor.PutOccupant(a.target, a.end)
+		if !a.put {
+			floor.CurrentFloor.PutOccupant(a.target, a.end)
+		}
 		sfx.SoundPlayer.PlaySound("step1")
+		a.IsDone = true
 	}
 }
 
@@ -58,6 +65,7 @@ type MoveSeriesAction struct {
 	target *floor.Character
 	series []world.Coords
 	step   int
+	put    bool
 	start  world.Coords
 	interX *gween.Tween
 	interY *gween.Tween
@@ -83,18 +91,27 @@ func NewMoveSeriesAction(source *floor.Character, target *floor.Character, serie
 }
 
 func (a *MoveSeriesAction) Update() {
+	next := a.series[a.step]
+	if a.target.Coords.Above(next) && !a.put {
+		floor.CurrentFloor.PutOccupant(a.target, a.series[a.step])
+		a.put = true
+	}
 	x, finX := a.interX.Update(timing.DT)
 	y, finY := a.interY.Update(timing.DT)
 	a.target.SetPos(pixel.V(x, y))
 	if finX && finY {
 		if a.step >= len(a.series)-1 {
-			next := a.series[a.step]
 			a.IsDone = true
-			floor.CurrentFloor.PutOccupant(a.target, next)
+			if !a.put {
+				floor.CurrentFloor.PutOccupant(a.target, next)
+			}
 		} else {
 			sfx.SoundPlayer.PlaySound("step1")
-			next := a.series[a.step+1]
-			b := world.MapToWorld(next)
+			if !a.put {
+				floor.CurrentFloor.PutOccupant(a.target, next)
+			}
+			a.put = false
+			b := world.MapToWorld(a.series[a.step+1])
 			if a.step >= len(a.series)-2 {
 				a.interX = gween.New(x, b.X, 0.25, ease.OutQuad)
 				a.interY = gween.New(y, b.Y, 0.25, ease.OutQuad)

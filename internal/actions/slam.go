@@ -17,6 +17,7 @@ type SlamAction struct {
 	area    []world.Coords
 	landing world.Coords
 	start   bool
+	put     bool
 }
 
 func NewSlamAction(landing world.Coords, area []world.Coords, values selector.ActionValues) *SlamAction {
@@ -33,6 +34,10 @@ func NewSlamAction(landing world.Coords, area []world.Coords, values selector.Ac
 
 func (a *SlamAction) Update() {
 	if a.start {
+		if a.values.Source.Coords.Above(a.landing) && !a.put {
+			floor.CurrentFloor.PutOccupant(a.values.Source, a.landing)
+			a.put = true
+		}
 		p := a.values.Source.GetPos()
 		e := world.MapToWorld(a.landing)
 		transform := animation.TransformBuilder{
@@ -45,7 +50,9 @@ func (a *SlamAction) Update() {
 	}
 	if !a.values.Source.IsMoving() {
 		a.IsDone = true
-		floor.CurrentFloor.PutOccupant(a.values.Source, a.landing)
+		if !a.put {
+			floor.CurrentFloor.PutOccupant(a.values.Source, a.landing)
+		}
 		first := true
 		for _, h := range a.area {
 			// todo: add an effect

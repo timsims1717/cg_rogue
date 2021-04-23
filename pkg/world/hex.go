@@ -20,6 +20,14 @@ type Coords struct {
 	Y int
 }
 
+func (a Coords) Above(b Coords) bool {
+	if a.X % 2 == 0 {
+		return a.Y > b.Y
+	} else {
+		return a.Y >= b.Y
+	}
+}
+
 func (a Coords) Direction(b Coords) Sextant {
 	return GetSextant(b, a)
 }
