@@ -132,7 +132,7 @@ func (c *Card) Update(r pixel.Rect) {
 
 func (c *Card) Draw(target pixel.Target) {
 	if c.draw {
-		c.canvas.Clear(pixel.RGBA{R: 0, G: 0, B: 0, A: 0})
+		c.canvas.Clear(pixel.RGBA{})
 		CardBG.Draw(c.canvas, pixel.IM.Moved(pixel.V(BaseCardWidth*0.5, BaseCardHeight*0.5)))
 		c.desc.Draw(c.canvas, pixel.IM.Scaled(c.desc.Orig, 1.2).Moved(pixel.V(BaseCardWidth*0.5, BaseCardHeight*0.5)))
 		//c.desc.Draw(c.canvas, pixel.IM.Scaled(pa.text.Orig, 1.2).Moved(pixel.V(BaseCardWidth*0.5, BaseCardHeight*0.5-float64(offset)*(text2.BasicAtlas.LineHeight()+20.))))
